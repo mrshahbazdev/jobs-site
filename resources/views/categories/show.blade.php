@@ -5,20 +5,20 @@
     @push('breadcrumb_schema')
     <script type="application/ld+json">
     {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
+      "@@context": "https://schema.org",
+      "@@type": "BreadcrumbList",
       "itemListElement": [{
-        "@type": "ListItem",
+        "@@type": "ListItem",
         "position": 1,
         "name": "Home",
         "item": "{{ url('/') }}"
       },{
-        "@type": "ListItem",
+        "@@type": "ListItem",
         "position": 2,
         "name": "Categories",
         "item": "{{ url('/categories') }}"
       },{
-        "@type": "ListItem",
+        "@@type": "ListItem",
         "position": 3,
         "name": "{{ $category->name }}",
         "item": "{{ url()->current() }}"
