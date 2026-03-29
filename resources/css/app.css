@@ -13,9 +13,9 @@
     --color-background-light: #f6f7f8;
     --color-background-dark: #111921;
 
-    /* Inter font as display */
-    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    /* System fonts */
+    --font-display: ui-sans-serif, system-ui, sans-serif;
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Material Symbols base */
@@ -36,6 +36,6 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
