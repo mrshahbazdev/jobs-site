@@ -23,9 +23,9 @@
             <p class="mt-3 text-lg text-slate-500 dark:text-slate-400 font-medium max-w-3xl">Browse and apply for the most relevant opportunities matching your location and professional criteria.</p>
         </div>
 
-        <div class="grid grid-cols-1 gap-12 lg:grid-cols-4 items-start">
+        <div class="grid grid-cols-1 gap-12 lg:grid-cols-5 items-start">
             <!-- Sidebar Filters -->
-            <aside class="lg:col-span-1 sticky top-8">
+            <aside class="lg:col-span-2 sticky top-8">
                 <x-job-filters :categories="$categories" :cities="$cities" />
             </aside>
 
