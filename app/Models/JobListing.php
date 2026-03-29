@@ -44,4 +44,9 @@ class JobListing extends Model
     {
         return $this->belongsToMany(User::class, 'bookmarks', 'user_id', 'job_listing_id')->withTimestamps();
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

@@ -11,8 +11,11 @@ use App\Http\Controllers\SitemapController;
 // Homepage & Main Job Routes
 Route::get('/', [JobController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/news-sitemap.xml', [SitemapController::class, 'news']);
 Route::get('/robots.txt', [SitemapController::class, 'robots']);
 Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/jobs/{slug}/amp', [JobController::class, 'ampShow'])->name('jobs.amp');
+Route::get('/web-stories/{slug}', [JobController::class, 'storyShow'])->name('jobs.story');
 Route::get('/categories', [JobController::class, 'categories'])->name('categories.index');
 Route::get('/categories/{slug}', [JobController::class, 'category'])->name('categories.show');
 Route::get('/cities/{slug}', [JobController::class, 'city'])->name('cities.show');

@@ -573,4 +573,30 @@ class JobController extends Controller
         $title = $skill . " Skills Jobs";
         return view('jobs.list', compact('jobs', 'categories', 'cities', 'title'));
     }
+
+    /**
+     * Display the AMP version of a job listing.
+     */
+    public function ampShow($slug)
+    {
+        $job = JobListing::where('slug', $slug)->with(['category', 'city'])->firstOrFail();
+        $relatedJobs = JobListing::where('category_id', $job->category_id)
+            ->where('id', '!=', $job->id)
+            ->where('is_active', true)
+            ->latest()
+            ->take(3)
+            ->get();
+            
+        return view('jobs.amp', compact('job', 'relatedJobs'));
+    }
+
+    /**
+     * Display the Web Story (AMP Story) version of a job listing.
+     */
+    public function storyShow($slug)
+    {
+        $job = JobListing::where('slug', $slug)->with(['category', 'city'])->firstOrFail();
+        
+        return view('jobs.story', compact('job'));
+    }
 }

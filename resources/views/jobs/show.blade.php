@@ -4,6 +4,26 @@
     @section('meta_keywords', $job->meta_keywords ?: 'jobs in pakistan, ' . $job->category->name . ', ' . $job->city->name)
 
     @push('extra_head')
+        <link rel="amphtml" href="{{ route('jobs.amp', $job->slug) }}">
+        
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          "headline": "{{ $job->title }}",
+          "datePublished": "{{ $job->created_at->toIso8601String() }}",
+          "dateModified": "{{ $job->updated_at->toIso8601String() }}",
+          "author": [{
+              "@type": "Organization",
+              "name": "JobsPic",
+              "url": "{{ url('/') }}"
+            }],
+          "image": [
+            "{{ $job->company_logo ? asset('storage/'.$job->company_logo) : asset('icons/icon-512x512.png') }}"
+          ]
+        }
+        </script>
+
         @if($job->schema_json)
             {!! $job->schema_json !!}
         @endif
