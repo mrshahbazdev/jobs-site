@@ -58,7 +58,7 @@
         <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4">{{ $title ?? 'Join Our Exclusive Job Networks' }}</h2>
         <p class="text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed">{{ $subtitle ?? 'Stay updated with 200+ daily opportunities across Pakistan. Join 50,000+ candidates receiving instant alerts.' }}</p>
         <div class="flex flex-wrap gap-4">
-            <a href="{{ route('jobs.whatsapp') }}" class="flex items-center gap-2 bg-[#128C7E] text-white px-6 py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#0e6b60] transition-all shadow-lg shadow-emerald-600/20">
+            <a href="{{ route('jobs.whatsapp') }}" class="flex items-center gap-2 bg-[#075E54] text-white px-6 py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#064e46] transition-all shadow-lg shadow-emerald-600/20">
                 <span class="material-symbols-outlined">whatsapp</span>
                 Join Groups
             </a>

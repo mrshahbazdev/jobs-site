@@ -18,9 +18,9 @@
                         <span class="bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded uppercase border border-blue-200">Featured</span>
                     @endif
                 </div>
-                <h3 class="font-bold text-slate-900 group-hover:text-primary dark:text-white leading-tight pr-4">
+                <h2 class="font-bold text-slate-900 group-hover:text-primary dark:text-white leading-tight pr-4">
                     <a href="{{ url('/jobs/'.$job->slug) }}">{{ $job->title }}</a>
-                </h3>
+                </h2>
                 <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1">
                     {{ $job->company_name ?? $job->category?->name }} • {{ $job->city?->name }}
                 </p>

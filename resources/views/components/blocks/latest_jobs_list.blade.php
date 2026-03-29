@@ -44,7 +44,7 @@
     <div class="flex flex-1 flex-col gap-8">
         <div class="flex flex-col gap-3">
             <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Latest Recommended Jobs <span class="current-year"></span></h1>
-            <p class="text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">Hand-picked opportunities verified for quality and relevance.</p>
+            <p class="text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">Hand-picked opportunities verified for quality and relevance.</p>
         </div>
 
         <section class="flex flex-col gap-4">

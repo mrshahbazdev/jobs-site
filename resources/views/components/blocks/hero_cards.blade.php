@@ -39,9 +39,9 @@
         @endphp
         <a href="{{ $url }}" class="group relative overflow-hidden flex items-center justify-between p-6 bg-gradient-to-br from-{{ $color }}-50 to-{{ $color }}-100 dark:from-{{ $color }}-900/20 dark:to-{{ $color }}-800/20 rounded-2xl border border-{{ $color }}-200 dark:border-{{ $color }}-800/50 hover:shadow-lg transition-all">
             <div class="relative z-10">
-                <span class="text-[10px] font-black uppercase tracking-widest text-{{ $color }}-600 dark:text-{{ $color }}-400">{{ $card['label'] ?? 'Feature' }}</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-{{ $color }}-700 dark:text-{{ $color }}-400">{{ $card['label'] ?? 'Feature' }}</span>
                 <h3 class="text-xl font-black text-slate-900 dark:text-white mt-1">{{ $card['title'] }}</h3>
-                <p class="text-xs text-{{ $color }}-700/70 dark:text-{{ $color }}-300/50 mt-1">{{ $card['sub_title'] ?? '' }}</p>
+                <p class="text-xs text-{{ $color }}-800/80 dark:text-{{ $color }}-300/50 mt-1">{{ $card['sub_title'] ?? '' }}</p>
             </div>
             <span class="material-symbols-outlined text-4xl text-{{ $color }}-200 dark:text-{{ $color }}-800/30 group-hover:scale-110 transition-transform">{{ $card['icon'] ?? 'star' }}</span>
         </a>

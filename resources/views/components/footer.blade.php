@@ -24,7 +24,7 @@
 
             @if($footerBlocks->where('type', 'footer_column')->isEmpty())
                 <div>
-                    <h4 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Quick Links</h4>
+                    <h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Quick Links</h3>
                     <ul class="flex flex-col gap-2 text-sm text-slate-500">
                         <li><a class="hover:text-primary" href="{{ url('/') }}">Home</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/categories') }}">Categories</a></li>
@@ -32,7 +32,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Legal</h4>
+                    <h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Legal</h3>
                     <ul class="flex flex-col gap-2 text-sm text-slate-500">
                         <li><a class="hover:text-primary" href="{{ url('/about') }}">About Us</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/privacy-policy') }}">Privacy Policy</a></li>
@@ -40,7 +40,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Follow Us</h4>
+                    <h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Follow Us</h3>
                     <div class="flex gap-4">
                         <a class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-primary hover:text-white dark:bg-slate-800" href="#"><span class="material-symbols-outlined" aria-hidden="true">public</span></a>
                         <a class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-primary hover:text-white dark:bg-slate-800" href="#"><span class="material-symbols-outlined" aria-hidden="true">alternate_email</span></a>
