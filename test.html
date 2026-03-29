@@ -913,18 +913,43 @@
 
                 articleContent.innerHTML = htmlFormat;
 
-                // Handle Schema
+                // -- Handle Schema: Validate JSON before saving --
                 if (schemaTxt) {
-                    // rawJsonSchema = full script block for copying/display
-                    rawJsonSchema = `<script type="application/ld+json">\n${schemaTxt}\n<\/script>`;
-                    // Show in a visible <pre> block (innerHTML won't execute script tags)
-                    schemaHolder.innerHTML = `<pre style="white-space:pre-wrap;word-break:break-all;font-size:12px;background:#0f172a;color:#7dd3fc;border-radius:16px;padding:20px;overflow:auto;max-height:320px;">${rawJsonSchema.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
+                    let schemaValid = false;
+                    let cleanJson = schemaTxt
+                        .replace(/<script[^>]*>/gi, "")
+                        .replace(/<\/script>/gi, "")
+                        .replace(/^[\s:\n]+/, "")
+                        .trim();
+                    try { JSON.parse(cleanJson); schemaValid = true; }
+                    catch (e) { schemaValid = false; console.warn("Schema invalid:", e.message); }
+
+                    if (schemaValid) {
+                        currentSchemaJson = cleanJson;
+                        rawJsonSchema = "<script type=\"application/ld+json\">\n" + cleanJson + "\n<\/script>";
+                        schemaHolder.innerHTML =
+                            "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" +
+                            "<span style=\"background:#dcfce7;color:#15803d;font-weight:900;padding:4px 14px;border-radius:999px;font-size:13px;\">✅ Valid JSON-LD Schema</span>" +
+                            "<span style=\"background:#e0f2fe;color:#0369a1;font-weight:700;padding:4px 14px;border-radius:999px;font-size:13px;\">Saved to DB as schema_json</span>" +
+                            "</div>" +
+                            "<pre style=\"white-space:pre-wrap;word-break:break-all;font-size:12px;background:#0f172a;color:#7dd3fc;border-radius:16px;padding:20px;overflow:auto;max-height:320px;\">" +
+                            rawJsonSchema.replace(/</g,"&lt;").replace(/>/g,"&gt;") + "</pre>";
+                    } else {
+                        currentSchemaJson = "";
+                        rawJsonSchema = "";
+                        schemaHolder.innerHTML =
+                            "<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:12px;\">" +
+                            "<span style=\"background:#fee2e2;color:#b91c1c;font-weight:900;padding:4px 14px;border-radius:999px;font-size:13px;\">❌ Invalid JSON — Schema NOT saved</span>" +
+                            "</div>" +
+                            "<pre style=\"white-space:pre-wrap;word-break:break-all;font-size:12px;background:#1e1b1b;color:#fca5a5;border-radius:16px;padding:20px;overflow:auto;max-height:320px;\">" +
+                            cleanJson.replace(/</g,"&lt;").replace(/>/g,"&gt;") + "</pre>";
+                    }
                 } else {
-                    rawJsonSchema = "No valid schema detected.";
-                    schemaHolder.innerHTML = `<p style="color:#ef4444;font-weight:bold;">âš ï¸ Schema not detected in response.</p>`;
+                    rawJsonSchema = ""; currentSchemaJson = "";
+                    schemaHolder.innerHTML = "<p style=\"color:#ef4444;font-weight:bold;\">⚠️ Schema not detected in response.</p>";
                 }
 
-                // â† Save final HTML for posting
+                // Save final HTML for posting (schema sent separately as schema_json DB field)
                 currentArticleHtml = articleContent.innerHTML;
 
                 showStatus("Success! Article and Schema generated perfectly. Review below.", "success");
