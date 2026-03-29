@@ -22,6 +22,7 @@
                 <label class="relative w-full">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                    </div>
                     <input name="q" value="{{ request('q') }}" class="block w-full rounded-lg border-0 bg-slate-100 py-2 pl-10 pr-3 text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-700 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm" placeholder="Search latest jobs..." type="text"/>
                 </label>
             </form>
@@ -57,6 +58,7 @@
                 <label class="relative w-full">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                         <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                    </div>
                     <input name="q" value="{{ request('q') }}" class="block w-full rounded-lg border-0 bg-slate-100 py-2.5 pl-10 pr-3 text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-700 focus:ring-2 focus:ring-inset focus:ring-primary text-sm" placeholder="Search latest jobs..." type="text"/>
                 </label>
             </form>
