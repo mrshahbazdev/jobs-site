@@ -1,5 +1,31 @@
 <x-layout>
-    <x-slot name="title">{{ $category->name }} Jobs in Pakistan - JobsPic</x-slot>
+    @section('title', 'Latest ' . $category->name . ' Jobs in Pakistan 2026 - Apply Online | JobsPic')
+    @section('meta_description', 'Browse the newest ' . $category->name . ' job openings in Pakistan. View salary, requirements, and application deadlines for ' . $category->name . ' positions.')
+    
+    @push('breadcrumb_schema')
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url('/') }}"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Categories",
+        "item": "{{ url('/categories') }}"
+      },{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "{{ $category->name }}",
+        "item": "{{ url()->current() }}"
+      }]
+    }
+    </script>
+    @endpush
 
     <main class="mx-auto flex flex-col lg:flex-row w-full max-w-7xl grow gap-8 px-4 py-8 lg:px-10">
         <aside class="w-full lg:w-64 shrink-0 flex-col gap-4 flex">

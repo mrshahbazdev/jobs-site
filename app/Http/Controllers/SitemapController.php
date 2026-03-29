@@ -42,11 +42,23 @@ class SitemapController extends Controller
     }
 
     /**
+     * Generate RSS feed for job aggregators.
+     */
+    public function feed(): Response
+    {
+        $jobs = JobListing::active()->orderBy('created_at', 'desc')->take(50)->get();
+
+        return response()->view('feed', [
+            'jobs' => $jobs,
+        ])->header('Content-Type', 'application/rss+xml');
+    }
+
+    /**
      * Display a basic robots.txt.
      */
     public function robots(): Response
     {
-        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml');
+        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/feed');
         return response($content)->header('Content-Type', 'text/plain');
     }
 }

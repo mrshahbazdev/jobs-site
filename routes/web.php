@@ -12,6 +12,7 @@ use App\Http\Controllers\SitemapController;
 Route::get('/', [JobController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/news-sitemap.xml', [SitemapController::class, 'news']);
+Route::get('/feed', [SitemapController::class, 'feed']);
 Route::get('/robots.txt', [SitemapController::class, 'robots']);
 Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('/jobs/{slug}/amp', [JobController::class, 'ampShow'])->name('jobs.amp');

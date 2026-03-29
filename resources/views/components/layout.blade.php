@@ -8,6 +8,25 @@
     <meta name="keywords" content="@yield('meta_keywords', 'jobs in pakistan, govt jobs, private jobs, pakistani jobs')">
     <meta name="theme-color" content="#1773cf">
     
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('og_title', 'Latest Govt & Private Jobs in Pakistan - JobsPic')">
+    <meta property="og:description" content="@yield('meta_description', 'Find the latest Government, Federal, Police, and Private sector jobs in Pakistan.')">
+    <meta property="og:image" content="@yield('og_image', asset('icons/icon-512x512.png'))">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="@yield('og_title', 'Latest Govt & Private Jobs in Pakistan - JobsPic')">
+    <meta property="twitter:description" content="@yield('meta_description', 'Find the latest Government, Federal, Police, and Private sector jobs in Pakistan.')">
+    <meta property="twitter:image" content="@yield('og_image', asset('icons/icon-512x512.png'))">
+
+    <!-- Breadcrumb Schema -->
+    @stack('breadcrumb_schema')
+    
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
@@ -28,6 +47,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+    @stack('extra_head')
     {!! $settings['header_tags'] ?? '' !!}
 </head>
 <body class="bg-background-light text-slate-900 font-display transition-colors duration-300">

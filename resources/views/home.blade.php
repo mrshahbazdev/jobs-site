@@ -1,5 +1,20 @@
 <x-layout>
-    <x-slot name="title">Latest Jobs in Pakistan - Govt & Private Positions</x-slot>
+    <x-slot name="title">Latest Jobs in Pakistan 2026 - Govt & Private Positions | JobsPic</x-slot>
+    
+    @push('breadcrumb_schema')
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url('/') }}"
+      }]
+    }
+    </script>
+    @endpush
 
     <!-- Dynamic Block System -->
     @foreach($homeBlocks as $block)

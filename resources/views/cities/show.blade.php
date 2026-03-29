@@ -1,5 +1,26 @@
 <x-layout>
-    <x-slot name="title">Jobs in {{ $city->name }} - JobsPic</x-slot>
+    @section('title', 'Latest Jobs in ' . $city->name . ' 2026 - Govt & Private | JobsPic')
+    @section('meta_description', 'Find the most recent job vacancies in ' . $city->name . '. Stay updated with daily listings in the ' . $city->name . ' region across all sectors.')
+    
+    @push('breadcrumb_schema')
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url('/') }}"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "{{ $city->name }}",
+        "item": "{{ url()->current() }}"
+      }]
+    }
+    </script>
+    @endpush
 
     <main class="mx-auto flex flex-col lg:flex-row w-full max-w-7xl grow gap-8 px-4 py-8 lg:px-10">
         <aside class="w-full lg:w-64 shrink-0 flex-col gap-4 flex">
