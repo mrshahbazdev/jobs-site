@@ -117,6 +117,18 @@
                     {{ $jobs->links() }}
                 </div>
             </section>
+
+            <!-- SEO Content Section -->
+            <hr class="border-slate-100 dark:border-slate-800 my-4">
+            <section class="prose prose-slate dark:prose-invert max-w-none bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <h2 class="text-xl font-bold mb-4">Job Opportunities in {{ $city->name }}, Pakistan</h2>
+                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    Browse all current <strong>vacancies in {{ $city->name }}</strong> for the year 2026. This page is updated daily with the latest government and private sector jobs specifically for residents of {{ $city->name }}. Our listings include positions from various departments, hospitals, schools, and private companies located within the {{ $city->name }} region.
+                </p>
+                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-2">
+                    If you are a resident of <strong>{{ $city->name }}</strong> searching for your next career move, explore our filter-friendly lists to find jobs that match your education level and experience. Don't miss out on the latest <strong>{{ $city->name }} job alerts</strong>.
+                </p>
+            </section>
         </div>
     </main>
 </x-layout>

@@ -12,6 +12,7 @@ use App\Http\Controllers\SitemapController;
 Route::get('/', [JobController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/news-sitemap.xml', [SitemapController::class, 'news']);
+Route::get('/image-sitemap.xml', [SitemapController::class, 'images']);
 Route::get('/feed', [SitemapController::class, 'feed']);
 Route::get('/robots.txt', [SitemapController::class, 'robots']);
 Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');
@@ -45,6 +46,7 @@ Route::get('/department/{department}', [JobController::class, 'department'])->na
 Route::get('/province/{province}', [JobController::class, 'province'])->name('jobs.province');
 Route::get('/gender/{gender}', [JobController::class, 'gender'])->name('jobs.gender');
 Route::get('/bps/{scale}', [JobController::class, 'bps'])->name('jobs.bps');
+Route::get('/government-jobs', [JobController::class, 'sector'])->defaults('sector', 'government')->name('jobs.government');
 Route::get('/today-jobs', [JobController::class, 'today'])->name('jobs.today');
 Route::get('/expiring-soon', [JobController::class, 'expiring'])->name('jobs.expiring');
 Route::get('/degree/{degree}', [JobController::class, 'degree'])->name('jobs.degree');

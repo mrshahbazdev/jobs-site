@@ -55,6 +55,10 @@
 
         @if($job->schema_json)
             {!! $job->schema_json !!}
+        @else
+            <script type="application/ld+json">
+            {!! $job->generateSchema() !!}
+            </script>
         @endif
     @endpush
 

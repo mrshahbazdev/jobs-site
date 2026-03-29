@@ -49,4 +49,54 @@ class JobListing extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Generate a JobPosting Schema JSON-LD if none exists.
+     */
+    public function generateSchema()
+    {
+        if ($this->schema_json && strlen($this->schema_json) > 50) {
+            return $this->schema_json;
+        }
+
+        $schema = [
+            "@context" => "https://schema.org/",
+            "@type" => "JobPosting",
+            "title" => $this->title,
+            "description" => strip_tags($this->description_html),
+            "datePosted" => $this->created_at->toIso8601String(),
+            "validThrough" => $this->deadline ? \Carbon\Carbon::parse($this->deadline)->toIso8601String() : $this->created_at->addMonths(3)->toIso8601String(),
+            "employmentType" => $this->job_type ?: "FULL_TIME",
+            "hiringOrganization" => [
+                "@type" => "Organization",
+                "name" => $this->company_name ?: "JobsPic Pakistan",
+                "sameAs" => url('/'),
+                "logo" => $this->company_logo ? asset('storage/'.$this->company_logo) : asset('icons/icon-192x192.png')
+            ],
+            "jobLocation" => [
+                "@type" => "Place",
+                "address" => [
+                    "@type" => "PostalAddress",
+                    "addressLocality" => $this->city ? $this->city->name : "Pakistan",
+                    "addressRegion" => $this->province ?: "Pakistan",
+                    "addressCountry" => "PK"
+                ]
+            ]
+        ];
+
+        if ($this->salary_min) {
+            $schema['baseSalary'] = [
+                "@type" => "MonetaryAmount",
+                "currency" => "PKR",
+                "value" => [
+                    "@type" => "QuantitativeValue",
+                    "minValue" => $this->salary_min,
+                    "maxValue" => $this->salary_max ?: $this->salary_min,
+                    "unitText" => "MONTH"
+                ]
+            ];
+        }
+
+        return json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
 }

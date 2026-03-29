@@ -132,6 +132,18 @@
                     {{ $jobs->links() }}
                 </div>
             </section>
+
+            <!-- SEO Content Section -->
+            <hr class="border-slate-100 dark:border-slate-800 my-4">
+            <section class="prose prose-slate dark:prose-invert max-w-none bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <h2 class="text-xl font-bold mb-4">About {{ $category->name }} Jobs in Pakistan</h2>
+                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    Find the latest <strong>{{ $category->name }} job openings</strong> across Pakistan for 2026. We collect daily advertisements from major newspapers like Jang, Express, and Dawn to bring you the best opportunities in the {{ $category->name }} sector. Whether you are looking for Government, Semi-Government, or Private sector positions, our categorized listings help you find your dream career quickly. 
+                </p>
+                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 mt-2">
+                    Stay updated with the newest <strong>{{ $category->name }} vacancies</strong> by joining our WhatsApp alerts. We provide detailed information including salary range, education requirements (Matric, Inter, Graduate, Masters), and application deadlines for all {{ $category->name }} listings.
+                </p>
+            </section>
         </div>
     </main>
 </x-layout>

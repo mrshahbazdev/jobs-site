@@ -54,11 +54,23 @@ class SitemapController extends Controller
     }
 
     /**
+     * Generate Google Image XML sitemap.
+     */
+    public function images(): Response
+    {
+        $jobs = JobListing::active()->whereNotNull('job_source_image_id')->orderBy('created_at', 'desc')->take(1000)->get();
+
+        return response()->view('image_sitemap', [
+            'jobs' => $jobs,
+        ])->header('Content-Type', 'text/xml');
+    }
+
+    /**
      * Display a basic robots.txt.
      */
     public function robots(): Response
     {
-        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/feed');
+        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/image-sitemap.xml') . "\nSitemap: " . url('/feed');
         return response($content)->header('Content-Type', 'text/plain');
     }
 }
