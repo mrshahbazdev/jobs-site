@@ -75,9 +75,16 @@ class LandingLinkSeeder extends Seeder
         ];
 
         foreach ($links as $link) {
+            $group = \App\Models\LandingGroup::firstOrCreate(['name' => $link['group_name']]);
+            
             LandingLink::updateOrCreate(
-                ['label' => $link['label'], 'group_name' => $link['group_name']],
-                $link
+                ['title' => $link['label'], 'landing_group_id' => $group->id],
+                [
+                    'route_name' => $link['route_name'],
+                    'route_param' => $link['route_param'] ?? null,
+                    'sort_order' => $link['sort_order'],
+                    'icon' => $link['icon'] ?? null,
+                ]
             );
         }
     }

@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('landing_links', function (Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string('label');
-            $blueprint->string('group_name'); // Testing Services, Overseas, Departments, Education, Industry, QuickLink
-            $blueprint->string('route_name'); // jobs.testing_service, jobs.country, etc.
-            $blueprint->string('route_param')->nullable(); // NTS, Saudi Arabia, etc.
-            $blueprint->string('icon')->nullable(); // Material symbol name
+            $blueprint->foreignId('landing_group_id')->constrained()->cascadeOnDelete();
+            $blueprint->string('title');
+            $blueprint->string('url')->nullable();
+            $blueprint->string('route_name')->nullable();
+            $blueprint->string('route_param')->nullable();
+            $blueprint->string('icon')->nullable(); 
             $blueprint->integer('sort_order')->default(0);
             $blueprint->boolean('is_active')->default(true);
             $blueprint->timestamps();
