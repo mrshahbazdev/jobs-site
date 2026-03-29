@@ -24,34 +24,7 @@
         }
         </script>
 
-        <script type="application/ld+json">
-        {
-          "@@context": "https://schema.org",
-          "@@type": "FAQPage",
-          "mainEntity": [{
-            "@@type": "Question",
-            "name": "How to apply for {{ $job->title }}?",
-            "acceptedAnswer": {
-              "@@type": "Answer",
-              "text": "To apply for this position, please read the full job description above and follow the application instructions provided. You can apply directly on our website or through the WhatsApp link if available."
-            }
-          }, {
-            "@@type": "Question",
-            "name": "What is the last date to apply for this job?",
-            "acceptedAnswer": {
-              "@@type": "Answer",
-              "text": "The deadline for this job is {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('M d, Y') : 'not specified' }}. We recommend applying as soon as possible."
-            }
-          }, {
-            "@@type": "Question",
-            "name": "Where is this job located?",
-            "acceptedAnswer": {
-              "@@type": "Answer",
-              "text": "This position is located in {{ $job->city->name }}, Pakistan."
-            }
-          }]
-        }
-        </script>
+
 
         @if($job->schema_json)
             <script type="application/ld+json">
