@@ -8,13 +8,13 @@
         
         <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@type": "NewsArticle",
+          "@@context": "https://schema.org",
+          "@@type": "NewsArticle",
           "headline": "{{ $job->title }}",
           "datePublished": "{{ $job->created_at->toIso8601String() }}",
           "dateModified": "{{ $job->updated_at->toIso8601String() }}",
           "author": [{
-              "@type": "Organization",
+              "@@type": "Organization",
               "name": "JobsPic",
               "url": "{{ url('/') }}"
             }],
@@ -26,27 +26,27 @@
 
         <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
+          "@@context": "https://schema.org",
+          "@@type": "FAQPage",
           "mainEntity": [{
-            "@type": "Question",
+            "@@type": "Question",
             "name": "How to apply for {{ $job->title }}?",
             "acceptedAnswer": {
-              "@type": "Answer",
+              "@@type": "Answer",
               "text": "To apply for this position, please read the full job description above and follow the application instructions provided. You can apply directly on our website or through the WhatsApp link if available."
             }
           }, {
-            "@type": "Question",
+            "@@type": "Question",
             "name": "What is the last date to apply for this job?",
             "acceptedAnswer": {
-              "@type": "Answer",
+              "@@type": "Answer",
               "text": "The deadline for this job is {{ $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('M d, Y') : 'not specified' }}. We recommend applying as soon as possible."
             }
           }, {
-            "@type": "Question",
+            "@@type": "Question",
             "name": "Where is this job located?",
             "acceptedAnswer": {
-              "@type": "Answer",
+              "@@type": "Answer",
               "text": "This position is located in {{ $job->city->name }}, Pakistan."
             }
           }]
@@ -285,7 +285,7 @@
     </main>
 
     <style>
-        @media print {
+        @@media print {
             .no-print { display: none !important; }
             body { background: white !important; padding: 0 !important; }
             .mx-auto { max-width: 100% !important; margin: 0 !important; border: none !important; }
