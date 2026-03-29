@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/container-queries";
 
@@ -32,6 +33,7 @@
     word-wrap: normal;
     direction: ltr;
     -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
 }
 

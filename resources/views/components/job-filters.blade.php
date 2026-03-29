@@ -1,7 +1,7 @@
 @props(['categories' => null, 'cities' => null, 'jobTypes' => null, 'experiences' => null])
 
 <div id="filterSidebar" class="flex flex-col gap-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-    <div class="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 pb-4">
+    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
         <h3 class="text-lg font-black tracking-tight">Refine Results</h3>
         <a href="{{ url()->current() }}" class="text-xs font-bold text-primary hover:underline">Clear all</a>
     </div>
@@ -64,7 +64,7 @@
                         <span class="material-symbols-outlined">whatsapp</span>
                         Fast Alerts
                     </h4>
-                    <p class="text-[10px] text-emerald-100 font-bold uppercase tracking-wider mb-4 leading-tight">Get Jobs on WhatsApp</p>
+                    <p class="text-[10px] text-white font-bold uppercase tracking-wider mb-4 leading-tight">Get Jobs on WhatsApp</p>
                     <a href="{{ route('jobs.whatsapp') }}" class="block w-full bg-white text-emerald-600 text-center py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-colors shadow-sm">
                         Join Groups
                     </a>

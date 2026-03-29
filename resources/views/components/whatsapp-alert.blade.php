@@ -20,15 +20,15 @@
         </div>
 
         @if(!$title)
-        <p class="text-xs font-bold leading-relaxed text-emerald-50/90">Get the latest Government & Private jobs directly on your phone, every single day!</p>
+        <p class="text-xs font-bold leading-relaxed text-white">Get the latest Government & Private jobs directly on your phone, every single day!</p>
         @endif
         
         <div class="flex flex-col gap-3">
             <div class="group/input relative">
-                <input type="text" id="wa_name_v2" placeholder="Full Name" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm placeholder:text-white/60 focus:bg-white/20 focus:outline-none focus:border-white/50 transition-all font-bold">
+                <input type="text" id="wa_name_v2" placeholder="Full Name" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm placeholder:text-white/80 focus:bg-white/20 focus:outline-none focus:border-white/50 transition-all font-bold">
             </div>
             <div class="group/input relative">
-                <input type="text" id="wa_number_v2" placeholder="WhatsApp Number" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm placeholder:text-white/60 focus:bg-white/20 focus:outline-none focus:border-white/50 transition-all font-bold">
+                <input type="text" id="wa_number_v2" placeholder="WhatsApp Number" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm placeholder:text-white/80 focus:bg-white/20 focus:outline-none focus:border-white/50 transition-all font-bold">
             </div>
             
             <button type="button" onclick="subscribeWhatsAppV2()" class="w-full bg-white text-[#075E54] font-black py-4 rounded-2xl shadow-lg hover:shadow-emerald-900/20 hover:bg-emerald-50 transition-all active:scale-95 text-xs uppercase tracking-widest mt-1 border border-white">
@@ -36,7 +36,7 @@
             </button>
         </div>
         
-        <p class="text-[10px] text-center font-bold text-emerald-100/70 italic italic">No Spam. Secure & Encrypted.</p>
+        <p class="text-[10px] text-center font-bold text-emerald-50 italic">No Spam. Secure & Encrypted.</p>
     </div>
 </div>
 

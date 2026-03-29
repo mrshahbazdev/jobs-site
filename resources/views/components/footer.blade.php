@@ -51,7 +51,7 @@
 
         <div class="mt-12 border-t border-slate-100 dark:border-slate-800 pt-8">
             <h3 class="mb-6 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Trending Job Searches</h3>
-            <div class="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 text-xs font-semibold text-slate-500">
+            <div class="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 text-xs font-semibold text-slate-600">
                 <a href="{{ route('jobs.newspaper', 'Jang') }}" class="hover:text-primary transition-colors">Jang Jobs 2026</a>
                 <a href="{{ route('jobs.newspaper', 'Express') }}" class="hover:text-primary transition-colors">Express Jobs</a>
                 <a href="{{ route('jobs.newspaper', 'Dawn') }}" class="hover:text-primary transition-colors">Dawn News Jobs</a>
@@ -59,13 +59,13 @@
                 <a href="{{ route('jobs.testing_service', 'PPSC') }}" class="hover:text-primary transition-colors underline decoration-primary/30">PPSC Jobs 2026</a>
                 <a href="{{ route('jobs.testing_service', 'FPSC') }}" class="hover:text-primary transition-colors underline decoration-primary/30">FPSC Jobs Online</a>
                 <a href="{{ route('jobs.today') }}" class="hover:text-primary transition-colors font-bold text-slate-900">Today Jobs In Pakistan</a>
-                <a href="{{ route('jobs.expiring') }}" class="hover:text-primary transition-colors text-red-500">Jobs Expiring Soon</a>
+                <a href="{{ route('jobs.expiring') }}" class="hover:text-primary transition-colors text-red-600">Jobs Expiring Soon</a>
                 <a href="{{ Route::has('jobs.government') ? route('jobs.government') : '#' }}" class="hover:text-primary transition-colors">Government Jobs</a>
                 <a href="{{ route('jobs.sector', 'private') }}" class="hover:text-primary transition-colors">Private Jobs</a>
                 <a href="{{ route('jobs.retired_army') }}" class="hover:text-primary transition-colors">Retired Army Jobs</a>
                 <a href="{{ route('jobs.student_jobs') }}" class="hover:text-primary transition-colors">Student Friendly Jobs</a>
                 <a href="{{ route('jobs.fresh_graduates') }}" class="hover:text-primary transition-colors">Jobs for Freshers</a>
-                <a href="{{ route('jobs.walkin') }}" class="hover:text-primary transition-colors text-amber-600">Walk-in Interviews</a>
+                <a href="{{ route('jobs.walkin') }}" class="hover:text-primary transition-colors text-amber-800">Walk-in Interviews</a>
             </div>
         </div>
 

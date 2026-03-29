@@ -8,7 +8,7 @@
             @endif
             {{ $group->name }}
             @if($group->sub_label)
-                <span class="text-[10px] lowercase text-slate-400 font-bold ml-auto">{{ $group->sub_label }}</span>
+                <span class="text-[10px] lowercase text-slate-600 font-bold ml-auto">{{ $group->sub_label }}</span>
             @endif
         </h3>
         <div class="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -27,7 +27,7 @@
 <!-- Quick Strip: {{ $group->name }} -->
 <div class="mt-16 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-center gap-8">
     @foreach($group->links as $link)
-    <a href="{{ route($link->route_name, $link->route_param) }}" class="flex items-center gap-2 {{ $loop->first ? 'bg-red-50 dark:bg-red-950/30 px-4 py-2 rounded-full' : 'text-xs font-black text-slate-500 hover:text-primary uppercase tracking-widest' }}">
+    <a href="{{ route($link->route_name, $link->route_param) }}" class="flex items-center gap-2 {{ $loop->first ? 'bg-red-50 dark:bg-red-950/30 px-4 py-2 rounded-full' : 'text-xs font-black text-slate-600 hover:text-primary uppercase tracking-widest' }}">
         @if($loop->first && $group->name === 'QuickLink')
             <span class="relative flex h-2.5 w-2.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -50,7 +50,7 @@
 <div class="mt-16 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
     @foreach($group->links as $link)
         <a href="{{ route($link->route_name, $link->route_param) }}" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-center group">
-            <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Industry</span>
+            <span class="text-[10px] font-black text-slate-600 dark:text-slate-500 uppercase tracking-widest block mb-1">Industry</span>
             <span class="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">{{ $link->label }}</span>
         </a>
     @endforeach

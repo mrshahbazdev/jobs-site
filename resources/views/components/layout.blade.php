@@ -33,7 +33,7 @@
 
     <!-- Scripts & Styles -->
     <script>
-        // Force Light Mode always
+        // Force Light Mode always - prevents dark: variant from triggering via class
         document.documentElement.classList.remove('dark');
         localStorage.theme = 'light';
     </script>

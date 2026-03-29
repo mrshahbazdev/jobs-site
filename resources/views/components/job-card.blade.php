@@ -29,7 +29,7 @@
         <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black uppercase text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 whitespace-nowrap">Apply Soon</span>
     </div>
     
-    <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase text-slate-500">
+    <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase text-slate-600">
         @if($job->job_type) <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">{{ $job->job_type }}</span> @endif
         @if($job->experience) <span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-primary">{{ $job->experience }}</span> @endif
         
@@ -52,7 +52,7 @@
         @endif
     </div>
 
-    <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-50 dark:border-slate-800 pt-4">
+    <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
         <div class="flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[16px]">payments</span>
             <span class="font-bold">{{ $job->salary_range ?: ($job->salary_min ? number_format($job->salary_min).' PKR' : 'Market Rate') }}</span>

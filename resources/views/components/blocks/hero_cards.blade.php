@@ -41,7 +41,7 @@
             <div class="relative z-10">
                 <span class="text-[10px] font-black uppercase tracking-widest text-{{ $color }}-700 dark:text-{{ $color }}-400">{{ $card['label'] ?? 'Feature' }}</span>
                 <h3 class="text-xl font-black text-slate-900 dark:text-white mt-1">{{ $card['title'] }}</h3>
-                <p class="text-xs text-{{ $color }}-800/80 dark:text-{{ $color }}-300/50 mt-1">{{ $card['sub_title'] ?? '' }}</p>
+                <p class="text-xs text-{{ $color }}-900 dark:text-{{ $color }}-200 mt-1">{{ $card['sub_title'] ?? '' }}</p>
             </div>
             <span class="material-symbols-outlined text-4xl text-{{ $color }}-200 dark:text-{{ $color }}-800/30 group-hover:scale-110 transition-transform">{{ $card['icon'] ?? 'star' }}</span>
         </a>
