@@ -36,22 +36,44 @@ class ScrapePakistanJobsBank extends Command
         $this->info("Fetching job list from {$url}...");
 
         try {
-            $response = Http::get($url);
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+            ])->get($url);
+            
             if (!$response->successful()) {
-                if ($this->output) $this->error("Failed to fetch the page.");
+                $msg = "Failed to fetch the page. Status: " . $response->status();
+                Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $msg], 600);
+                if ($this->output) $this->error($msg);
                 return 1;
             }
 
             $html = $response->body();
+            if (empty($html)) {
+                Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => 'Empty HTML response'], 600);
+                return 1;
+            }
+
             $dom = new \DOMDocument();
-            @$dom->loadHTML($html);
+            @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
             $xpath = new \DOMXPath($dom);
 
-            $rows = $xpath->query("//tr[@class='job-ad']");
+            // Robust query: Look for rows that have class 'job-ad' OR container table with specific header
+            $rows = $xpath->query("//tr[contains(@class, 'job-ad')]");
             $total = $rows->length;
-            $this->info("Found " . $total . " potential job links.");
+            
+            if ($total === 0) {
+                // Fallback: search for any link inside a table row that looks like a job link
+                $rows = $xpath->query("//tr[td/strong/a[contains(@href, '/Jobs/')]]");
+                $total = $rows->length;
+            }
 
-            Cache::put('scraper_progress', ['current' => 0, 'total' => $total, 'status' => 'running'], 600);
+            $this->info("Found " . $total . " potential job links.");
+            Cache::put('scraper_progress', [
+                'current' => 0, 
+                'total' => $total, 
+                'status' => 'running',
+                'latest_findings' => []
+            ], 600);
 
             $count = 0;
             foreach ($rows as $row) {
@@ -77,10 +99,25 @@ class ScrapePakistanJobsBank extends Command
                 }
 
                 $count++;
-                Cache::put('scraper_progress', ['current' => $count, 'total' => $total, 'status' => 'running'], 600);
+                
+                // Track latest findings for front-end real-time feedback
+                $progress = Cache::get('scraper_progress', []);
+                $findings = $progress['latest_findings'] ?? [];
+                array_unshift($findings, $title);
+                $findings = array_slice($findings, 0, 5); // Keep last 5
+                
+                Cache::put('scraper_progress', [
+                    'current' => $count, 
+                    'total' => $total, 
+                    'status' => 'running',
+                    'latest_findings' => $findings
+                ], 600);
             }
 
-            Cache::put('scraper_progress', ['current' => $count, 'total' => $total, 'status' => 'completed'], 600);
+            $progress = Cache::get('scraper_progress', []);
+            $progress['status'] = 'completed';
+            $progress['current'] = $count;
+            Cache::put('scraper_progress', $progress, 600);
             $this->info("Successfully updated {$count} job sources.");
         } catch (\Exception $e) {
             Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $e->getMessage()], 600);
