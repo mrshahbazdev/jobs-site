@@ -18,7 +18,7 @@
                 <form action="{{ url('/') }}" method="GET" id="filterForm" class="flex flex-col gap-4">
                     <div class="space-y-2">
                         <p class="text-xs font-bold uppercase tracking-wider text-slate-500">City</p>
-                        <select name="city_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 text-sm focus:ring-primary dark:bg-slate-800 dark:border-slate-700">
+                        <select name="city_id" aria-label="City" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 text-sm focus:ring-primary dark:bg-slate-800 dark:border-slate-700">
                             <option value="">All Cities</option>
                             @foreach($cities as $city)
                                 <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>

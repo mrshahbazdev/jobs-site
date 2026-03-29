@@ -7,8 +7,8 @@
                 <h3 class="text-lg font-bold">Filters</h3>
                 <form action="{{ url()->current() }}" method="GET" class="flex flex-col gap-4">
                     <div class="space-y-2">
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">City</p>
-                        <select name="city_id" onchange="this.form.submit()" class="w-full rounded-lg border-slate-300 text-sm focus:ring-primary dark:bg-slate-800 dark:border-slate-700">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-600">City</p>
+                        <select name="city_id" aria-label="City" onchange="this.form.submit()" class="w-full rounded-lg border-slate-300 text-sm focus:ring-primary dark:bg-slate-800 dark:border-slate-700">
                             <option value="">All Cities</option>
                             @foreach($cities as $city)
                                 <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
@@ -18,7 +18,7 @@
 
                     @if($jobTypes->count() > 0)
                     <div class="space-y-2">
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Job Type</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Job Type</p>
                         <div class="flex flex-col gap-2">
                             @foreach($jobTypes as $type)
                             <label class="flex items-center gap-2 cursor-pointer group">
@@ -32,7 +32,7 @@
 
                     @if($experiences->count() > 0)
                     <div class="space-y-2">
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Experience</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Experience</p>
                         <div class="flex flex-col gap-2">
                             @foreach($experiences as $exp)
                             <label class="flex items-center gap-2 cursor-pointer group">
