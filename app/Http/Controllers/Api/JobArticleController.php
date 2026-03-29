@@ -118,4 +118,74 @@ class JobArticleController extends Controller
 
         return response()->json(['message' => 'Article submitted and synced successfully!', 'job_id' => $job->id]);
     }
+
+    /**
+     * Post a job directly from test.html (no job_source_image_id required).
+     * AI ne OCR se job extract ki, category/city already resolve ho chuki hogi.
+     */
+    public function postJob(Request $request)
+    {
+        $request->validate([
+            'title'            => 'required|string|max:500',
+            'description'      => 'required|string',
+            'category_id'      => 'required|exists:categories,id',
+            'city_id'          => 'required|exists:cities,id',
+            'slug'             => 'nullable|string|max:600',
+            'is_active'        => 'nullable|boolean',
+            'schema_json'      => 'nullable|string',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords'    => 'nullable|string',
+            'deadline'         => 'nullable|string|max:100',
+            'job_type'         => 'nullable|string|max:100',
+            'newspaper'        => 'nullable|string|max:200',
+            'department'       => 'nullable|string|max:300',
+        ]);
+
+        // Unique slug generation
+        $baseSlug = $request->slug ? Str::slug($request->slug) : Str::slug($request->title);
+        $slug     = $baseSlug;
+        $counter  = 1;
+        while (JobListing::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+
+        $isActive = $request->has('is_active') ? (bool) $request->is_active : true;
+
+        // Parse deadline safely
+        $deadline = null;
+        if ($request->deadline) {
+            try {
+                $deadline = \Carbon\Carbon::parse($request->deadline)->format('Y-m-d');
+            } catch (\Exception $e) {
+                $deadline = null;
+            }
+        }
+
+        $job = JobListing::create([
+            'title'            => $request->title,
+            'slug'             => $slug,
+            'description_html' => $request->description,
+            'category_id'      => $request->category_id,
+            'city_id'          => $request->city_id,
+            'schema_json'      => $request->schema_json,
+            'is_active'        => $isActive,
+            'meta_description' => $request->meta_description,
+            'meta_keywords'    => $request->meta_keywords,
+            'deadline'         => $deadline,
+            'job_type'         => $request->job_type ?: 'FULL_TIME',
+            'newspaper'        => $request->newspaper,
+            'department'       => $request->department,
+        ]);
+
+        if ($job->is_active) {
+            \App\Services\GoogleIndexingService::notify(url('/jobs/' . $job->slug));
+        }
+
+        return response()->json([
+            'message' => 'Job successfully posted to database!',
+            'job_id'  => $job->id,
+            'job_url' => url('/jobs/' . $job->slug),
+            'slug'    => $job->slug,
+        ], 201);
+    }
 }

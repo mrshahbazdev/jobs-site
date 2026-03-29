@@ -8,6 +8,15 @@ use App\Http\Controllers\Api\CityApiController;
 use App\Http\Controllers\Api\ScraperApiController;
 use App\Http\Controllers\Api\LandingGroupApiController;
 
+// ── CORS OPTIONS preflight (allows test.html file:// access) ──────────────────
+Route::options('/{any}', function () {
+    return response('', 200)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Requested-With');
+})->where('any', '.*');
+
+// ── Core API Routes ──────────────────────────────────────────────────────────
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -15,6 +24,7 @@ Route::get('/user', function (Request $request) {
 Route::get('/pending-images', [JobArticleController::class, 'pendingImages']);
 Route::get('/internal-links', [JobArticleController::class, 'internalLinks']);
 Route::post('/submit-article', [JobArticleController::class, 'submitArticle']);
+Route::post('/post-job', [JobArticleController::class, 'postJob']); // ← test.html se direct post
 Route::get('/jobs', [JobArticleController::class, 'jobsList']);
 Route::post('/skip-image', [JobArticleController::class, 'skipImage']);
 
