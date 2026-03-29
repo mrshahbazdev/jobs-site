@@ -8,7 +8,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use App\Services\GeminiService;
 use App\Models\Category;
