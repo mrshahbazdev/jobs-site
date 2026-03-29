@@ -13,13 +13,18 @@ class LandingGroupApiController extends Controller
      */
     public function index()
     {
-        $groups = LandingGroup::active()
-            ->ordered()
-            ->with(['links' => function($q) {
-                $q->active()->ordered()->select('id', 'landing_group_id', 'title', 'url', 'sort_order');
-            }])
-            ->select('id', 'name', 'icon', 'sort_order')
-            ->get();
+        try {
+            $groups = LandingGroup::active()
+                ->ordered()
+                ->with(['links' => function ($q) {
+                    $q->active()->ordered()->select('id', 'landing_group_id', 'title', 'route_param', 'route_name', 'sort_order');
+                }])
+                ->select('id', 'name', 'icon', 'sort_order')
+                ->get();
+        } catch (\Exception $e) {
+            // Fallback: return groups without links if schema mismatch
+            $groups = LandingGroup::active()->ordered()->select('id', 'name', 'icon', 'sort_order')->get();
+        }
 
         return response()->json($groups);
     }

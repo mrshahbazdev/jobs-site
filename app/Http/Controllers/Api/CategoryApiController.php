@@ -53,17 +53,28 @@ class CategoryApiController extends Controller
             return response()->json(['message' => 'No matching category found.'], 404);
         }
 
-        // Find parent group
-        $landingLink = \App\Models\LandingLink::where('url', 'LIKE', '%' . $bestMatch->slug . '%')->with('group')->first();
+        // Find parent group via landing_links (safe — handle missing url column)
+        $landingLink = null;
+        try {
+            $landingLink = \App\Models\LandingLink::where(function($q) use ($bestMatch) {
+                    $q->where('url', 'LIKE', '%' . $bestMatch->slug . '%')
+                      ->orWhere('route_param', 'LIKE', '%' . $bestMatch->slug . '%');
+                })
+                ->with('group')
+                ->first();
+        } catch (\Exception $e) {
+            // Column may not exist in production — skip group lookup
+            $landingLink = null;
+        }
 
         return response()->json([
             'category' => [
-                'id' => $bestMatch->id,
+                'id'   => $bestMatch->id,
                 'name' => $bestMatch->name,
                 'slug' => $bestMatch->slug,
             ],
-            'group' => $landingLink ? [
-                'id' => $landingLink->group->id,
+            'group' => $landingLink && $landingLink->group ? [
+                'id'   => $landingLink->group->id,
                 'name' => $landingLink->group->name,
             ] : null
         ]);
