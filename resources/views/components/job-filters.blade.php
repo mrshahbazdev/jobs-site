@@ -11,7 +11,7 @@
             @if($cities && $cities->count() > 0)
             <div class="space-y-3">
                 <p class="text-xs font-black uppercase tracking-widest text-slate-400">Location</p>
-                <select name="city_id" onchange="this.form.submit()" class="w-full rounded-2xl border-slate-200 text-sm font-bold focus:ring-primary dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
+                <select name="city_id" aria-label="Location" onchange="this.form.submit()" class="w-full rounded-2xl border-slate-200 text-sm font-bold focus:ring-primary dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
                     <option value="">All Cities</option>
                     @foreach($cities as $city)
                         <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
@@ -23,7 +23,7 @@
             @if($categories && $categories->count() > 0)
             <div class="space-y-3">
                 <p class="text-xs font-black uppercase tracking-widest text-slate-400">Category</p>
-                <select name="category_id" onchange="this.form.submit()" class="w-full rounded-2xl border-slate-200 text-sm font-bold focus:ring-primary dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
+                <select name="category_id" aria-label="Category" onchange="this.form.submit()" class="w-full rounded-2xl border-slate-200 text-sm font-bold focus:ring-primary dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
                     <option value="">All Categories</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>

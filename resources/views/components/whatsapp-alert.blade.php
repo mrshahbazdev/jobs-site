@@ -31,7 +31,7 @@
                 <input type="text" id="wa_number_v2" placeholder="WhatsApp Number" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm placeholder:text-white/60 focus:bg-white/20 focus:outline-none focus:border-white/50 transition-all font-bold">
             </div>
             
-            <button type="button" onclick="subscribeWhatsAppV2()" class="w-full bg-white text-[#128C7E] font-black py-4 rounded-2xl shadow-lg hover:shadow-emerald-900/20 hover:bg-emerald-50 transition-all active:scale-95 text-xs uppercase tracking-widest mt-1 border border-white">
+            <button type="button" onclick="subscribeWhatsAppV2()" class="w-full bg-white text-[#075E54] font-black py-4 rounded-2xl shadow-lg hover:shadow-emerald-900/20 hover:bg-emerald-50 transition-all active:scale-95 text-xs uppercase tracking-widest mt-1 border border-white">
                 Subscribe Free
             </button>
         </div>
