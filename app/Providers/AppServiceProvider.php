@@ -19,20 +19,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-            // Seed defaults if empty
-            if (\App\Models\Setting::count() === 0) {
-                \App\Models\Setting::insert([
-                    ['key' => 'header_tags', 'value' => '<!-- Add custom meta/scripts here -->', 'created_at' => now(), 'updated_at' => now()],
-                    ['key' => 'ad_home_top', 'value' => '<!-- Ad: Home Top -->', 'created_at' => now(), 'updated_at' => now()],
-                    ['key' => 'ad_job_sidebar', 'value' => '<!-- Ad: Job Sidebar -->', 'created_at' => now(), 'updated_at' => now()],
-                    ['key' => 'ad_job_bottom', 'value' => '<!-- Ad: Job Bottom -->', 'created_at' => now(), 'updated_at' => now()],
-                    ['key' => 'ad_footer', 'value' => '<!-- Ad: Footer Top -->', 'created_at' => now(), 'updated_at' => now()],
-                ]);
-            }
+        // Prevent crashes during migrations or before DB is setup
+        try {
+            if (!app()->runningInConsole() && \Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                // Seed defaults if empty
+                if (\App\Models\Setting::count() === 0) {
+                    \App\Models\Setting::insert([
+                        ['key' => 'header_tags', 'value' => '<!-- Add custom meta/scripts here -->', 'created_at' => now(), 'updated_at' => now()],
+                        ['key' => 'ad_home_top', 'value' => '<!-- Ad: Home Top -->', 'created_at' => now(), 'updated_at' => now()],
+                        ['key' => 'ad_job_sidebar', 'value' => '<!-- Ad: Job Sidebar -->', 'created_at' => now(), 'updated_at' => now()],
+                        ['key' => 'ad_job_bottom', 'value' => '<!-- Ad: Job Bottom -->', 'created_at' => now(), 'updated_at' => now()],
+                        ['key' => 'ad_footer', 'value' => '<!-- Ad: Footer Top -->', 'created_at' => now(), 'updated_at' => now()],
+                    ]);
+                }
 
-            $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
-            \Illuminate\Support\Facades\View::share('settings', $settings);
+                $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+                \Illuminate\Support\Facades\View::share('settings', $settings);
+            }
+        } catch (\Exception $e) {
+            // Silently fail if database is not reachable yet
         }
     }
 }
