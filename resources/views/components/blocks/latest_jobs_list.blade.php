@@ -1,5 +1,5 @@
 <!-- Block: Latest Jobs List -->
-<main class="mx-auto flex flex-col lg:flex-row w-full max-w-7xl grow gap-8 py-8 px-0">
+<main class="mx-auto flex flex-col lg:flex-row w-full max-w-7xl grow gap-8 py-8">
     @if($block->show_sidebar ?? true)
     <aside class="w-full lg:w-64 shrink-0 flex-col gap-4 flex">
         <!-- Mobile Filter Toggle -->
