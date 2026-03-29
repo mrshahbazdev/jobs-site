@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Job Alerts & Newsletter - JobsPic</title>
+<meta name="description" content="Subscribe to JobsPic Job Alerts via WhatsApp or Email and never miss a deadline."/>
+<link rel="canonical" href="https://www.jobspic.com/job-alerts"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#1773cf", "background-light": "#f6f7f8", "background-dark": "#111921", }, fontFamily: { "display": ["Inter"] }, } } }
+    </script>
+<style> body { font-family: 'Inter', sans-serif; } .material-symbols-outlined { font-size: 20px; vertical-align: middle; } </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<div class="relative flex min-h-screen flex-col">
+
+<!-- Header -->
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-4 lg:px-10 py-3">
+<div class="mx-auto flex max-w-7xl items-center justify-between gap-8">
+<div class="flex items-center gap-8 flex-1">
+<a href="index.html" class="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-3xl font-bold" aria-hidden="true">work</span>
+<h2 class="text-2xl font-black leading-tight tracking-tight text-slate-900 dark:text-slate-100">Jobs<span class="text-primary">Pic</span><span class="text-slate-400 text-lg">.com</span></h2>
+</a>
+</div>
+</div>
+</header>
+
+<main class="mx-auto w-full max-w-4xl grow px-4 py-12 lg:px-10 flex items-center justify-center">
+    
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden w-full flex flex-col md:flex-row">
+        
+        <!-- Left Side: Graphic & WhatsApp -->
+        <div class="w-full md:w-1/2 md:p-12 p-8 bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex flex-col justify-center relative overflow-hidden text-center md:text-left">
+            <!-- Decorative circle -->
+            <div class="absolute -top-16 -left-16 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            
+            <span class="material-symbols-outlined text-6xl mb-6 opacity-90 mx-auto md:mx-0">notifications_active</span>
+            <h2 class="text-3xl md:text-4xl font-black mb-4 leading-tight">Never Miss Another Govt Job Again!</h2>
+            <p class="text-emerald-100 mb-8 leading-relaxed">Join 50,000+ candidates who get verified job updates, past papers, and result alerts sent directly to their phones daily.</p>
+            
+            <a href="#" class="inline-flex items-center justify-center rounded-xl bg-white text-emerald-700 font-black py-4 px-6 shadow-lg shadow-emerald-900/20 hover:scale-105 transition-transform">
+                <svg class="w-6 h-6 mr-3 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 000 12a12 12 0 001.928 6.551l-1.928 5.449 5.629-1.896A11.93 11.93 0 0011.944 24C18.57 24 24 18.608 24 12c0-6.608-5.43-12-12.056-12zM12 21.841c-1.583 0-3.13-.414-4.5-1.206l-3.21.108.857-3.107c-.902-1.428-1.382-3.08-1.382-4.792C3.765 6.47 8.356 2.062 14.887 2.062 21.417 2.062 26 6.47 26 12.846 26 19.222 21.417 21.841 12 21.841z"/></svg>
+                Join Free WhatsApp Group
+            </a>
+            
+            <p class="text-xs text-emerald-200 mt-4 opacity-80">* 100% Free. No Spam. Admin Only Messages.</p>
+        </div>
+
+        <!-- Right Side: Email Newsletter -->
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <div class="mb-8">
+                <span class="text-primary font-bold tracking-wider text-xs uppercase bg-primary/10 px-3 py-1 rounded-full mb-3 inline-block">Email Alerts</span>
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Subscribe via Email</h3>
+                <p class="text-slate-500 text-sm">Prefer email? Drop your address below and we'll send you a weekly digest of top jobs.</p>
+            </div>
+            
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Your Name</label>
+                    <input type="text" class="w-full rounded-xl border-slate-200 bg-slate-50 py-3.5 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Ali Khan" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                    <input type="email" class="w-full rounded-xl border-slate-200 bg-slate-50 py-3.5 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="ali@gmail.com" required>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-slate-900 dark:bg-primary hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition-transform transform hover:-translate-y-0.5">
+                        Subscribe Now
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 text-center flex justify-center items-center gap-1 mt-4">
+                    <span class="material-symbols-outlined text-[14px]">lock</span> We respect your privacy.
+                </p>
+            </form>
+        </div>
+
+    </div>
+
+</main>
+
+<footer class="mt-auto border-t border-slate-200 bg-white py-8 dark:border-slate-800 dark:bg-background-dark">
+<div class="mx-auto max-w-7xl px-4 lg:px-10">
+<div class="text-center text-sm text-slate-400">
+                &copy; <span class="current-year"></span> JobsPic.com.
+            </div>
+</div>
+</footer>
+</div>
+<script>
+    const currentYear = new Date().getFullYear();
+    document.querySelectorAll('.current-year').forEach(el => el.textContent = currentYear);
+</script>
+</body></html>

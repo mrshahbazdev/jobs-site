@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI SEO Article & Schema Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0284c7;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 1);
+        }
+
+        /* Article Visual Excellence */
+        .prose h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+            line-height: 1.2;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .prose h2 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1.25rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+        }
+
+        .prose h2::before {
+            content: "";
+            width: 6px;
+            height: 30px;
+            background: #0284c7;
+            margin-right: 12px;
+            border-radius: 4px;
+        }
+
+        .prose h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #334155;
+        }
+
+        .prose p {
+            margin-bottom: 1.5rem;
+            line-height: 1.9;
+            font-size: 1.15rem;
+            color: #475569;
+            text-align: justify;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+            color: #475569;
+        }
+
+        .prose li {
+            margin-bottom: 0.75rem;
+        }
+
+        .schema-badge {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+    <div id="schemaHolder"></div>
+</head>
+
+<body class="bg-slate-50 min-h-screen p-4 md:p-10 text-slate-900">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-black text-slate-900 mb-4 tracking-tight">AI SEO Content Engine</h1>
+            <p class="text-xl text-slate-600">Image se 100% SEO-optimized article aur professional JSON-LD schemas
+                generate karein.</p>
+        </header>
+
+        <!-- Input Section -->
+        <div class="glass-effect rounded-[2rem] p-8 shadow-2xl mb-12 border border-slate-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">Image Link
+                        (URL)</label>
+                    <input type="text" id="imageUrl" placeholder="Paste image link here..."
+                        class="w-full px-5 py-4 border border-slate-300 rounded-2xl focus:ring-4 focus:ring-sky-100 focus:border-sky-500 focus:outline-none transition-all">
+                </div>
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider">File Upload</label>
+                    <input type="file" id="imageFile" accept="image/*"
+                        class="w-full px-5 py-3 border border-slate-300 rounded-2xl bg-white cursor-pointer file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition-all">
+                </div>
+            </div>
+
+            <!-- Humanize Toggle -->
+            <!-- Features Toggles -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Humanize Toggle -->
+                <div
+                    class="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="humanizeToggle" class="sr-only peer">
+                        <div
+                            class="w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500">
+                        </div>
+                        <span class="ml-3 text-sm font-black text-slate-800 tracking-wide uppercase">HUMANIZE
+                            ARTICLE</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1 font-medium text-center">Bypass AI Detectors (100% Human
+                        Score)</p>
+                </div>
+
+                <!-- Watermark Toggle -->
+                <div
+                    class="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="watermarkToggle" class="sr-only peer">
+                        <div
+                            class="w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-500">
+                        </div>
+                        <span class="ml-3 text-sm font-black text-slate-800 tracking-wide uppercase">REMOVE
+                            WATERMARK</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1 font-medium text-center">Visual AI Erase (Requires RapidAPI
+                        Key)</p>
+                </div>
+            </div>
+
+            <div class="mt-10 flex flex-col items-center">
+                <div id="imagePreviewContainer"
+                    class="hidden mb-10 w-full max-w-lg border-8 border-white shadow-2xl rounded-[2.5rem] overflow-hidden">
+                    <img id="imagePreview" src="" alt="Preview" class="w-full h-auto object-contain">
+                </div>
+
+                <button id="processBtn"
+                    class="bg-sky-600 hover:bg-sky-700 text-white font-black py-5 px-20 rounded-2xl transition-all shadow-xl hover:shadow-sky-200 active:scale-95 flex items-center justify-center min-w-[350px] text-lg">
+                    <span id="btnText">GENERATE SEO CONTENT</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="statusBox" class="hidden mb-10 p-6 rounded-3xl text-center font-bold shadow-lg border-2 animate-pulse">
+        </div>
+
+        <!-- Results Master Section -->
+        <div id="results" class="hidden space-y-12">
+
+            <!-- AI Watermark Detection Box -->
+            <div id="watermarkAlertBox" class="bg-indigo-50 border-l-[6px] border-indigo-500 p-6 rounded-2xl shadow-sm text-indigo-900 flex items-center transition-all hidden">
+                <svg class="w-8 h-8 mr-4 text-indigo-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div>
+                    <h4 class="font-black text-lg mb-1 uppercase tracking-wide">AI Watermark & Spam Scanner</h4>
+                    <p id="watermarkResultText" class="font-medium text-sm">Scanning image...</p>
+                </div>
+            </div>
+
+            <!-- OCR Data Card -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-5">
+                    <h3 class="text-xl font-extrabold text-slate-800 flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        Raw Scanned Text
+                    </h3>
+                    <button onclick="copyToClipboard('ocrContent', this)"
+                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-black px-6 py-2.5 rounded-xl transition-all text-sm uppercase">Copy
+                        Text</button>
+                </div>
+                <div id="ocrContent"
+                    class="text-slate-600 bg-slate-50 p-6 rounded-2xl whitespace-pre-wrap font-mono text-sm leading-relaxed border border-slate-100 max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <!-- Tags Box -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 mb-12">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-5">
+                    <h3 class="text-xl font-black text-slate-800 flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-emerald-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
+                            </path>
+                        </svg>
+                        LSI Keywords & WordPress Tags
+                    </h3>
+                    <button onclick="copyToClipboard('tagsContent', this)"
+                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-black px-6 py-2.5 rounded-xl transition-all text-sm uppercase">Copy
+                        Tags</button>
+                </div>
+                <div id="tagsContent"
+                    class="text-slate-600 bg-slate-50 p-6 rounded-2xl whitespace-pre-wrap font-medium text-sm leading-relaxed border border-slate-100 max-h-32 overflow-y-auto">
+                </div>
+            </div>
+
+            <!-- Advanced SEO Insights Box -->
+            <div
+                class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-8 shadow-2xl border border-slate-700 mb-12">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-5">
+                    <h3 class="text-xl font-black text-white flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Google NLP Entities & Cannibalization Warning
+                    </h3>
+                    <button onclick="copyToClipboard('advancedSeoContent', this)"
+                        class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-black px-6 py-2.5 rounded-xl transition-all text-sm uppercase border border-slate-600">Copy
+                        Data</button>
+                </div>
+                <div id="advancedSeoContent"
+                    class="text-slate-300 bg-slate-800/50 p-6 rounded-2xl whitespace-pre-wrap font-mono text-sm leading-relaxed border border-slate-700 max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <!-- SEO Article & Schema Card -->
+            <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl border-t-[16px] border-sky-600 relative">
+                <div class="flex flex-wrap gap-3 mb-10 items-center">
+                    <span
+                        class="bg-sky-600 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-tighter">SEO
+                        Masterpiece</span>
+                    <span class="schema-badge">Article Schema</span>
+                    <span class="schema-badge">FAQ Schema</span>
+                    <span class="schema-badge">Job Schema</span>
+                </div>
+
+                <div class="absolute top-0 right-0 p-8 flex gap-4">
+                    <button onclick="copyRawSchema()" id="schemaBtn"
+                        class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl font-black shadow-lg transition-all text-sm uppercase">Copy
+                        JSON Schema</button>
+                    <button onclick="copyToClipboard('articleContent', this)"
+                        class="bg-sky-50 hover:bg-sky-100 p-3.5 rounded-2xl border border-sky-200 transition-all shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-sky-700" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="articleContent" class="prose prose-slate max-w-none">
+                    <!-- High Quality Content Here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "";
+        const processBtn = document.getElementById('processBtn');
+        const btnText = document.getElementById('btnText');
+        const statusBox = document.getElementById('statusBox');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const results = document.getElementById('results');
+        const ocrContent = document.getElementById('ocrContent');
+        const articleContent = document.getElementById('articleContent');
+        const schemaHolder = document.getElementById('schemaHolder');
+
+        let rawJsonSchema = "";
+
+        document.getElementById('imageFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                    document.getElementById('imageUrl').value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function apiCall(prompt, base64Data) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{
+                    parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64Data.split(',')[1] } }]
+                }]
+            };
+
+            let retry = 0;
+            while (retry < 5) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error('AI Busy');
+                    const data = await response.json();
+                    return data.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    retry++;
+                    await new Promise(r => setTimeout(r, Math.pow(2, retry) * 1000));
+                }
+            }
+        }
+
+        async function fetchImageAsBase64(url) {
+            const proxies = [
+                (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+                (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
+            ];
+            for (let proxy of proxies) {
+                try {
+                    const res = await fetch(proxy(url));
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        return new Promise(resolve => {
+                            const r = new FileReader();
+                            r.onloadend = () => resolve(r.result);
+                            r.readAsDataURL(blob);
+                        });
+                    }
+                } catch (e) { continue; }
+            }
+            throw new Error("Direct link block hai. Image download karke upload karein.");
+        }
+
+        processBtn.addEventListener('click', async () => {
+            const fileInput = document.getElementById('imageFile');
+            const urlInput = document.getElementById('imageUrl').value.trim();
+            let base64Image = '';
+
+            try {
+                setLoading(true);
+                statusBox.classList.add('hidden');
+                results.classList.add('hidden');
+
+                if (fileInput.files.length > 0) {
+                    const r = new FileReader();
+                    base64Image = await new Promise(res => {
+                        r.onload = (e) => res(e.target.result);
+                        r.readAsDataURL(fileInput.files[0]);
+                    });
+                } else if (urlInput) {
+                    base64Image = await fetchImageAsBase64(urlInput);
+                } else { throw new Error("Pehle koi image dalo."); }
+
+                // Watermark Removal Logic using a Free API approach
+                const removeVisualWatermark = document.getElementById('watermarkToggle').checked;
+                if (removeVisualWatermark && urlInput) {
+                    showStatus("Removing Visual Watermark via AI API...", "info");
+
+                    // NOTE: Watermark Removal APIs usually require a free key (e.g., RapidAPI or PixelBin)
+                    // We are setting up the framework here. Replace 'YOUR_RAPIDAPI_KEY' if using RapidAPI.
+                    // For now, we will use an open endpoint if available or simulate it to show the cleaned image.
+                    try {
+                        const options = {
+                            method: 'POST',
+                            headers: {
+                                'content-type': 'application/json',
+                                'X-RapidAPI-Key': 'YOUR_FREE_RAPIDAPI_KEY_HERE',
+                                'X-RapidAPI-Host': 'watermark-remover3.p.rapidapi.com' // Example endpoint
+                            },
+                            body: JSON.stringify({ image_url: urlInput })
+                        };
+
+                        // Example Call (Commented out until user provides key)
+                        /*
+                        const wmResponse = await fetch('https://watermark-remover3.p.rapidapi.com/remove', options);
+                        if(wmResponse.ok) {
+                            const wmResult = await wmResponse.json();
+                            if(wmResult.cleaned_image_url) {
+                                imagePreview.src = wmResult.cleaned_image_url;
+                                base64Image = await fetchImageAsBase64(wmResult.cleaned_image_url);
+                            }
+                        }
+                        */
+                        showStatus("Visual Watermark Removal Code Active! (Requires Free API Key in code)", "info");
+                        await new Promise(res => setTimeout(res, 1000));
+                    } catch (e) {
+                        console.warn("Watermark removal failed, continuing with original.", e);
+                    }
+                }
+
+                showStatus("Scanning image & writing SEO Article...", "info");
+
+                const humanizeOn = document.getElementById('humanizeToggle').checked;
+                const toneStyle = humanizeOn
+                    ? "CRITICAL: Write in EXTREMELY SIMPLE, basic Grade 5 English. Use daily-life, conversational vocabulary suitable for an average Pakistani reader. Maintain 100% human score on AI Detectors by using burstiness (mix very short 3-word sentences with medium ones). Ask rhetorical questions. NEVER use complex or typical AI words like 'delve', 'moreover', 'tapestry', 'testament', 'crucial', 'elevate', 'landscape'. Keep the tone extremely easy to read."
+                    : "Target keywords naturally. Use EXTREMELY SIMPLE, basic Grade 5 English. The vocabulary must be very easy so a normal Pakistani reader can understand it without a dictionary. Avoid all complex or fancy words.";
+
+                const currentYear = new Date().getFullYear();
+                const prompt = `Analyze this image text deeply and perform these steps for the current year ${currentYear}:
+                1. WATERMARK_CHECK: Write EXACTLY "YES, Watermark Detected: [Details]" if you see any logo, stamp, or website URL in the image background/corner. Otherwise write "NO, Image is 100% clean". Use marker WATERMARK_STATUS.
+                2. WATERMARK REMOVAL: Actively ignore and remove any text that looks like a watermark, website URL, "Scanned by", or background stamp. Do NOT include them in the output.
+                3. OCR: Extract all genuine content text as OCR_TEXT.
+                4. SEO ARTICLE: Write a long (1500+ words) highly engaging English article starting with ARTICLE_MARKDOWN.
+                   - READ TIME BADGES: Immediately under the H1 title, insert HTML: <div class="flex flex-wrap gap-3 mb-8 mt-4"><span class="bg-sky-100 text-sky-800 text-sm font-bold px-4 py-1.5 rounded-full border border-sky-200">⏱️ 8 Min Read</span><span class="bg-emerald-100 text-emerald-800 text-sm font-bold px-4 py-1.5 rounded-full border border-emerald-200">📅 Last Updated: Today</span></div>
+                   - AGE/QUALIFICATION SNIPPET: Create a highlighted HTML block: <div class="bg-amber-50 p-5 rounded-2xl border-l-[6px] border-amber-500 mb-8 shadow-sm"><h4 class="font-extrabold text-lg text-amber-900 mb-2">🚀 Quick Eligibility Snippet</h4><p class="text-amber-800"><strong>Age Limit:</strong> [Age]</p><p class="text-amber-800"><strong>Qualification:</strong> [Req]</p></div>
+                   - OVERVIEW TABLE: Next, add a Markdown Table containing Name, Positions, Location, "Estimated Salary (Calculate BPS scale in PKR)", Last Date (Format with year ${currentYear}), etc.
+                   - URGENCY TRACKER: Right below the table, output an HTML warning: <div class="text-red-700 font-bold bg-red-50 p-4 rounded-xl border border-red-200 mt-2 mb-8 animate-pulse text-center">⚠️ Hurry Up! Last Date to Apply is [Date].</div> 
+                   - PROS & CONS: Add an H3 section titled "Pros & Cons of this Job". Provide a clean bulleted list using ✅ for Pros (like pension, security) and ❌ for Cons (like postings, strict hours).
+                   - HOW TO APPLY & CTA: Create a Step-by-Step numbered list for applying. End it with: <div class="text-center mt-8 mb-12"><a href="[Link]" target="_blank" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-10 rounded-full shadow-xl transition-all transform hover:scale-105 active:scale-95 text-xl">Apply Online Now</a></div>
+                   - SYLLABUS & INTERVIEW PREP: Dedicate an H2 section to "Expected Syllabus & Test Pattern" (e.g., 20% Math, 80% Subject). Then add an H3 section for "Top 5 Expected Interview Questions" with short Sample Answers.
+                   - MINI MCQ TEST: At the end of the article, create an H3 section "🧠 Mini Syllabus Quiz" with 10 practical multiple-choice questions based on the expected syllabus test. Provide the correct answer below them.
+                   - SEO: Use powerful H2/H3s naturally including the year ${currentYear} in Headers. Use bullet points at least twice. Place Focus Keyword in the first and last 100 words.
+                   - ${toneStyle}
+                   - End with a professional conclusion.
+                5. FAQs (PAA): Include 10-15 highly specific Google "People Also Ask" (PAA) format FAQs related to this specific job/topic.
+                6. LSI_TAGS_AND_CATEGORIES: Generate a comma-separated list of 15-20 LSI keywords AND suggest 3-4 Custom Database Categories (like 'Federal Govt Jobs', 'Police Department'). Use marker LSI_TAGS_DATA.
+                7. ADVANCED_SEO: Output a structured text block containing: 
+                   - Google NLP Entities: [Extract key entities: Location, Organization]
+                   - Keyword Cannibalization Warning: [Warning not to reuse the exact focus keyword]
+                   - Authority Outbound Links: [Recommend 2-3 High Authority external website links (e.g., fpsc.gov.pk, hec.gov.pk) related to this post].
+                   - Keyword Prominence Check: [Verify the Focus Keyword placement].
+                   Use marker ADVANCED_SEO_DATA.
+                8. SCHEMA: Generate a SINGLE valid JSON-LD script block containing Article, FAQPage, JobPosting, AND a 5-Star AggregateRating (ratingValue: 4.8 to 5.0, reviewCount: 50+). Use marker SCHEMA_JSON.
+                Format: Clear markers WATERMARK_STATUS, OCR_TEXT, ARTICLE_MARKDOWN, LSI_TAGS_DATA, ADVANCED_SEO_DATA, and SCHEMA_JSON.`;
+
+                const response = await apiCall(prompt, base64Image);
+
+                // Better Parsing Logic
+                const wmMatch = response.match(/WATERMARK_STATUS([\s\S]*?)OCR_TEXT/i);
+                const ocrMatch = response.match(/OCR_TEXT([\s\S]*?)ARTICLE_MARKDOWN/i);
+                const articleMatch = response.match(/ARTICLE_MARKDOWN([\s\S]*?)LSI_TAGS_DATA/i);
+                const tagsMatch = response.match(/LSI_TAGS_DATA([\s\S]*?)ADVANCED_SEO_DATA/i);
+                const advSeoMatch = response.match(/ADVANCED_SEO_DATA([\s\S]*?)SCHEMA_JSON/i);
+                const schemaMatch = response.match(/SCHEMA_JSON([\s\S]*)/i);
+
+                const wmTxt = wmMatch ? wmMatch[1].trim() : "Scanning failed.";
+                const ocrTxt = ocrMatch ? ocrMatch[1].trim() : "OCR Failed.";
+                const articleTxt = articleMatch ? articleMatch[1].trim() : "Article Failed.";
+                const tagsTxt = tagsMatch ? tagsMatch[1].replace(/```/g, '').trim() : "Tags Failed.";
+                const advSeoTxt = advSeoMatch ? advSeoMatch[1].replace(/```/g, '').trim() : "Advanced SEO Tracking Failed.";
+                const schemaTxt = schemaMatch ? schemaMatch[1].replace(/```json/gi, '').replace(/```/g, '').trim() : "";
+
+                // Populate Watermark Alert Box
+                const wmBox = document.getElementById('watermarkAlertBox');
+                document.getElementById('watermarkResultText').innerText = wmTxt;
+                wmBox.classList.remove('hidden');
+                
+                // Reset box classes first
+                wmBox.className = "p-6 rounded-2xl shadow-sm border-l-[6px] flex items-center transition-all";
+                const svgIcon = wmBox.querySelector('svg');
+                svgIcon.className = "w-8 h-8 mr-4 animate-bounce";
+                
+                if (wmTxt.toUpperCase().includes('YES')) {
+                    wmBox.classList.add('bg-red-50', 'border-red-500', 'text-red-900');
+                    svgIcon.classList.add('text-red-500');
+                } else {
+                    wmBox.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900');
+                    svgIcon.classList.add('text-emerald-500');
+                }
+
+                // Populate OCR, Tags, and Advanced SEO
+                ocrContent.innerText = ocrTxt;
+                document.getElementById('tagsContent').innerText = tagsTxt;
+                document.getElementById('advancedSeoContent').innerText = advSeoTxt;
+
+                // Format Markdown to rich HTML
+                let htmlFormat = articleTxt
+                    // Tables
+                    .replace(/^\|([^]+)\|\n\|([-:| ]+)\|\n((\|.+\|\n?)+)/gm, function (match, header, separator, body) {
+                        const ths = header.split('|').filter(Boolean).map(t => `<th class="px-5 py-4 bg-sky-50 border-b border-sky-200 font-extrabold text-sky-900 text-left capitalize tracking-wide">${t.trim()}</th>`).join('');
+                        const trs = body.trim().split('\n').map(row => {
+                            const tds = row.split('|').filter(Boolean).map(t => `<td class="px-5 py-4 border-b border-slate-100 text-slate-700">${t.trim()}</td>`).join('');
+                            return `<tr class="hover:bg-slate-50 transition-colors">${tds}</tr>`;
+                        }).join('');
+                        return `<div class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm my-8 mb-10"><table class="w-full text-base border-collapse"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+                    })
+                    // Headers
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    // Bold & Italic
+                    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+                    // Bullet lists (important for jobs)
+                    .replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>')
+                    .replace(/<\/ul>\n<ul>/gim, '')
+                    .replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>')
+                    .replace(/<\/ul>\n<ul>/gim, '')
+                    // Paragraphs
+                    .replace(/\n\n/gim, '<p></p>')
+                    .replace(/\n(?!(<h|<ul|<li|<\/ul>|<p>))/gim, '<br>');
+
+                articleContent.innerHTML = htmlFormat;
+
+                // Handle Schema
+                if (schemaTxt) {
+                    rawJsonSchema = `<script type="application/ld+json">\n${schemaTxt}\n<\/script>`;
+                    schemaHolder.innerHTML = rawJsonSchema;
+                } else {
+                    rawJsonSchema = "No valid schema detected.";
+                }
+
+                showStatus("Success! Article and Schema generated perfectly. Review below.", "success");
+                results.classList.remove('hidden');
+
+            } catch (error) {
+                showStatus(error.message, "error");
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        function showStatus(msg, type) {
+            statusBox.innerText = msg;
+            statusBox.className = `p-5 rounded-2xl text-center font-bold shadow-lg border-2 ${type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : type === 'info' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`;
+            statusBox.classList.remove('hidden');
+        }
+
+        function setLoading(isLoading) {
+            processBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.innerHTML = '<span class="loader"></span> Generating SEO Package...';
+            } else {
+                btnText.innerText = 'GENERATE SEO CONTENT';
+            }
+        }
+
+        function copyToClipboard(elementId, btnElement) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const prevHtml = btnElement.innerHTML;
+                btnElement.innerHTML = 'Copied!';
+                setTimeout(() => btnElement.innerHTML = prevHtml, 2000);
+            });
+        }
+
+        function copyRawSchema() {
+            navigator.clipboard.writeText(rawJsonSchema).then(() => {
+                const btn = document.getElementById('schemaBtn');
+                btn.innerText = 'Copied!';
+                btn.classList.replace('bg-slate-800', 'bg-sky-600');
+                setTimeout(() => {
+                    btn.innerText = 'Copy JSON Schema';
+                    btn.classList.replace('bg-sky-600', 'bg-slate-800');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>
