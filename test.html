@@ -950,7 +950,7 @@
                 }
 
                 // Save final HTML for posting (schema sent separately as schema_json DB field)
-                currentArticleHtml = articleContent.innerHTML;
+                currentArticleHtml = articleContent.innerHTML.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{2B00}-\u{2BFF}]|[\u{FE00}-\u{FEFF}]/gu, m => "&#" + m.codePointAt(0) + ";");
 
                 showStatus("Success! Article and Schema generated perfectly. Review below.", "success");
                 results.classList.remove('hidden');
@@ -958,7 +958,7 @@
                 // â† Auto Post Panel: show and start resolving metadata
                 document.getElementById('autoPostPanel').classList.remove('hidden');
                 document.getElementById('autoPostPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                resolveJobMetadata(ocrTxt);
+                resolveJobMetadata(ocrTxt, articleContent.innerText);
 
             } catch (error) {
                 showStatus(error.message, "error");
@@ -1053,8 +1053,10 @@ From the OCR text and image below, extract ALL this info as VALID JSON ONLY (no 
   "is_minority_quota": false
 }
 
-OCR TEXT:
-${ocrText.substring(0, 4000)}`;
+OCR TEXT (raw image scan):
+${ocrText.substring(0, 2500)}
+ARTICLE TEXT (AI generated, use for salary/deadline if not in OCR):
+${(articleText||"").substring(0, 2000)}`;
 
                 const raw = await apiCall(metaPrompt, currentBase64Image);
                 const jsonMatch = raw.match(/\{[\s\S]*\}/);
