@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+
         // Prevent crashes during migrations or before DB is setup
         try {
             if (!app()->runningInConsole() && \Illuminate\Support\Facades\Schema::hasTable('settings')) {
