@@ -14,7 +14,7 @@
                         <h2 class="text-2xl font-black leading-tight tracking-tight text-slate-900 dark:text-slate-100">Jobs<span class="text-primary">Pic</span><span class="text-slate-400 text-lg">.com</span></h2>
                     </div>
                 @endif
-                <p class="text-sm text-slate-500">Connecting talent with opportunity across Pakistan. Join thousands of professionals finding their next career step with us.</p>
+                <p class="text-sm text-slate-600">Connecting talent with opportunity across Pakistan. Join thousands of professionals finding their next career step with us.</p>
             </div>
 
             {{-- Column 2, 3, 4: Managed Columns or Default --}}
@@ -25,7 +25,7 @@
             @if($footerBlocks->where('type', 'footer_column')->isEmpty())
                 <div>
                     <h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Quick Links</h3>
-                    <ul class="flex flex-col gap-2 text-sm text-slate-500">
+                    <ul class="flex flex-col gap-2 text-sm text-slate-600">
                         <li><a class="hover:text-primary" href="{{ url('/') }}">Home</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/categories') }}">Categories</a></li>
                         <li><a class="hover:text-primary font-bold text-primary" href="{{ route('jobs.all_lists') }}">All Job Lists</a></li>
@@ -33,7 +33,7 @@
                 </div>
                 <div>
                     <h3 class="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Legal</h3>
-                    <ul class="flex flex-col gap-2 text-sm text-slate-500">
+                    <ul class="flex flex-col gap-2 text-sm text-slate-600">
                         <li><a class="hover:text-primary" href="{{ url('/about') }}">About Us</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/privacy-policy') }}">Privacy Policy</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/terms') }}">Terms & Conditions</a></li>
@@ -56,7 +56,7 @@
         @if($copyrightBlock)
             @include('components.blocks.footer_copyright', ['block' => $copyrightBlock])
         @else
-            <div class="mt-12 border-t border-slate-100 pt-8 text-center text-sm text-slate-400 dark:border-slate-800">
+            <div class="mt-12 border-t border-slate-100 pt-8 text-center text-sm text-slate-600 dark:border-slate-800">
                 &copy; <span class="current-year"></span> JobsPic.com. All rights reserved.
             </div>
         @endif
