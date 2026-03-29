@@ -14,12 +14,9 @@
 
     <!-- Scripts & Styles -->
     <script>
-        // Init Dark Mode
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        // Force Light Mode always
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -49,7 +46,7 @@
     @stack('styles')
     {!! $settings['header_tags'] ?? '' !!}
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<body class="bg-background-light text-slate-900 font-display transition-colors duration-300">
     <div class="relative flex min-h-screen flex-col">
         <x-header />
 
