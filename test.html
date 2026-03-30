@@ -349,8 +349,17 @@
                             <p class="text-xs text-purple-600 font-medium pl-4" id="grpNote">Matching...</p>
                         </div>
                         <input type="hidden" id="resolvedGroupId">
-                    </div>
-
+                        <input type="hidden" id="resolvedGroupId">
+                        <!-- Group override: shown when no match -->
+                        <div id="grpOverrideBox" class="hidden mt-2 flex flex-col gap-2">
+                            <select id="groupOverride" onchange="onGroupOverride()" class="w-full border border-purple-300 rounded-xl px-3 py-2 text-sm bg-white text-slate-700">
+                                <option value="">-- Select Existing Group --</option>
+                            </select>
+                            <div class="flex gap-2">
+                                <input type="text" id="newGroupName" placeholder="Or type new group name..." class="flex-1 border border-purple-300 rounded-xl px-3 py-2 text-sm">
+                                <button onclick="createOrAssignGroup()" class="bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-purple-700 transition">Create &amp; Use</button>
+                            </div>
+                        </div>
                     <!-- City -->
                     <div class="space-y-2">
                         <label class="block text-xs font-black text-slate-500 uppercase tracking-widest">ðŸ“ City</label>
@@ -1249,19 +1258,78 @@ ${(articleText||"").substring(0, 2000)}`;
         }
 
         // â”€â”€ Load Landing Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // Stores all groups globally for re-use
+        let allGroups = [];
+
         async function loadGroups() {
             const base = getApiBase();
             try {
-                const res = await fetch(`${base}/api/landing-groups`, { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(`${base}/api/landing-groups`, { headers: { "Accept": "application/json" } });
                 if (!res.ok) return;
-                const groups = await res.json();
-                // If group already set, show its name
-                const currentGrpId = document.getElementById('resolvedGroupId').value;
+                allGroups = await res.json();
+
+                // Populate the override dropdown
+                const sel = document.getElementById("groupOverride");
+                sel.innerHTML = "<option value=\"\">-- Select Existing Group --</option>";
+                allGroups.forEach(g => {
+                    const o = new Option(g.name, g.id);
+                    sel.appendChild(o);
+                });
+
+                // If group already resolved, show it
+                const currentGrpId = document.getElementById("resolvedGroupId").value;
                 if (currentGrpId) {
-                    const grp = groups.find(g => String(g.id) === String(currentGrpId));
-                    if (grp) document.getElementById('grpName').textContent = grp.name;
+                    const grp = allGroups.find(g => String(g.id) === String(currentGrpId));
+                    if (grp) document.getElementById("grpName").textContent = grp.name;
+                } else {
+                    // No match — show override box
+                    document.getElementById("grpOverrideBox").classList.remove("hidden");
                 }
-            } catch (e) { /* silent */ }
+            } catch (e) { console.warn("loadGroups failed:", e); }
+        }
+
+        // Called when user picks from override dropdown
+        function onGroupOverride() {
+            const sel = document.getElementById("groupOverride");
+            if (!sel.value) return;
+            document.getElementById("resolvedGroupId").value = sel.value;
+            document.getElementById("grpName").textContent = sel.options[sel.selectedIndex].text;
+            setMetaStatus("grp", "found", `"${sel.options[sel.selectedIndex].text}" (manual)`);
+            document.getElementById("newGroupName").value = "";
+        }
+
+        // Auto-create or find group by name then assign
+        async function createOrAssignGroup() {
+            const name = document.getElementById("newGroupName").value.trim();
+            if (!name) return;
+            const base = getApiBase();
+            try {
+                const res = await fetch(`${base}/api/landing-groups`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ name })
+                });
+                if (res.ok) {
+                    const grp = await res.json();
+                    document.getElementById("resolvedGroupId").value = grp.id;
+                    document.getElementById("grpName").textContent = grp.name;
+                    const isNew = res.status === 201;
+                    setMetaStatus("grp", "found", `"${grp.name}" (${isNew ? "NEW created!" : "existing matched"})`);
+                    document.getElementById("newGroupName").value = "";
+                    // Add to dropdown too
+                    const sel = document.getElementById("groupOverride");
+                    if (!Array.from(sel.options).some(o => String(o.value) === String(grp.id))) {
+                        sel.appendChild(new Option(grp.name, grp.id));
+                    }
+                    sel.value = grp.id;
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert("Error: " + (err.message || "Could not create group."));
+                }
+            } catch (e) {
+                alert("Network error: " + e.message);
+            }
+        }
         }
 
         // â”€â”€ Override handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -30,18 +30,23 @@ class LandingGroupApiController extends Controller
     }
 
     /**
-     * Store a new landing group (optional internal use).
+     * Store a new landing group (auto-create if not exists).
      */
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
+            'name' => 'required|string|max:255',
         ]);
 
-        $group = LandingGroup::create($request->all());
+        $group = LandingGroup::firstOrCreate(
+            ['name' => trim($request->name)],
+            [
+                'is_active'    => true,
+                'sort_order'   => 0,
+                'section_type' => 'grid',
+            ]
+        );
 
-        return response()->json($group, 201);
+        return response()->json($group, $group->wasRecentlyCreated ? 201 : 200);
     }
 }
