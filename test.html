@@ -980,6 +980,9 @@
                         // Get current article text to find the BEST matching job titles
                         const articleText = articleContent.innerText.toLowerCase();
 
+                        // Helper: escape string for use in RegExp
+                        const reEsc = s => s.replace(/[\-\[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
                         // Score each candidate by how many of its words appear in article
                         const scored = candidates.map(job => {
                             const words = job.title.toLowerCase()
@@ -1011,7 +1014,7 @@
                             for (const pat of patterns) {
                                 if (pat.length < 5) continue;
                                 // Escape regex special chars
-                                const escaped = pat.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+                                const escaped = reEsc(pat);
                                 const rx = new RegExp(`(?<![<"'/=>])\b(${escaped})\b(?![^<]*>)`, 'i');
                                 if (rx.test(html)) {
                                     html = html.replace(rx,
@@ -1027,7 +1030,7 @@
                         (data.categories || []).slice(0, 3).forEach(cat => {
                             if (!cat.slug || !cat.name || cat.name.length < 4) return;
                             const catUrl = `${baseUrl}/category/${cat.slug}`;
-                            const escaped = cat.name.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+                            const escaped = reEsc(cat.name);
                             const rx = new RegExp(`(?<![<"'/=>])\b(${escaped} jobs?)\b(?![^<]*>)`, 'i');
                             if (rx.test(html)) {
                                 html = html.replace(rx,
