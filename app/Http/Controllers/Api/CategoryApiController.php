@@ -46,7 +46,7 @@ class CategoryApiController extends Controller
                 ],
                 [
                     'title'      => $category->name,
-                    'route_name' => 'category.show',
+                    'route_name' => 'categories.show',
                     'is_active'  => true,
                     'sort_order' => 0,
                     'icon'       => 'work' // Ensure link also has the Material icon
