@@ -815,8 +815,18 @@
 
                 const humanizeOn = document.getElementById('humanizeToggle').checked;
                 const toneStyle = humanizeOn
-                    ? "CRITICAL: Write in EXTREMELY SIMPLE, basic Grade 5 English. Use daily-life, conversational vocabulary suitable for an average Pakistani reader. Maintain 100% human score on AI Detectors by using burstiness (mix very short 3-word sentences with medium ones). Ask rhetorical questions. NEVER use complex or typical AI words like 'delve', 'moreover', 'tapestry', 'testament', 'crucial', 'elevate', 'landscape'. Keep the tone extremely easy to read."
-                    : "Target keywords naturally. Use EXTREMELY SIMPLE, basic Grade 5 English. The vocabulary must be very easy so a normal Pakistani reader can understand it without a dictionary. Avoid all complex or fancy words.";
+                    ? `HUMANIZE MODE — BYPASS AI DETECTORS (TARGET: 0% AI SCORE). Follow every rule:
+1. Write like a Pakistani journalist talking to a friend. Use "you", "your", "we", "let's" throughout.
+2. MIX sentence lengths AGGRESSIVELY — alternate between very short (3-5 words) and longer ones. Like: "Yes, it's real. The Punjab government has opened new doors for thousands of young people waiting for this chance. Don't miss it."
+3. Contractions everywhere: don't, it's, you're, we're, can't, won't, here's, that's, there's.
+4. Rhetorical questions every 2-3 paragraphs: "Sounds good, right?", "Now you might be thinking...", "But here's the thing."
+5. Pakistani-English expressions: "kindly note", "do apply", "as per the advertisement", "eligible candidates may apply".
+6. Start some sentences with: "And", "But", "So", "Now", "Look", "Well", "See" — like real humans write.
+7. BANNED WORDS — never use: delve, tapestry, testament, crucial, pivotal, leverage, moreover, furthermore, in conclusion, it is worth noting, comprehensive, robust, streamlined, facilitate, endeavor, cutting-edge, landscape, realm, multifaceted.
+8. Informal phrases: "This is huge news", "Here's the deal", "Long story short", "To be honest with you", "Trust me on this".
+9. Short paragraphs — max 3-4 sentences each. Break it up. White space helps readers.
+10. Write like educated Urdu-speaking Pakistanis write in English — slightly informal but professional.`
+                    : "Write naturally with simple vocabulary. Use conversational tone. Avoid complex or AI-sounding academic language. Write like a knowledgeable Pakistani journalist.";
 
                 const currentYear = new Date().getFullYear();
                 const prompt = `Analyze this image text deeply and perform these steps for the current year ${currentYear}:

@@ -107,7 +107,27 @@
                     </div>
                     @endif
 
-                    <div class="job-description">
+                    <style>
+                        .job-description { font-family: 'Inter', 'Segoe UI', sans-serif; color: #334155; line-height: 1.9; font-size: 1.05rem; }
+                        .job-description h1 { font-size: 1.9rem; font-weight: 800; color: #0f172a; margin: 2rem 0 1rem; border-bottom: 3px solid #e2e8f0; padding-bottom: 0.5rem; line-height: 1.3; }
+                        .job-description h2 { font-size: 1.45rem; font-weight: 700; color: #1e3a5f; margin: 2rem 0 0.75rem; padding-left: 14px; border-left: 5px solid #0284c7; }
+                        .job-description h3 { font-size: 1.2rem; font-weight: 700; color: #334155; margin: 1.5rem 0 0.5rem; }
+                        .job-description p { margin-bottom: 1.25rem; text-align: justify; }
+                        .job-description ul, .job-description ol { margin: 0.75rem 0 1.25rem 1.5rem; }
+                        .job-description ul { list-style-type: disc; }
+                        .job-description ol { list-style-type: decimal; }
+                        .job-description li { margin-bottom: 0.5rem; }
+                        .job-description strong { color: #0f172a; font-weight: 700; }
+                        .job-description table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+                        .job-description th { background: #f0f9ff; color: #0369a1; font-weight: 800; padding: 12px 16px; text-align: left; border-bottom: 2px solid #bae6fd; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+                        .job-description td { padding: 11px 16px; border-bottom: 1px solid #f1f5f9; color: #475569; }
+                        .job-description tr:hover td { background: #f8fafc; }
+                        .job-description a { color: #0284c7; text-decoration: underline; }
+                        .job-description blockquote { border-left: 4px solid #0284c7; background: #f0f9ff; padding: 1rem 1.25rem; border-radius: 0 12px 12px 0; margin: 1.5rem 0; font-style: italic; color: #0369a1; }
+                        .job-description pre { background: #0f172a; color: #7dd3fc; padding: 1.25rem; border-radius: 12px; overflow-x: auto; font-size: 0.9rem; margin: 1.5rem 0; }
+                        @media (max-width: 640px) { .job-description h1 { font-size: 1.5rem; } .job-description h2 { font-size: 1.2rem; } .job-description { font-size: 0.98rem; } }
+                    </style>
+                    <div class="job-description max-w-none">
                         {!! $job->description_html !!}
                     </div>
                     <div class="mt-12 mb-8 no-print pt-8 border-t border-slate-100 dark:border-slate-800">
@@ -209,9 +229,6 @@
                            <span class="material-symbols-outlined">chat</span> Apply on WhatsApp
                         </a>
                         @endif
-                        <a href="#" class="inline-block bg-primary hover:bg-primary/90 text-white font-black py-4 px-10 rounded-full shadow-xl transition-all transform hover:scale-105 active:scale-95 text-xl">
-                            Apply for this Job
-                        </a>
                     </div>
                     @else
                     <div class="text-red-700 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800 mt-12 mb-12 text-center no-print">
