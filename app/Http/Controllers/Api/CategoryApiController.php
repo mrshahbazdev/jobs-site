@@ -79,9 +79,8 @@ class CategoryApiController extends Controller
             return response()->json(['message' => 'No matching category found.'], 404);
         }
 
-        // Try to find existing link
+        // Try to find existing link via category slug (route_param)
         $landingLink = LandingLink::where('route_param', $bestMatch->slug)
-            ->orWhere('url', 'LIKE', '%' . $bestMatch->slug . '%')
             ->with('group')
             ->first();
 

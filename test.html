@@ -1634,11 +1634,17 @@ ${(articleText || "").substring(0, 2000)}`;
                             document.getElementById('resolvedCategoryId').value = cat.id;
                             document.getElementById('catName').textContent = cat.name;
                             setMetaStatus('cat', 'new', `"${cat.name}" created & pinned!`);
+                        } else {
+                            setMetaStatus('cat', 'error', 'Could not create category.');
                         }
                     }
+                } else {
+                    setMetaStatus('cat', 'warn', `Server error (${res.status}). Select manually.`);
+                    setMetaStatus('grp', 'warn', 'Check server connection');
                 }
             } catch (e) {
                 setMetaStatus('cat', 'error', 'Network/CORS error: ' + e.message);
+                setMetaStatus('grp', 'error', 'Connection failed');
             }
         }
 
