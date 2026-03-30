@@ -1695,18 +1695,28 @@ ${(articleText||"").substring(0, 2000)}`;
 
         async function generateAiThumb() {
             const btnTxt = document.getElementById('aiThumbBtnTxt');
-            const title = document.getElementById('postTitle').value.trim() || 'Professional Job';
-            const dept = document.getElementById('postDepartment').value.trim() || '';
-            const prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
+            const title = (document.getElementById('postTitle').value || 'Professional').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+            const dept = (document.getElementById('postDepartment').value || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+            
+            // Sanitized prompt to prevent 500 server errors
+            let prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
             
             btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating...';
             
             try {
                 // Fetch direct image
                 const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true`;
-                const response = await fetch(aiUrl);
-                const blob = await response.blob();
+                let response = await fetch(aiUrl);
                 
+                // Fallback if the specific prompt causes a backend 500 error
+                if (!response.ok) {
+                    const fallbackPrompt = `clean modern corporate office desk background, 8k, photorealistic, without text`;
+                    const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fallbackPrompt)}?width=1200&height=630&nologo=true`;
+                    response = await fetch(fallbackUrl);
+                    if (!response.ok) throw new Error("AI Image Server Busy (500)");
+                }
+
+                const blob = await response.blob();
                 const img = new Image();
                 img.crossOrigin = "anonymous";
                 img.onload = async () => {
@@ -1716,7 +1726,7 @@ ${(articleText||"").substring(0, 2000)}`;
                 };
                 img.src = URL.createObjectURL(blob);
             } catch (e) {
-                alert('AI Generate failed: ' + e.message);
+                alert('AI Generate failed: ' + e.message + '. Please upload manual image or retry.');
                 btnTxt.innerText = 'Generate AI Thumbnail';
             }
         }
