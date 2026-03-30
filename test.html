@@ -1873,7 +1873,7 @@ ${(articleText||"").substring(0, 2000)}`;
                 });
 
                 const data = await res.json();
-                if (res.ok) {
+                if (res.ok) { resetPostForm();
                     document.getElementById('postSuccessMsg').textContent = `âœ… ${data.message} (ID: ${data.job_id})`;
                     document.getElementById('postJobLink').href = data.job_url;
                     document.getElementById('postJobLink').textContent = 'View Job Post â†’ ' + data.job_url;
@@ -1893,6 +1893,25 @@ ${(articleText||"").substring(0, 2000)}`;
                 btn.disabled = false;
                 btnText.textContent = 'POST JOB TO DATABASE';
             }
+        }
+
+        function resetPostForm() {
+            currentArticleHtml = '';
+            currentSchemaJson = null;
+            processedThumbnailBase64 = null;
+            document.getElementById('articleImage').value = '';
+            document.getElementById('manualThumbInput').value = '';
+            const inputs = ['postTitle', 'postMetaDesc', 'postDeadline', 'postDepartment', 'postNewspaper', 'postProvince', 'postGender', 'postBps', 'postSector', 'postEducation', 'postTestingService', 'postContractType', 'postJobRole', 'postExperience', 'postSkills', 'postQualDegree', 'postRegCouncil', 'postSubSector', 'postWhatsapp', 'postSalaryMin', 'postSalaryMax', 'resolvedCategoryId', 'resolvedCityId'];
+            inputs.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ''; });
+            const checks = ['flagFeatured', 'flagPremium', 'flagOverseas', 'flagRemote', 'flagWalkin', 'flagWhatsappApply', 'flagRetiredArmy', 'flagStudent', 'flagAccommodation', 'flagTransport', 'flagMedical', 'flagSpecialQuota', 'flagMinorityQuota'];
+            checks.forEach(id => { if(document.getElementById(id)) document.getElementById(id).checked = false; });
+            document.getElementById('articlePreview').innerHTML = '<div class="text-slate-400 italic">SEO Content yahan nazar aaye ga...</div>';
+            document.getElementById('tagPreview').innerHTML = '<div class="text-slate-400 italic">Tags yahan nazar aayengay...</div>';
+            document.getElementById('thumbPreviewImg').src = '';
+            document.getElementById('thumbPreviewImg').classList.add('hidden');
+            document.getElementById('thumbPreviewEmpty').classList.remove('hidden');
+            setMetaStatus('cat', 'idle', 'Waiting...');
+            setMetaStatus('city', 'idle', 'Waiting...');
         }
 
         // â”€â”€ UI Helper: set status dot + note text â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
