@@ -229,7 +229,7 @@
                     @if($job->deadline && \Carbon\Carbon::parse($job->deadline)->isFuture())
                     <div class="text-center mt-4 mb-12 flex flex-col md:flex-row items-center justify-center gap-4 no-print">
                         @if($job->whatsapp_number)
-                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $job->whatsapp_number) }}?text={{ urlencode('I am interested in applying for the job: ' . $job->title) }}" target="_blank" class="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-black py-4 px-10 rounded-full shadow-xl transition-all transform hover:scale-105 active:scale-95 text-xl">
+                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $job->whatsapp_number) }}?text={{ urlencode('I am interested in applying for the job: ' . $job->title) }}" target="_blank" class="inline-flex items-center gap-3 bg-[#075E54] hover:bg-[#064e46] text-white font-black py-4 px-10 rounded-full shadow-xl transition-all transform hover:scale-105 active:scale-95 text-xl">
                            <span class="material-symbols-outlined">chat</span> Apply on WhatsApp
                         </a>
                         @endif
@@ -246,7 +246,7 @@
 
         <!-- Sidebar -->
         <aside class="w-full lg:w-1/3 flex flex-col gap-6 no-print">
-            <div class="bg-gradient-to-br from-[#128C7E] to-[#25D366] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="bg-gradient-to-br from-[#128C7E] to-[#1a9548] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                 <div class="relative z-10">
                     <h3 class="text-xl font-black mb-2">Join Our WhatsApp</h3>
                     <p class="text-white/90 text-sm mb-6 leading-relaxed">Stay updated with the latest job alerts in your city!</p>

@@ -22,7 +22,7 @@
       .content h2 { font-size: 18px; color: #1e293b; margin-top: 20px; }
       .footer-cta { padding: 25px; background: #f1f5f9; text-align: center; }
       .btn { display: block; background: #004b93; color: #fff; text-decoration: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 16px; margin-bottom: 10px; }
-      .btn-wa { background: #25D366; }
+      .btn-wa { background: #075E54; }
       .related { margin-top: 30px; }
       .related h3 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 15px; }
       .related-card { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 10px; text-decoration: none; display: block; }

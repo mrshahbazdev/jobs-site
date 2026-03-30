@@ -29,10 +29,10 @@
                 <div class="flex items-center gap-4">
                     <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Share Article</p>
                     <div class="flex gap-2">
-                         <a href="https://wa.me/?text={{ urlencode($post->title . ' - ' . url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-md hover:opacity-90 transition-all">
+                         <a href="https://wa.me/?text={{ urlencode($post->title . ' - ' . url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#075E54] text-white shadow-md hover:bg-[#064e46] transition-all">
                              <span class="material-symbols-outlined text-lg">share</span>
                          </a>
-                         <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1877F2] text-white shadow-md hover:opacity-90 transition-all">
+                         <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0d65d9] text-white shadow-md hover:bg-[#0b54b5] transition-all">
                              <span class="material-symbols-outlined text-lg">share</span>
                          </a>
                     </div>

@@ -1,7 +1,7 @@
 @props(['variant' => 'sidebar', 'title' => null, 'subtitle' => null, 'icon' => null])
 
 @if($variant === 'sidebar')
-<div class="bg-gradient-to-br from-[#128C7E] to-[#25D366] rounded-3xl p-6 text-white shadow-xl mb-4 relative overflow-hidden group">
+<div class="bg-gradient-to-br from-[#128C7E] to-[#1a9548] rounded-3xl p-6 text-white shadow-xl mb-4 relative overflow-hidden group">
     <!-- Decorative background elements -->
     <div class="absolute -right-6 -bottom-6 opacity-20 group-hover:scale-110 transition-transform duration-700">
         <span class="material-symbols-outlined text-9xl">chat</span>
