@@ -42,9 +42,9 @@
         <article class="w-full lg:w-2/3 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             
             <!-- Job Header Image/Banner -->
-            <div class="w-full h-48 md:h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 relative">
+            <div class="w-full h-56 md:h-80 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 relative overflow-hidden">
                 @if($job->company_logo)
-                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->company_name }}" class="h-32 w-auto object-contain">
+                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} job vacancies at {{ $job->company_name ?? $job->department }} in {{ $job->city->name }} - Apply Now" class="w-full h-full object-cover">
                 @else
                     <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">work</span>
                 @endif
@@ -81,9 +81,9 @@
                             prose-th:bg-primary/5 prose-th:p-4 prose-td:p-4 prose-table:overflow-hidden prose-table:rounded-xl prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-700
                             prose-li:marker:text-primary">
                     
-                    <h1 class="text-3xl md:text-5xl tracking-tight mb-2">{{ $job->title }}</h1>
+                    <div class="text-3xl md:text-5xl font-black tracking-tight mb-2 text-slate-900 dark:text-white">{{ $job->title }}</div>
                     @if($job->company_name)
-                        <h2 class="text-xl font-bold text-slate-600 dark:text-slate-400 mt-0 mb-4">{{ $job->company_name }}</h2>
+                        <div class="text-xl font-bold text-slate-600 dark:text-slate-400 mt-0 mb-4">{{ $job->company_name }}</div>
                     @endif
                     
                     <div class="flex flex-wrap gap-3 mb-8 mt-4">

@@ -3,9 +3,9 @@
 <div class="group relative flex flex-col gap-4 rounded-xl border {{ $job->is_premium ? 'border-amber-400 bg-amber-50/30' : 'border-slate-200 bg-white' }} p-5 shadow-sm transition-all hover:border-primary/50 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
     <div class="flex items-start justify-between">
         <div class="flex gap-4">
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+            <div class="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-sm">
                 @if($job->company_logo)
-                    <img src="{{ asset('storage/'.$job->company_logo) }}" class="w-full h-full object-contain p-1">
+                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} at {{ $job->company_name ?? $job->department }}" class="w-full h-full object-cover">
                 @else
                     <span class="material-symbols-outlined text-primary text-2xl" aria-hidden="true">work</span>
                 @endif
