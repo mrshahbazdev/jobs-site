@@ -959,6 +959,98 @@
 
                 articleContent.innerHTML = htmlFormat;
 
+                // ── Auto Internal Linking ──────────────────────────────────────────
+                // Fetch related jobs from API and inject contextual internal links
+                (async () => {
+                    try {
+                        const catId = document.getElementById('resolvedCategoryId')?.value || '';
+                        const res = await fetch(`https://jobspic.com/api/internal-links?category_id=${catId}`, {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        const baseUrl = data.base_url || 'https://jobspic.com';
+
+                        // Build candidate links — related first, then general
+                        const candidates = [
+                            ...(data.related_jobs || []),
+                            ...(data.general_jobs || [])
+                        ];
+
+                        // Get current article text to find the BEST matching job titles
+                        const articleText = articleContent.innerText.toLowerCase();
+
+                        // Score each candidate by how many of its words appear in article
+                        const scored = candidates.map(job => {
+                            const words = job.title.toLowerCase()
+                                .replace(/[^a-z0-9\s]/g, '')
+                                .split(/\s+/)
+                                .filter(w => w.length > 3);
+                            const matches = words.filter(w => articleText.includes(w)).length;
+                            return { ...job, score: matches };
+                        }).filter(j => j.score >= 2);
+
+                        // Sort by score descending, pick top 5 unique
+                        scored.sort((a, b) => b.score - a.score);
+                        const top5 = scored.slice(0, 5);
+
+                        if (!top5.length) return;
+
+                        // Inject links into article HTML
+                        let html = articleContent.innerHTML;
+                        const linked = new Set();
+
+                        top5.forEach(job => {
+                            if (linked.has(job.slug)) return;
+                            const jobUrl = `${baseUrl}/jobs/${job.slug}`;
+
+                            // Try exact title match first, then first 4 words
+                            const titleShort = job.title.split(' ').slice(0, 4).join(' ');
+                            const patterns = [job.title, titleShort];
+
+                            for (const pat of patterns) {
+                                if (pat.length < 5) continue;
+                                // Escape regex special chars
+                                const escaped = pat.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+                                const rx = new RegExp(`(?<![<"'/=>])\b(${escaped})\b(?![^<]*>)`, 'i');
+                                if (rx.test(html)) {
+                                    html = html.replace(rx,
+                                        `<a href="${jobUrl}" title="${job.title}" class="internal-link" style="color:#0284c7;text-decoration:underline;font-weight:600;" target="_self">$1</a>`
+                                    );
+                                    linked.add(job.slug);
+                                    break;
+                                }
+                            }
+                        });
+
+                        // Also auto-link category/city pages from data
+                        (data.categories || []).slice(0, 3).forEach(cat => {
+                            if (!cat.slug || !cat.name || cat.name.length < 4) return;
+                            const catUrl = `${baseUrl}/category/${cat.slug}`;
+                            const escaped = cat.name.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+                            const rx = new RegExp(`(?<![<"'/=>])\b(${escaped} jobs?)\b(?![^<]*>)`, 'i');
+                            if (rx.test(html)) {
+                                html = html.replace(rx,
+                                    `<a href="${catUrl}" title="${cat.name} Jobs in Pakistan" class="internal-link" style="color:#0284c7;text-decoration:underline;font-weight:600;" target="_self">$1</a>`
+                                );
+                            }
+                        });
+
+                        articleContent.innerHTML = html;
+
+                        // Show badge
+                        const badge = document.createElement('div');
+                        badge.style.cssText = 'background:#dcfce7;color:#15803d;font-weight:800;padding:4px 14px;border-radius:999px;font-size:12px;display:inline-block;margin-top:8px;';
+                        badge.innerText = `✔ ${linked.size} Internal Links Auto-Injected`;
+                        articleContent.parentElement.appendChild(badge);
+
+                    } catch(e) {
+                        console.warn('Internal linking skipped:', e.message);
+                    }
+                })();
+                // ── End Internal Linking ───────────────────────────────────────────
+
+
                 // -- Handle Schema: Validate JSON before saving --
                 if (schemaTxt) {
                     let schemaValid = false;
