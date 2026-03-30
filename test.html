@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -860,7 +860,7 @@
                    - STRICT FORMATTING RULES: NEVER use standalone asterisks (*) as bullet points or decoration. NEVER start a sentence with a colon (:). Do NOT use ** around words unless they are genuinely bold terms. Use clean paragraphs, numbered lists, or HTML lists instead. Avoid markdown symbols in prose text. Write naturally as a human journalist would.
                    - End with a professional conclusion.
                 5. FAQs (PAA): Include 10-15 highly specific Google "People Also Ask" (PAA) format FAQs related to this specific job/topic.
-                6. LSI_TAGS_AND_CATEGORIES: Generate a comma-separated list of 15-20 LSI keywords AND suggest 3-4 Custom Database Categories (like 'Federal Govt Jobs', 'Police Department'). Use marker LSI_TAGS_DATA.
+                6. LSI_TAGS_AND_CATEGORIES: Generate a SINGLE comma-separated list of 15-20 LSI keywords + 3-4 Categories. EXACT FORMAT: keyword 1, keyword 2, category 1. NO bullet points. NO newlines. NO prefixes like "Categories:". Use marker LSI_TAGS_DATA.
                 7. ADVANCED_SEO: Output a structured text block containing: 
                    - Google NLP Entities: [Extract key entities: Location, Organization]
                    - Keyword Cannibalization Warning: [Warning not to reuse the exact focus keyword]
@@ -920,7 +920,11 @@
                 ocrContent.innerText = ocrTxt;
                 // Render LSI tags as clickable chips
                 const tagsEl = document.getElementById("tagsContent");
-                const tagChips = tagsTxt.split(",").map(t => t.trim()).filter(Boolean)
+                // Clean the text: convert newlines to commas, remove colon prefixes
+                let cleanTags = tagsTxt.replace(/LSI Keywords:|Categories:|Tags:|Keywords:/gi, '').replace(/\n/g, ',').replace(/:/g, ',');
+                const tagChips = cleanTags.split(",")
+                    .map(t => t.replace(/^[-\*\·\d\.]+\s*/, '').trim()) // Remove bullet points if any
+                    .filter(t => t.length > 2) // Remove empty or very short strings
                     .map(t => `<span style="display:inline-block;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:999px;padding:3px 12px;margin:3px;font-size:12px;font-weight:700;cursor:pointer;" onclick="this.style.background=this.style.background==='#0369a1'?'#e0f2fe':'#0369a1';this.style.color=this.style.color==='#fff'?'#0369a1':'#fff'">${t}</span>`).join("");
                 tagsEl.innerHTML = tagChips || tagsTxt;
 
@@ -1661,7 +1665,7 @@ ${(articleText||"").substring(0, 2000)}`;
                 is_premium:           gc('flagPremium'),
                 schema_json:          currentSchemaJson || null,
                 meta_description:     (document.getElementById('postMetaDesc')?.value || '').trim().substring(0, 160) || null,
-                meta_keywords:        document.getElementById('tagsContent')?.innerText?.substring(0, 500) || null,
+                meta_keywords:        Array.from(document.getElementById('tagsContent')?.querySelectorAll('span') || []).map(s => s.innerText).join(', ').substring(0, 500) || null,
                 deadline:             gv('postDeadline'),
                 department:           gv('postDepartment'),
                 newspaper:            gv('postNewspaper'),
