@@ -1039,7 +1039,7 @@ From the OCR text and image below, extract ALL this info as VALID JSON ONLY (no 
   "city": "City or 'Pakistan Wide' (string)",
   "province": "One of: Punjab, Sindh, KPK, Balochistan, AJK, Gilgit-Baltistan, ICT Islamabad, All Pakistan",
   "deadline": "Last date to apply in format DD Month YYYY, or empty string",
-  "newspaper": "One of: Express, Jang, Dawn, The News, Nawaiwaqt, Dunya, Mashriq, Aaj, Pakistan, Online / Website, or empty string",
+  "newspaper": "Exact newspaper name visible in the image (e.g. Express, Jang, Dawn, The News, Nawaiwaqt, Dunya, Mashriq, Aaj, Pakistan). If visible, write the exact name. If online/website only, write Online / Website. If not visible, write empty string",
   "gender": "One of: Male Only, Female Only, Male/Female (Both)",
   "bps_scale": "e.g. BPS-17, BPS-18, MP-II, or empty string",
   "education": "One of: Matric, Intermediate, Bachelor, Master, MPhil, PhD, MBBS / BDS, Engineering (BE/BS), Law (LLB), Diploma, or empty string",
@@ -1086,12 +1086,21 @@ ${(articleText||"").substring(0, 2000)}`;
             const setSel  = (id, v) => {
                 const el = document.getElementById(id);
                 if (!el || !v) return;
+                const needle = v.toLowerCase().trim();
+                // Try fuzzy match first
                 for (let opt of el.options) {
-                    if (opt.text.toLowerCase().includes(v.toLowerCase()) || v.toLowerCase().includes(opt.text.toLowerCase())) {
-                        el.value = opt.value; break;
+                    if (opt.text.toLowerCase().includes(needle) || needle.includes(opt.text.toLowerCase().trim())) {
+                        el.value = opt.value; return;
                     }
                 }
+                // Not found — add as new option and select it
+                const newOpt = new Option(v, v);
+                newOpt.style.fontStyle = "italic";
+                newOpt.style.color = "#7c3aed";
+                el.appendChild(newOpt);
+                el.value = v;
             };
+
 
             setVal('postTitle',       meta.title);
             setVal('postDepartment',  meta.department);
@@ -1136,6 +1145,41 @@ ${(articleText||"").substring(0, 2000)}`;
             loader.classList.add('hidden');
         }
 
+        // Auto-create a landing group by name (firstOrCreate)
+        async function autoCreateGroup(name) {
+            if (!name) { setMetaStatus("grp", "warn", "No group — select manually"); return; }
+            setMetaStatus("grp", "loading", "Auto-creating group...");
+            const base = getApiBase();
+            try {
+                const res = await fetch(`${base}/api/landing-groups`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ name })
+                });
+                if (res.ok) {
+                    const grp = await res.json();
+                    document.getElementById("resolvedGroupId").value = grp.id;
+                    document.getElementById("grpName").textContent = grp.name;
+                    const label = res.status === 201 ? "NEW auto-created!" : "existing matched";
+                    setMetaStatus("grp", res.status === 201 ? "new" : "found", `"${grp.name}" (${label})`);
+                    // Also select it in the override dropdown if it exists
+                    const sel = document.getElementById("groupOverride");
+                    if (sel) {
+                        if (!Array.from(sel.options).some(o => String(o.value) === String(grp.id))) {
+                            sel.appendChild(new Option(grp.name, grp.id));
+                        }
+                        sel.value = grp.id;
+                    }
+                } else {
+                    setMetaStatus("grp", "warn", "Could not create — select manually below");
+                    document.getElementById("grpOverrideBox").classList.remove("hidden");
+                }
+            } catch(e) {
+                setMetaStatus("grp", "warn", "Network error — select manually below");
+                document.getElementById("grpOverrideBox").classList.remove("hidden");
+            }
+        }
+
         // â”€â”€ Resolve / auto-create Category â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         async function resolveCategory(aiCategory) {
             setMetaStatus('cat', 'loading', 'Checking database...');
@@ -1160,8 +1204,8 @@ ${(articleText||"").substring(0, 2000)}`;
                         document.getElementById('grpName').textContent = data.group.name;
                         setMetaStatus('grp', 'found', `"${data.group.name}" (matched)`);
                     } else {
-                        setMetaStatus('grp', 'warn', 'No group matched â€” select manually below');
-                        document.getElementById('grpName').textContent = 'Not matched';
+                        // No group matched - auto-create from AI category name
+                        autoCreateGroup(aiCategory);
                     }
                 } else if (res.status === 404 && aiCategory) {
                     // Not found â†’ auto-create
@@ -1342,7 +1386,7 @@ ${(articleText||"").substring(0, 2000)}`;
                 alert("Network error: " + e.message);
             }
         }
-        }
+        
 
         // â”€â”€ Override handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function onCategoryOverride() {
