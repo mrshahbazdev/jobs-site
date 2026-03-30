@@ -1055,11 +1055,17 @@ From the OCR text and image below, extract ALL this info as VALID JSON ONLY (no 
   "salary_min": "Numeric minimum salary in PKR (number or null)",
   "salary_max": "Numeric maximum salary in PKR (number or null)",
   "meta_description": "One SEO sentence max 155 chars describing this job",
-  "is_overseas": false,
-  "has_walkin_interview": false,
-  "is_student_friendly": false,
-  "is_special_quota": false,
-  "is_minority_quota": false
+  "is_overseas": "true if job is outside Pakistan or mentions overseas/abroad",
+  "has_walkin_interview": "true if walk-in interview is mentioned",
+  "is_student_friendly": "true if students or fresh graduates can apply",
+  "is_special_quota": "true if special quota, disabled persons quota, or minorities quota mentioned",
+  "is_minority_quota": "true if minorities or non-Muslim quota specifically mentioned",
+  "is_remote": "true if work from home, remote work, or online job mentioned",
+  "whatsapp_apply": "true if WhatsApp number given to apply or contact",
+  "is_retired_army": "true if retired military/army/navy/PAF/armed forces personnel preferred",
+  "has_accommodation": "true if accommodation or residence provided",
+  "has_transport": "true if transport or pick-drop mentioned",
+  "has_medical_insurance": "true if medical or health insurance/facility mentioned"
 }
 
 OCR TEXT (raw image scan):
@@ -1114,6 +1120,12 @@ ${(articleText||"").substring(0, 2000)}`;
             setChk('flagStudent',       meta.is_student_friendly);
             setChk('flagSpecialQuota',  meta.is_special_quota);
             setChk('flagMinorityQuota', meta.is_minority_quota);
+            setChk('flagRemote',        meta.is_remote);
+            setChk('flagWhatsappApply', meta.whatsapp_apply);
+            setChk('flagRetiredArmy',   meta.is_retired_army);
+            setChk('flagAccommodation', meta.has_accommodation);
+            setChk('flagTransport',     meta.has_transport);
+            setChk('flagMedical',       meta.has_medical_insurance);
 
             // â”€â”€ Step 2: Resolve Category & City via Laravel API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             await resolveCategory(meta.category || '');
