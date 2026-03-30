@@ -856,21 +856,18 @@
 
                 const humanizeOn = document.getElementById('humanizeToggle').checked;
                 const toneStyle = humanizeOn
-                    ? `HUMANIZE MODE — BYPASS AI DETECTORS (TARGET: 0% AI SCORE). Follow every rule:
-1. Write like a Pakistani journalist talking to a friend. Use "you", "your", "we", "let's" throughout.
-2. MIX sentence lengths AGGRESSIVELY — alternate between very short (3-5 words) and longer ones. Like: "Yes, it's real. The Punjab government has opened new doors for thousands of young people waiting for this chance. Don't miss it."
-3. Contractions everywhere: don't, it's, you're, we're, can't, won't, here's, that's, there's.
-4. Rhetorical questions every 2-3 paragraphs: "Sounds good, right?", "Now you might be thinking...", "But here's the thing."
-5. Pakistani-English expressions: "kindly note", "do apply", "as per the advertisement", "eligible candidates may apply".
-6. Start some sentences with: "And", "But", "So", "Now", "Look", "Well", "See" — like real humans write.
-7. BANNED WORDS — never use: delve, tapestry, testament, crucial, pivotal, leverage, moreover, furthermore, in conclusion, it is worth noting, comprehensive, robust, streamlined, facilitate, endeavor, cutting-edge, landscape, realm, multifaceted.
-8. Informal phrases: "This is huge news", "Here's the deal", "Long story short", "To be honest with you", "Trust me on this".
-9. Short paragraphs — max 3-4 sentences each. Break it up. White space helps readers.
-10. Write like educated Urdu-speaking Pakistanis write in English — slightly informal but professional.
-11. STRUCTURE VARIETY: Do NOT use numbered lists for everything. Sometimes write 2-3 short punchy sentences instead of a list. Mix prose paragraphs with occasional lists. Example: instead of "Step 1: Do X. Step 2: Do Y." write "First, do X. Then move on to Y. It's that simple."
-12. IMPERFECTION RULE: Start 2-3 sentences without a subject (e.g., "Easy to understand.", "Worth it.", "Not bad at all."). Add one or two rhetorical self-answers: "Can you apply without STS? Short answer: no, you can't."
-13. EMOTION: Add one genuine emotional statement per major section. Like "This is honestly one of the best government jobs announced this year." or "I wouldn't miss this if I were you."`
-                    : "Write naturally with simple vocabulary. Use conversational tone. Avoid complex or AI-sounding academic language. Write like a knowledgeable Pakistani journalist.";
+                    ? `GRADE 4 STUDENT STYLE — Write like a 10-year-old Pakistani child talking to a friend. 
+1. Use very simple words that a kid knows. No hard words.
+2. Make sentences very short. 5 to 7 words is best.
+3. Use "you", "your", and "we" is fine. 
+4. Be happy and excited! Like: "Wow! Look at this job. It is so good."
+5. No big business talk. Just tell the news simply.
+6. Use simple Pakistani English like: "Apply soon", "Good salary", "Big office".
+7. BANNED: delve, tapestry, testament, crucial, pivotal, leverage, moreover, furthermore, comprehensive, robust, facilitate, landscape. (NEVER use these hard words).
+8. Use "don't", "can't", "it's". 
+9. Write very short paragraphs. Just 2 sentences is enough.
+10. If there is a big word in the job, explain it like a kid: "Experience means how much you worked before."`
+                    : "Write like a Grade 4 student. Use very simple words and very short sentences. Be friendly and easy to understand.";
 
                 const currentYear = new Date().getFullYear();
                 const prompt = `Analyze this image text deeply and perform these steps for the current year ${currentYear}:
