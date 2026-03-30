@@ -351,7 +351,7 @@
                             <p class="text-xs text-purple-600 font-medium pl-4" id="grpNote">Matching...</p>
                         </div>
                         <input type="hidden" id="resolvedGroupId">
-                        <input type="hidden" id="resolvedGroupId">
+
                         <!-- Group override: shown when no match -->
                         <div id="grpOverrideBox" class="hidden mt-2 flex flex-col gap-2">
                             <select id="groupOverride" onchange="onGroupOverride()" class="w-full border border-purple-300 rounded-xl px-3 py-2 text-sm bg-white text-slate-700">
@@ -362,9 +362,11 @@
                                 <button onclick="createOrAssignGroup()" class="bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-purple-700 transition">Create &amp; Use</button>
                             </div>
                         </div>
+                    </div>
+
                     <!-- City -->
                     <div class="space-y-2">
-                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest">ðŸ“ City</label>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest">&#x1F4CD; City</label>
                         <div id="cityDisplay" class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 min-h-[80px] flex flex-col justify-center">
                             <div class="flex items-center gap-2 mb-1">
                                 <span id="cityStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-300 flex-shrink-0"></span>
@@ -830,7 +832,17 @@
                    - HOW TO APPLY & CTA: Create a Step-by-Step numbered list for applying. End it with: <div class="text-center mt-8 mb-12"><a href="[Link]" target="_blank" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-10 rounded-full shadow-xl transition-all transform hover:scale-105 active:scale-95 text-xl">Apply Online Now</a></div>
                    - SYLLABUS & INTERVIEW PREP: Dedicate an H2 section to "Expected Syllabus & Test Pattern" (e.g., 20% Math, 80% Subject). Then add an H3 section for "Top 5 Expected Interview Questions" with short Sample Answers.
                    - MINI MCQ TEST: At the end of the article, create an H3 section "ðŸ§  Mini Syllabus Quiz" with 10 practical multiple-choice questions based on the expected syllabus test. Provide the correct answer below them.
-                   - SEO: Use powerful H2/H3s naturally including the year ${currentYear} in Headers. Use bullet points at least twice. Place Focus Keyword in the first and last 100 words.
+                   - SEO BEST PRACTICES (CRITICAL - follow every rule):
+                     * Focus Keyword: Place the exact job title + year in H1, first paragraph, last paragraph, and at least 2 H2 headings.
+                     * Title (H1): Must include: [Job Title] [Year] - [Organization/Dept] Pakistan
+                     * Keyword Density: Use focus keyword 4-6 times naturally (avoid keyword stuffing).
+                     * H2 Headings: Include year ${currentYear} in at least 3 H2s (e.g. "How to Apply for [Job] ${currentYear}", "Eligibility Criteria ${currentYear}").
+                     * First 100 Words: Must include focus keyword + organization name + location.
+                     * Internal Linking Hints: Suggest [link to related jobs page] in natural text.
+                     * E-E-A-T Signals: Mention official website, notification number, or gazette reference.
+                     * Featured Snippet: Write one 40-60 word direct answer paragraph immediately under the first H2 (optimized for Google position 0).
+                     * Image Alt Text Suggestion: At the image placeholder write: [Image: {job title} {organization} Jobs ${currentYear} Pakistan].
+                     * Use bullet points at least 3 times for scannability. Keep paragraphs under 4 sentences.
                    - ${toneStyle}
                    - STRICT FORMATTING RULES: NEVER use standalone asterisks (*) as bullet points or decoration. NEVER start a sentence with a colon (:). Do NOT use ** around words unless they are genuinely bold terms. Use clean paragraphs, numbered lists, or HTML lists instead. Avoid markdown symbols in prose text. Write naturally as a human journalist would.
                    - End with a professional conclusion.
