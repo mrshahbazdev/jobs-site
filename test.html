@@ -1677,9 +1677,9 @@ ${(articleText||"").substring(0, 2000)}`;
         async function optimizeAndPreviewThumb(imgObj) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
-                // Standard OG image size - balanced for quality and speed (960x504)
-                canvas.width = 960;
-                canvas.height = 504;
+                // Standard OG image size - balanced for quality and speed (820x430)
+                canvas.width = 820;
+                canvas.height = 430;
                 const ctx = canvas.getContext('2d');
                 
                 // Draw and cover
@@ -1688,8 +1688,8 @@ ${(articleText||"").substring(0, 2000)}`;
                 const y = (canvas.height / 2) - (imgObj.height / 2) * scale;
                 ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
 
-                // Export to WebP 75% for 17KiB+ savings
-                const webpDataUrl = canvas.toDataURL('image/webp', 0.75);
+                // Export to WebP 65% for 20KiB+ savings
+                const webpDataUrl = canvas.toDataURL('image/webp', 0.65);
                 
                 // Show in UI
                 const previewImg = document.getElementById('thumbPreviewImg');
@@ -1873,11 +1873,12 @@ ${(articleText||"").substring(0, 2000)}`;
                 });
 
                 const data = await res.json();
-                if (res.ok) { resetPostForm();
+                if (res.ok) { 
                     document.getElementById('postSuccessMsg').textContent = `âœ… ${data.message} (ID: ${data.job_id})`;
                     document.getElementById('postJobLink').href = data.job_url;
                     document.getElementById('postJobLink').textContent = 'View Job Post â†’ ' + data.job_url;
                     document.getElementById('postSuccessBox').classList.remove('hidden');
+                    resetPostForm();
                 } else {
                     const errMsg = data.message || JSON.stringify(data.errors || data);
                     document.getElementById('postErrorMsg').textContent = '&#x274C; ' + errMsg;
