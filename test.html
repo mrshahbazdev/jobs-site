@@ -854,7 +854,7 @@
                    - Authority Outbound Links: [Recommend 2-3 High Authority external website links (e.g., fpsc.gov.pk, hec.gov.pk) related to this post].
                    - Keyword Prominence Check: [Verify the Focus Keyword placement].
                    Use marker ADVANCED_SEO_DATA.
-                 8. SCHEMA: Generate a SINGLE completely valid JSON object. Output RAW JSON ONLY (no script tags, no markdown fences, no extra text). Structure it as ONE root @graph array with THREE separate objects: (1) @type=NewsArticle with headline, datePublished and dateModified (today: ${new Date().toISOString().split("T")[0]}), author (@type=Organization name=JobsPic), mainEntityOfPage pointing to @id "#jobposting". (2) @type=JobPosting with @id="#jobposting" — REQUIRED FIELDS: title, description (2-3 sentence summary), datePosted MUST be "${new Date().toISOString().split("T")[0]}", employmentType (FULL_TIME or CONTRACTOR inferred from ad), hiringOrganization, jobLocation with postalCode (44000 Islamabad, 75600 Karachi, 54000 Lahore), baseSalary if salary visible, validThrough if deadline visible. (3) @type=FAQPage with mainEntity array using the EXACT SAME questions written in the article FAQs section above — copy verbatim, do NOT invent. Start JSON with { end with }. Use marker SCHEMA_JSON.
+                 8. SCHEMA: Generate a SINGLE completely valid JSON object. Output RAW JSON ONLY (no script tags, no markdown fences, no extra text). Structure it as ONE root @graph array with THREE separate objects: (1) @type=NewsArticle — REQUIRED: headline (exact job title), image (use "https://jobspic.com/images/og-default.jpg" as placeholder), datePublished MUST be "${new Date().toISOString()}" (full ISO 8601 with timezone Z), dateModified MUST be "${new Date().toISOString()}", author (@type=Organization, name=JobsPic, url="https://jobspic.com"), mainEntityOfPage pointing to @id "#jobposting". (2) @type=JobPosting with @id="#jobposting" — REQUIRED FIELDS: title, description (2-3 sentence summary), datePosted MUST be "${new Date().toISOString()}", employmentType (FULL_TIME or CONTRACTOR inferred from ad), hiringOrganization (@type=Organization with name and sameAs official website URL if visible), jobLocation (@type=Place, address with streetAddress (use organization name or "Main Office"), addressLocality, addressRegion, postalCode (54000 Lahore/44000 Islamabad/75600 Karachi/60000 Multan), addressCountry=PK), baseSalary if visible, validThrough in full ISO format "YYYY-MM-DDT00:00:00+05:00" if deadline visible. (3) @type=FAQPage with mainEntity array using the EXACT SAME questions written in the article FAQs above — copy verbatim, do NOT invent. Start JSON with { end with }. Use marker SCHEMA_JSON.
                 Format: Clear markers WATERMARK_STATUS, OCR_TEXT, ARTICLE_MARKDOWN, LSI_TAGS_DATA, ADVANCED_SEO_DATA, and SCHEMA_JSON.`;
 
                 const response = await apiCall(prompt, base64Image);
@@ -957,7 +957,27 @@
                         .replace(/<\/script>/gi, "")
                         .replace(/^[\s:\n]+/, "")
                         .trim();
-                    try { JSON.parse(cleanJson); schemaValid = true; }
+                    try {
+                        const schemaObj = JSON.parse(cleanJson);
+                        // Fix bare date strings (YYYY-MM-DD) -> full ISO with timezone
+                        const fixDates = (obj) => {
+                            if (!obj || typeof obj !== "object") return obj;
+                            const dateFields = ["datePublished","dateModified","datePosted","validThrough"];
+                            for (const k of Object.keys(obj)) {
+                                if (dateFields.includes(k) && typeof obj[k] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(obj[k])) {
+                                    obj[k] = obj[k] + "T00:00:00+05:00";
+                                } else if (typeof obj[k] === "object") {
+                                    fixDates(obj[k]);
+                                } else if (Array.isArray(obj[k])) {
+                                    obj[k].forEach(fixDates);
+                                }
+                            }
+                            return obj;
+                        };
+                        fixDates(schemaObj);
+                        cleanJson = JSON.stringify(schemaObj, null, 2);
+                        schemaValid = true;
+                    }
                     catch (e) { schemaValid = false; console.warn("Schema invalid:", e.message); }
 
                     if (schemaValid) {
