@@ -597,6 +597,34 @@
                         </label>
                     </div>
                 </div>
+                <!-- ── AI Thumbnail / Manual Image ─────────────────────────────────────── -->
+                <details class="mb-8" open>
+                    <summary class="cursor-pointer text-xs font-black text-slate-500 uppercase tracking-widest bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 hover:bg-slate-100 transition-all select-none">ðŸ–¼ï¸  Post Thumbnail / Cover Image</summary>
+                    <div class="mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            
+                            <!-- Left: Controls -->
+                            <div class="flex-1 space-y-4">
+                                <p class="text-sm text-slate-600 mb-2">Generate an AI background based on the Job Title, or upload a manual image. It will be automatically optimized to WebP before upload.</p>
+                                
+                                <button type="button" onclick="generateAiThumb()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                                    <span id="aiThumbBtnTxt">Generate AI Thumbnail</span>
+                                </button>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1 mt-3">Upload Manual Thumbnail</label>
+                                    <input type="file" id="manualThumb" accept="image/*" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-white cursor-pointer" onchange="handleManualThumb(event)">
+                                </div>
+                            </div>
+
+                            <!-- Right: Preview -->
+                            <div class="w-full md:w-1/2 flex items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-inner min-h-[160px] overflow-hidden relative">
+                                <img id="thumbPreviewImg" class="hidden object-cover w-full h-full absolute inset-0 text-slate-400" alt="Preview">
+                                <span id="thumbPreviewEmpty" class="text-sm text-slate-400 font-bold">&#x1F4F7; No Image Selected</span>
+                            </div>
+                        </div>
+                    </div>
+                </details>
 
                 <!-- â”€â”€ Manual Override Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
                 <details class="mb-8">
@@ -1630,6 +1658,79 @@ ${(articleText||"").substring(0, 2000)}`;
             }
         }
 
+        // ── Thumbnail / Cover Image Processing ───────────────────────────────────────
+        let processedThumbnailBase64 = null;
+
+        async function optimizeAndPreviewThumb(imgObj) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                // Standard OG image size
+                canvas.width = 1200;
+                canvas.height = 630;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw and cover
+                const scale = Math.max(canvas.width / imgObj.width, canvas.height / imgObj.height);
+                const x = (canvas.width / 2) - (imgObj.width / 2) * scale;
+                const y = (canvas.height / 2) - (imgObj.height / 2) * scale;
+                ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
+
+                // Export to WebP 80%
+                const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+                
+                // Show in UI
+                const previewImg = document.getElementById('thumbPreviewImg');
+                const previewEmpty = document.getElementById('thumbPreviewEmpty');
+                previewImg.src = webpDataUrl;
+                previewImg.classList.remove('hidden');
+                previewEmpty.classList.add('hidden');
+                
+                processedThumbnailBase64 = webpDataUrl;
+                resolve(webpDataUrl);
+            });
+        }
+
+        async function generateAiThumb() {
+            const btnTxt = document.getElementById('aiThumbBtnTxt');
+            const title = document.getElementById('postTitle').value.trim() || 'Professional Job';
+            const dept = document.getElementById('postDepartment').value.trim() || '';
+            const prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
+            
+            btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating...';
+            
+            try {
+                // Fetch direct image
+                const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true`;
+                const response = await fetch(aiUrl);
+                const blob = await response.blob();
+                
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = async () => {
+                    await optimizeAndPreviewThumb(img);
+                    btnTxt.innerText = 'âœ… AI Thumbnail Ready';
+                    setTimeout(() => btnTxt.innerText = 'Regenerate AI Thumbnail', 3000);
+                };
+                img.src = URL.createObjectURL(blob);
+            } catch (e) {
+                alert('AI Generate failed: ' + e.message);
+                btnTxt.innerText = 'Generate AI Thumbnail';
+            }
+        }
+
+        function handleManualThumb(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => optimizeAndPreviewThumb(img);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         // â”€â”€ Final: POST JOB to Laravel /api/post-job â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         async function postJobToDatabase() {
             const categoryId = document.getElementById('resolvedCategoryId').value;
@@ -1664,6 +1765,7 @@ ${(articleText||"").substring(0, 2000)}`;
                 is_featured:          gc('flagFeatured'),
                 is_premium:           gc('flagPremium'),
                 schema_json:          currentSchemaJson || null,
+                thumbnail_base64:     processedThumbnailBase64 || null,
                 meta_description:     (document.getElementById('postMetaDesc')?.value || '').trim().substring(0, 160) || null,
                 meta_keywords:        Array.from(document.getElementById('tagsContent')?.querySelectorAll('span') || []).map(s => s.innerText).join(', ').substring(0, 500) || null,
                 deadline:             gv('postDeadline'),

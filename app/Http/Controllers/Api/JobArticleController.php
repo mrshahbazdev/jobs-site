@@ -168,6 +168,7 @@ class JobArticleController extends Controller
             // ── SEO ──────────────────────────────────────────────────────────
             'meta_description'     => 'nullable|string|max:160',
             'meta_keywords'        => 'nullable|string',
+            'thumbnail_base64'     => 'nullable|string',
         ]);
 
         // ── Unique slug ──────────────────────────────────────────────────────
@@ -240,6 +241,32 @@ class JobArticleController extends Controller
             'meta_description'     => $request->meta_description,
             'meta_keywords'        => $request->meta_keywords,
         ]);
+
+        if ($request->filled('thumbnail_base64')) {
+            try {
+                $base64Image = $request->thumbnail_base64;
+                if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                    $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                    $ext = strtolower($type[1]);
+                    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $ext = 'webp';
+                    }
+                } else {
+                    $ext = 'webp';
+                }
+                
+                $imgData = base64_decode($base64Image);
+                $filename = time() . '_' . $slug . '.' . $ext;
+                $savePath = 'job-listings/' . $filename;
+                
+                if (\Illuminate\Support\Facades\Storage::disk('public')->put($savePath, $imgData)) {
+                    $job->image_path = $savePath;
+                    $job->save();
+                }
+            } catch (\Exception $e) {
+                // Ignore image save error
+            }
+        }
 
         if ($job->is_active) {
             \App\Services\GoogleIndexingService::notify(url('/jobs/' . $job->slug));
