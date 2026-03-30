@@ -260,7 +260,7 @@ class JobArticleController extends Controller
                 $savePath = 'job-listings/' . $filename;
                 
                 if (\Illuminate\Support\Facades\Storage::disk('public')->put($savePath, $imgData)) {
-                    $job->image_path = $savePath;
+                    $job->company_logo = $savePath; // Map thumbnail to correct frontend column
                     $job->save();
                 }
             } catch (\Exception $e) {
