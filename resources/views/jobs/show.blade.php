@@ -48,7 +48,7 @@
             <!-- Job Header Image/Banner -->
             <div class="w-full h-56 md:h-80 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 relative overflow-hidden">
                 @if($job->company_logo)
-                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} job vacancies at {{ $job->company_name ?? $job->department }} in {{ $job->city->name }} - Apply Now" class="w-full h-full object-cover" fetchpriority="high" decoding="async">
+                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} job vacancies at {{ $job->company_name ?? $job->department }} in {{ $job->city->name }} - Apply Now" class="w-full h-full object-cover" fetchpriority="high" decoding="async" width="960" height="504">
                 @else
                     <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">work</span>
                 @endif

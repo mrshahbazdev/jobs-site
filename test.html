@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1680,9 +1680,9 @@ ${(articleText||"").substring(0, 2000)}`;
         async function optimizeAndPreviewThumb(imgObj) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
-                // Standard OG image size
-                canvas.width = 1200;
-                canvas.height = 630;
+                // Standard OG image size - balanced for quality and speed (960x504)
+                canvas.width = 960;
+                canvas.height = 504;
                 const ctx = canvas.getContext('2d');
                 
                 // Draw and cover
@@ -1691,8 +1691,8 @@ ${(articleText||"").substring(0, 2000)}`;
                 const y = (canvas.height / 2) - (imgObj.height / 2) * scale;
                 ctx.drawImage(imgObj, x, y, imgObj.width * scale, imgObj.height * scale);
 
-                // Export to WebP 80%
-                const webpDataUrl = canvas.toDataURL('image/webp', 0.8);
+                // Export to WebP 75% for 17KiB+ savings
+                const webpDataUrl = canvas.toDataURL('image/webp', 0.75);
                 
                 // Show in UI
                 const previewImg = document.getElementById('thumbPreviewImg');
