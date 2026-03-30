@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1717,55 +1717,68 @@ ${(articleText||"").substring(0, 2000)}`;
             
             btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating with Gemini...';
             
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-                
-                const partsArray = [{ text: prompt }];
-                if (currentBase64Image && currentBase64Image.includes(',')) {
-                    partsArray.push({
-                        inlineData: { 
-                            mimeType: "image/png", 
-                            data: currentBase64Image.split(',')[1] 
-                        }
-                    });
-                }
+            let success = false;
+            let retryCount = 0;
 
-                const payload = {
-                    contents: [{ parts: partsArray }],
-                    generationConfig: { responseModalities: ['IMAGE'] }
-                };
+            while (!success) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+                    
+                    const partsArray = [{ text: prompt }];
+                    if (currentBase64Image && currentBase64Image.includes(',')) {
+                        partsArray.push({
+                            inlineData: { 
+                                mimeType: "image/png", 
+                                data: currentBase64Image.split(',')[1] 
+                            }
+                        });
+                    }
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`API Error (${response.status}): ` + errText);
-                }
-
-                const data = await response.json();
-                
-                // Extract generated base64 image
-                const base64Image = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
-                
-                if (base64Image) {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.onload = async () => {
-                        await optimizeAndPreviewThumb(img);
-                        btnTxt.innerText = 'âœ… AI Thumbnail Ready';
-                        setTimeout(() => btnTxt.innerText = 'Regenerate AI Thumbnail', 3000);
+                    const payload = {
+                        contents: [{ parts: partsArray }],
+                        generationConfig: { responseModalities: ['IMAGE'] }
                     };
-                    img.src = `data:image/png;base64,${base64Image}`;
-                } else {
-                    throw new Error("Gemini failed to generate an image or the key lacks support.");
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 429 || response.status === 500) {
+                            retryCount++;
+                            btnTxt.innerHTML = `<span class="loader" style="border-width:2px;width:14px;height:14px;border-color:#fff3;border-top-color:#fff;display:inline-block;"></span> Retrying (${retryCount})...`;
+                            await new Promise(r => setTimeout(r, 2000));
+                            continue; // Retry loop
+                        }
+                        const errText = await response.text();
+                        throw new Error(`API Error (${response.status}): ` + errText);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Extract generated base64 image
+                    const base64Image = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                    
+                    if (base64Image) {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = async () => {
+                            await optimizeAndPreviewThumb(img);
+                            btnTxt.innerText = 'âœ… AI Thumbnail Ready';
+                            setTimeout(() => btnTxt.innerText = 'Regenerate AI Thumbnail', 3000);
+                        };
+                        img.src = `data:image/png;base64,${base64Image}`;
+                        success = true; // Break loop
+                    } else {
+                        throw new Error("Gemini failed to generate an image or the key lacks support.");
+                    }
+                } catch (e) {
+                    alert('Gemini Image Generate failed: ' + e.message);
+                    btnTxt.innerText = 'Generate AI Thumbnail';
+                    break;
                 }
-            } catch (e) {
-                alert('Gemini Image Generate failed: ' + e.message);
-                btnTxt.innerText = 'Generate AI Thumbnail';
             }
         }
 
