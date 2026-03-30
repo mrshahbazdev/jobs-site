@@ -7,7 +7,7 @@
         <link rel="amphtml" href="{{ route('jobs.amp', $job->slug) }}">
         
         @if($job->company_logo)
-            <link rel="preload" as="image" href="{{ asset('storage/'.$job->company_logo) }}" fetchpriority="high">
+            <link rel="preload" as="image" href="{{ secure_asset('storage/'.$job->company_logo) }}" fetchpriority="high">
         @endif
         
         <script type="application/ld+json">
@@ -48,7 +48,7 @@
             <!-- Job Header Image/Banner -->
             <div class="w-full h-56 md:h-80 bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 relative overflow-hidden">
                 @if($job->company_logo)
-                    <img src="{{ asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} job vacancies at {{ $job->company_name ?? $job->department }} in {{ $job->city->name }} - Apply Now" class="w-full h-full object-cover" fetchpriority="high" decoding="async" width="960" height="504">
+                    <img src="{{ secure_asset('storage/'.$job->company_logo) }}" alt="{{ $job->title }} job vacancies - Apply Now" class="w-full h-full object-cover" fetchpriority="high" decoding="async" width="960" height="504" loading="eager">
                 @else
                     <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">work</span>
                 @endif
@@ -138,7 +138,7 @@
                         <p class="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-4">Share this job with friends</p>
                         <div class="flex flex-wrap gap-3">
                             <!-- WhatsApp Share -->
-                            <a href="https://wa.me/?text={{ urlencode($job->title . ' - ' . url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#128C7E] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#075e54] transition-all text-sm">
+                            <a href="https://wa.me/?text={{ urlencode($job->title . ' - ' . url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#075E54] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#064e46] transition-all text-sm">
                                 <span class="material-symbols-outlined text-sm">share</span> WhatsApp
                             </a>
                             <!-- Facebook -->
@@ -246,7 +246,7 @@
 
         <!-- Sidebar -->
         <aside class="w-full lg:w-1/3 flex flex-col gap-6 no-print">
-            <div class="bg-gradient-to-br from-[#128C7E] to-[#1a9548] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="bg-gradient-to-br from-[#075E54] to-[#128C7E] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                 <div class="relative z-10">
                     <h3 class="text-xl font-black mb-2">Join Our WhatsApp</h3>
                     <p class="text-white/90 text-sm mb-6 leading-relaxed">Stay updated with the latest job alerts in your city!</p>

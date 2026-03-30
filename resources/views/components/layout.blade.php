@@ -43,11 +43,11 @@
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
     </noscript>
 
+    @stack('extra_head')
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
-    @stack('extra_head')
     {!! $settings['header_tags'] ?? '' !!}
 </head>
 <body class="bg-background-light text-slate-900 font-display transition-colors duration-300">
