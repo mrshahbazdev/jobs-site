@@ -1717,9 +1717,21 @@ ${(articleText||"").substring(0, 2000)}`;
             
             btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating with Gemini...';
             
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+                
+                const partsArray = [{ text: prompt }];
+                if (currentBase64Image && currentBase64Image.includes(',')) {
+                    partsArray.push({
+                        inlineData: { 
+                            mimeType: "image/png", 
+                            data: currentBase64Image.split(',')[1] 
+                        }
+                    });
+                }
+
                 const payload = {
-                    contents: [{ parts: parts }],
+                    contents: [{ parts: partsArray }],
                     generationConfig: { responseModalities: ['IMAGE'] }
                 };
 
@@ -1751,8 +1763,11 @@ ${(articleText||"").substring(0, 2000)}`;
                 } else {
                     throw new Error("Gemini failed to generate an image or the key lacks support.");
                 }
+            } catch (e) {
+                alert('Gemini Image Generate failed: ' + e.message);
+                btnTxt.innerText = 'Generate AI Thumbnail';
             }
-             
+        }
 
         function handleManualThumb(event) {
             const file = event.target.files[0];
