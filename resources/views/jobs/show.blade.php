@@ -142,11 +142,11 @@
                                 <span class="material-symbols-outlined text-sm">share</span> WhatsApp
                             </a>
                             <!-- Facebook -->
-                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#1877F2] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:opacity-90 transition-all text-sm">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#0d65d9] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#0b54b5] transition-all text-sm">
                                 <span class="material-symbols-outlined text-sm">share</span> Facebook
                             </a>
                             <!-- LinkedIn -->
-                            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#0A66C2] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:opacity-90 transition-all text-sm">
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#08427b] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#06325d] transition-all text-sm">
                                 <span class="material-symbols-outlined text-sm">share</span> LinkedIn
                             </a>
                             
