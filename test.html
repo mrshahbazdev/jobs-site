@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1708,12 +1708,7 @@ ${(articleText||"").substring(0, 2000)}`;
 
         async function generateAiThumb() {
             const btnTxt = document.getElementById('aiThumbBtnTxt');
-            const apiKey = localStorage.getItem('geminiApiKey');
-            
-            if (!apiKey) {
-                alert('Gemini API Key missing! Oopar settings mein API key enter karein.');
-                return;
-            }
+            const apiKey = "";
 
             const title = (document.getElementById('postTitle').value || 'Professional').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
             const dept = (document.getElementById('postDepartment').value || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
@@ -1722,12 +1717,10 @@ ${(articleText||"").substring(0, 2000)}`;
             
             btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating with Gemini...';
             
-            try {
-                // Using the requested Imagen API logic
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 const payload = {
-                    instances: [{ prompt: prompt }],
-                    parameters: { sampleCount: 1 }
+                    contents: [{ parts: parts }],
+                    generationConfig: { responseModalities: ['IMAGE'] }
                 };
 
                 const response = await fetch(url, {
@@ -1743,9 +1736,10 @@ ${(articleText||"").substring(0, 2000)}`;
 
                 const data = await response.json();
                 
-                if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
-                    const base64Image = data.predictions[0].bytesBase64Encoded;
-                    
+                // Extract generated base64 image
+                const base64Image = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                
+                if (base64Image) {
                     const img = new Image();
                     img.crossOrigin = "anonymous";
                     img.onload = async () => {
@@ -1755,7 +1749,7 @@ ${(articleText||"").substring(0, 2000)}`;
                     };
                     img.src = `data:image/png;base64,${base64Image}`;
                 } else {
-                    throw new Error("Model failed to generate image. No base64 data returned.");
+                    throw new Error("Gemini failed to generate an image or the key lacks support.");
                 }
             } catch (e) {
                 alert('Gemini Image Generate failed: ' + e.message);
