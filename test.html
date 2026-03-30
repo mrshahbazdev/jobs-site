@@ -707,6 +707,19 @@
 </div>
 
     <script>
+        // Custom Alert to bypass "allow-modals" block in sandboxed WebViews
+        window.alert = function(msg) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#ef4444;color:white;padding:12px 24px;border-radius:12px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.2);z-index:9999;font-weight:bold;font-size:14px;max-width:90vw;text-align:center;transition:all 0.3s ease;opacity:0;';
+            toast.innerHTML = 'âš ï¸  ' + msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.opacity = '1', 10);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 6000);
+        };
+
         const apiKey = "";
         const processBtn = document.getElementById('processBtn');
         const btnText = document.getElementById('btnText');
@@ -1695,38 +1708,57 @@ ${(articleText||"").substring(0, 2000)}`;
 
         async function generateAiThumb() {
             const btnTxt = document.getElementById('aiThumbBtnTxt');
+            const apiKey = localStorage.getItem('geminiApiKey');
+            
+            if (!apiKey) {
+                alert('Gemini API Key missing! Oopar settings mein API key enter karein.');
+                return;
+            }
+
             const title = (document.getElementById('postTitle').value || 'Professional').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
             const dept = (document.getElementById('postDepartment').value || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
             
-            // Sanitized prompt to prevent 500 server errors
-            let prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
+            const prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
             
-            btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating...';
+            btnTxt.innerHTML = '<span class="loader" style="border-color:#fff3;border-top-color:#fff;border-width:2px;width:14px;height:14px;display:inline-block;"></span> Generating with Gemini...';
             
             try {
-                // Fetch direct image
-                const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true`;
-                let response = await fetch(aiUrl);
-                
-                // Fallback if the specific prompt causes a backend 500 error
+                // Using the requested Imagen API logic
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+                const payload = {
+                    instances: [{ prompt: prompt }],
+                    parameters: { sampleCount: 1 }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
                 if (!response.ok) {
-                    const fallbackPrompt = `clean modern corporate office desk background, 8k, photorealistic, without text`;
-                    const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fallbackPrompt)}?width=1200&height=630&nologo=true`;
-                    response = await fetch(fallbackUrl);
-                    if (!response.ok) throw new Error("AI Image Server Busy (500)");
+                    const errText = await response.text();
+                    throw new Error(`API Error (${response.status}): ` + errText);
                 }
 
-                const blob = await response.blob();
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.onload = async () => {
-                    await optimizeAndPreviewThumb(img);
-                    btnTxt.innerText = 'âœ… AI Thumbnail Ready';
-                    setTimeout(() => btnTxt.innerText = 'Regenerate AI Thumbnail', 3000);
-                };
-                img.src = URL.createObjectURL(blob);
+                const data = await response.json();
+                
+                if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
+                    const base64Image = data.predictions[0].bytesBase64Encoded;
+                    
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = async () => {
+                        await optimizeAndPreviewThumb(img);
+                        btnTxt.innerText = 'âœ… AI Thumbnail Ready';
+                        setTimeout(() => btnTxt.innerText = 'Regenerate AI Thumbnail', 3000);
+                    };
+                    img.src = `data:image/png;base64,${base64Image}`;
+                } else {
+                    throw new Error("Model failed to generate image. No base64 data returned.");
+                }
             } catch (e) {
-                alert('AI Generate failed: ' + e.message + '. Please upload manual image or retry.');
+                alert('Gemini Image Generate failed: ' + e.message);
                 btnTxt.innerText = 'Generate AI Thumbnail';
             }
         }
