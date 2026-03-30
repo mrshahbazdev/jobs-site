@@ -1329,6 +1329,9 @@ ${(articleText||"").substring(0, 2000)}`;
             await loadGroups();
             await loadAllCategoriesAndCities();
 
+            // Auto-generate Thumbnail using newly populated Title & Department
+            await generateAiThumb();
+
             loader.classList.add('hidden');
         }
 
