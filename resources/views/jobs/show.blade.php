@@ -135,10 +135,10 @@
                         {!! $job->description_html !!}
                     </div>
                     <div class="mt-12 mb-8 no-print pt-8 border-t border-slate-100 dark:border-slate-800">
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Share this job with friends</p>
+                        <p class="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-4">Share this job with friends</p>
                         <div class="flex flex-wrap gap-3">
                             <!-- WhatsApp Share -->
-                            <a href="https://wa.me/?text={{ urlencode($job->title . ' - ' . url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:opacity-90 transition-all text-sm">
+                            <a href="https://wa.me/?text={{ urlencode($job->title . ' - ' . url()->current()) }}" target="_blank" class="flex items-center gap-2 bg-[#128C7E] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#075e54] transition-all text-sm">
                                 <span class="material-symbols-outlined text-sm">share</span> WhatsApp
                             </a>
                             <!-- Facebook -->
@@ -250,7 +250,7 @@
                 <div class="relative z-10">
                     <h3 class="text-xl font-black mb-2">Join Our WhatsApp</h3>
                     <p class="text-white/90 text-sm mb-6 leading-relaxed">Stay updated with the latest job alerts in your city!</p>
-                    <a href="https://chat.whatsapp.com/invite/YOUR_LINK" target="_blank" class="block w-full text-center bg-white text-[#128C7E] font-bold py-3 rounded-xl shadow-md hover:bg-slate-50 transition-colors">
+                    <a href="https://chat.whatsapp.com/invite/YOUR_LINK" target="_blank" class="block w-full text-center bg-white text-[#075E54] font-bold py-3 rounded-xl shadow-md hover:bg-slate-50 transition-colors">
                         Join Community
                     </a>
                 </div>
@@ -269,7 +269,7 @@
                         </div>
                         <div class="flex flex-col">
                             <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-2 leading-snug">{{ $rJob->title }}</h4>
-                            <span class="text-[10px] text-slate-400 mt-1 font-medium">{{ $rJob->city->name }} • {{ $rJob->created_at->diffForHumans() }}</span>
+                            <span class="text-[10px] text-slate-600 dark:text-slate-400 mt-1 font-semibold">{{ $rJob->city->name }} • {{ $rJob->created_at->diffForHumans() }}</span>
                         </div>
                     </a>
                     @empty

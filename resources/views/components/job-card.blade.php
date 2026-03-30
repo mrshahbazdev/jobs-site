@@ -21,7 +21,7 @@
                 <h2 class="font-bold text-slate-900 group-hover:text-primary dark:text-white leading-tight pr-4">
                     <a href="{{ url('/jobs/'.$job->slug) }}">{{ $job->title }}</a>
                 </h2>
-                <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1">
+                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
                     {{ $job->company_name ?? $job->category?->name }} • {{ $job->city?->name }}
                 </p>
             </div>
