@@ -830,6 +830,7 @@
                    - MINI MCQ TEST: At the end of the article, create an H3 section "ðŸ§  Mini Syllabus Quiz" with 10 practical multiple-choice questions based on the expected syllabus test. Provide the correct answer below them.
                    - SEO: Use powerful H2/H3s naturally including the year ${currentYear} in Headers. Use bullet points at least twice. Place Focus Keyword in the first and last 100 words.
                    - ${toneStyle}
+                   - STRICT FORMATTING RULES: NEVER use standalone asterisks (*) as bullet points or decoration. NEVER start a sentence with a colon (:). Do NOT use ** around words unless they are genuinely bold terms. Use clean paragraphs, numbered lists, or HTML lists instead. Avoid markdown symbols in prose text. Write naturally as a human journalist would.
                    - End with a professional conclusion.
                 5. FAQs (PAA): Include 10-15 highly specific Google "People Also Ask" (PAA) format FAQs related to this specific job/topic.
                 6. LSI_TAGS_AND_CATEGORIES: Generate a comma-separated list of 15-20 LSI keywords AND suggest 3-4 Custom Database Categories (like 'Federal Govt Jobs', 'Police Department'). Use marker LSI_TAGS_DATA.
@@ -890,11 +891,23 @@
 
                 // Populate OCR, Tags, and Advanced SEO
                 ocrContent.innerText = ocrTxt;
-                document.getElementById('tagsContent').innerText = tagsTxt;
-                document.getElementById('advancedSeoContent').innerText = advSeoTxt;
+                // Render LSI tags as clickable chips
+                const tagsEl = document.getElementById("tagsContent");
+                const tagChips = tagsTxt.split(",").map(t => t.trim()).filter(Boolean)
+                    .map(t => `<span style="display:inline-block;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:999px;padding:3px 12px;margin:3px;font-size:12px;font-weight:700;cursor:pointer;" onclick="this.style.background=this.style.background==='#0369a1'?'#e0f2fe':'#0369a1';this.style.color=this.style.color==='#fff'?'#0369a1':'#fff'">${t}</span>`).join("");
+                tagsEl.innerHTML = tagChips || tagsTxt;
+
 
                 // Format Markdown to rich HTML
-                let htmlFormat = articleTxt
+                // Clean stray markdown symbols before converting
+                const cleanedArticle = articleTxt
+                    .replace(/^\s*\*\s*$/gm, "")            // lone asterisk lines
+                    .replace(/^\s*:\s*$/gm, "")             // lone colon lines
+                    .replace(/^(\s*)\*(?!\*)\s+/gm, "$1")   // single * bullet (not **bold**) - will be handled as -
+                    .replace(/(^|[\s>])\*(?!\*|\s*\*)(.*?)\*(?!\*)/gm, "$1$2")  // stray *italics* without semantic need
+                    .replace(/:\s*\n/gm, "\n")              // trailing colons before newline
+                    .replace(/^:\s+/gm, "");               // lines starting with colon
+                let htmlFormat = cleanedArticle
                     // Tables
                     .replace(/^\|([^]+)\|\n\|([-:| ]+)\|\n((\|.+\|\n?)+)/gm, function (match, header, separator, body) {
                         const ths = header.split('|').filter(Boolean).map(t => `<th class="px-5 py-4 bg-sky-50 border-b border-sky-200 font-extrabold text-sky-900 text-left capitalize tracking-wide">${t.trim()}</th>`).join('');
