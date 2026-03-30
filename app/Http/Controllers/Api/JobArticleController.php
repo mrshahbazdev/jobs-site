@@ -259,7 +259,8 @@ class JobArticleController extends Controller
                 $filename = time() . '_' . $slug . '.' . $ext;
                 $savePath = 'job-listings/' . $filename;
                 
-                if (\Illuminate\Support\Facades\Storage::disk('public')->put($savePath, $imgData)) {
+                // Save with explicitly public visibility to prevent 403 Forbidden on web servers
+                if (\Illuminate\Support\Facades\Storage::disk('public')->put($savePath, $imgData, 'public')) {
                     $job->company_logo = $savePath; // Map thumbnail to correct frontend column
                     $job->save();
                 }
