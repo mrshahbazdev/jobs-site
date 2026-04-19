@@ -63,21 +63,21 @@
                 <p class="mt-4 text-xs text-slate-400 group-hover:text-primary">View saved jobs →</p>
             </a>
 
-            <div class="rounded-xl bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm ring-1 ring-slate-200">
+            <a href="{{ route('cv.index') }}" class="group rounded-xl bg-gradient-to-br from-violet-50 to-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:ring-violet-400">
                 <div class="flex items-center gap-3">
-                    <div class="rounded-lg bg-emerald-100 p-2 text-emerald-700">
+                    <div class="rounded-lg bg-violet-100 p-2 text-violet-700">
                         <span class="material-symbols-outlined text-2xl" aria-hidden="true">description</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-black text-slate-900">0</p>
-                        <p class="text-sm text-slate-500">Applications</p>
+                        <p class="text-2xl font-black text-slate-900">{{ $cvCount }}</p>
+                        <p class="text-sm text-slate-500">My CVs</p>
                     </div>
                 </div>
-                <p class="mt-4 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                    <span class="material-symbols-outlined text-sm" aria-hidden="true">hourglass_top</span>
-                    Coming soon
+                <p class="mt-4 inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800">
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">auto_awesome</span>
+                    {{ $cvCount > 0 ? 'Open builder →' : 'Build with AI →' }}
                 </p>
-            </div>
+            </a>
         </div>
 
         <div class="mt-8">
@@ -95,10 +95,11 @@
                     <span class="material-symbols-outlined text-primary" aria-hidden="true">bookmark</span>
                     Saved jobs
                 </a>
-                <div class="flex items-center gap-3 rounded-lg bg-slate-50 p-4 text-sm font-semibold text-slate-400 ring-1 ring-slate-200">
-                    <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-                    Upload CV (soon)
-                </div>
+                <a href="{{ route('cv.index') }}" class="flex items-center gap-3 rounded-lg bg-white p-4 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:ring-primary">
+                    <span class="material-symbols-outlined text-primary" aria-hidden="true">description</span>
+                    CV Builder
+                    <span class="ml-auto rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-700">AI</span>
+                </a>
             </div>
         </div>
     </main>
