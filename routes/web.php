@@ -23,8 +23,18 @@ Route::get('/categories/{slug}', [JobController::class, 'category'])->name('cate
 Route::get('/cities/{slug}', [JobController::class, 'city'])->name('cities.show');
 Route::get('/search', [JobController::class, 'search'])->name('jobs.search');
 
-// Authentication Helper (Temporary)
-Route::redirect('/login', '/admin/login')->name('login');
+// Seeker auth routes (login, register, password reset, email verify, logout)
+// Admin panel still uses its own /admin/login (Filament).
+require __DIR__.'/auth.php';
+
+// Seeker dashboard + profile (must be verified email to use most features later).
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', \App\Http\Controllers\Seeker\DashboardController::class)->name('dashboard');
+    Route::get('/profile', [\App\Http\Controllers\Seeker\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\Seeker\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\Seeker\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::delete('/profile', [\App\Http\Controllers\Seeker\ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 // Newsletter / Subscribe
 Route::post('/subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe');
