@@ -120,11 +120,16 @@ async function subscribe(extra = {}) {
   const reg = await registerServiceWorker();
   if (!reg) throw new Error('Service worker registration failed.');
 
+  // pushManager.subscribe requires an *active* service worker. register() resolves
+  // before activation, so wait for the ready promise (or synthesise one if the
+  // registration is already active).
+  const activeReg = reg.active ? reg : await navigator.serviceWorker.ready;
+
   const publicKey = await fetchPublicKey();
 
-  let subscription = await reg.pushManager.getSubscription();
+  let subscription = await activeReg.pushManager.getSubscription();
   if (!subscription) {
-    subscription = await reg.pushManager.subscribe({
+    subscription = await activeReg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
