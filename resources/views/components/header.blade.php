@@ -43,6 +43,10 @@
                 </a>
             @endif
 
+            <div class="hidden sm:inline-flex">
+                <x-push-subscribe label="Get Alerts" />
+            </div>
+
             <!-- Hamburger (mobile only) -->
             <button id="mobileMenuBtn" class="md:hidden flex items-center justify-center rounded-lg p-2 text-slate-700 hover:bg-slate-100 transition-colors" aria-label="Open menu">
                 <span class="material-symbols-outlined" aria-hidden="true">menu</span>

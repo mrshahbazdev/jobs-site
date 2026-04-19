@@ -29,6 +29,15 @@ Route::redirect('/login', '/admin/login')->name('login');
 // Newsletter / Subscribe
 Route::post('/subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe');
 
+// Web Push Notifications
+Route::get('/push/public-key', [\App\Http\Controllers\PushController::class, 'publicKey'])->name('push.public_key');
+Route::post('/push/subscribe', [\App\Http\Controllers\PushController::class, 'subscribe'])
+    ->middleware('throttle:20,1')
+    ->name('push.subscribe');
+Route::post('/push/unsubscribe', [\App\Http\Controllers\PushController::class, 'unsubscribe'])
+    ->middleware('throttle:20,1')
+    ->name('push.unsubscribe');
+
 // Bookmark Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
