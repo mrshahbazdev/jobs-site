@@ -8,27 +8,54 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ScrapePakistanJobs implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 600;
-    public $onlyLinks = false;
-    public $imageId = null;
+    public $timeout = 900;
+    public $tries = 1;
 
-    public function __construct($onlyLinks = false, $imageId = null)
+    public bool $onlyLinks;
+    public ?int $imageId;
+    public ?int $limit;
+
+    public function __construct(bool $onlyLinks = false, ?int $imageId = null, ?int $limit = null)
     {
         $this->onlyLinks = $onlyLinks;
         $this->imageId = $imageId;
+        $this->limit = $limit;
     }
 
     public function handle(): void
     {
         $params = [];
-        if ($this->onlyLinks) $params['--only-links'] = true;
-        if ($this->imageId) $params['--image-id'] = $this->imageId;
+        if ($this->onlyLinks) {
+            $params['--only-links'] = true;
+        }
+        if ($this->imageId) {
+            $params['--image-id'] = $this->imageId;
+        }
+        if ($this->limit) {
+            $params['--limit'] = $this->limit;
+        }
 
         Artisan::call('scrape:pakistan-jobs', $params);
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('[ScrapePakistanJobs] queue job failed', [
+            'error' => $exception->getMessage(),
+        ]);
+
+        Cache::put('scraper_progress', [
+            'current' => 0,
+            'total' => 0,
+            'status' => 'error',
+            'message' => 'Job failed: ' . $exception->getMessage(),
+        ], 600);
     }
 }
