@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Latest Govt & Private Jobs in Pakistan - JobsPic')</title>
     <meta name="description" content="@yield('meta_description', 'Find the latest Government, Federal, Police, and Private sector jobs in Pakistan. Daily updated job listings, syllabus, and online apply guides.')">
     <meta name="keywords" content="@yield('meta_keywords', 'jobs in pakistan, govt jobs, private jobs, pakistani jobs')">
