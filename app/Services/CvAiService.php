@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class CvAiService
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
     /**
      * Improve a professional summary. Returns ['summary' => string].
