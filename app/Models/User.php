@@ -61,6 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Bookmark::class);
     }
 
+    public function cvs()
+    {
+        return $this->hasMany(Cv::class)->orderByDesc('updated_at');
+    }
+
     public function bookmarkedJobs()
     {
         return $this->belongsToMany(JobListing::class, 'bookmarks', 'user_id', 'job_listing_id')->withTimestamps();

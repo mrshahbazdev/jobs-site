@@ -34,7 +34,28 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [\App\Http\Controllers\Seeker\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [\App\Http\Controllers\Seeker\ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::delete('/profile', [\App\Http\Controllers\Seeker\ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // CV builder
+    Route::get('/cvs', [\App\Http\Controllers\Seeker\CvController::class, 'index'])->name('cv.index');
+    Route::post('/cvs', [\App\Http\Controllers\Seeker\CvController::class, 'create'])->name('cv.create');
+    Route::get('/cvs/{cv}/edit', [\App\Http\Controllers\Seeker\CvController::class, 'edit'])->name('cv.edit');
+    Route::patch('/cvs/{cv}', [\App\Http\Controllers\Seeker\CvController::class, 'update'])->name('cv.update');
+    Route::delete('/cvs/{cv}', [\App\Http\Controllers\Seeker\CvController::class, 'destroy'])->name('cv.destroy');
+    Route::post('/cvs/{cv}/duplicate', [\App\Http\Controllers\Seeker\CvController::class, 'duplicate'])->name('cv.duplicate');
+    Route::get('/cvs/{cv}/preview', [\App\Http\Controllers\Seeker\CvController::class, 'preview'])->name('cv.preview');
+    Route::get('/cvs/{cv}/download', [\App\Http\Controllers\Seeker\CvController::class, 'download'])->name('cv.download');
+
+    // CV AI endpoints (Gemini)
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/cvs/{cv}/ai/summary', [\App\Http\Controllers\Seeker\CvAiController::class, 'improveSummary'])->name('cv.ai.summary');
+        Route::post('/cvs/{cv}/ai/bullets', [\App\Http\Controllers\Seeker\CvAiController::class, 'generateBullets'])->name('cv.ai.bullets');
+        Route::post('/cvs/{cv}/ai/skills', [\App\Http\Controllers\Seeker\CvAiController::class, 'suggestSkills'])->name('cv.ai.skills');
+        Route::post('/cvs/{cv}/ai/ats', [\App\Http\Controllers\Seeker\CvAiController::class, 'atsScore'])->name('cv.ai.ats');
+    });
 });
+
+// Public CV share (no auth)
+Route::get('/cv/s/{uuid}', [\App\Http\Controllers\Seeker\CvController::class, 'publicShow'])->name('cv.public');
 
 // Newsletter / Subscribe
 Route::post('/subscribe', [SubscriberController::class, 'subscribe'])->name('subscribe');

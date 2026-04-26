@@ -14,6 +14,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         $bookmarkCount = Bookmark::where('user_id', $user->id)->count();
+        $cvCount = $user->cvs()->count();
 
         $user->profile_completion_percent = $user->recomputeProfileCompletion();
         $user->save();
@@ -21,6 +22,7 @@ class DashboardController extends Controller
         return view('seeker.dashboard', [
             'user' => $user,
             'bookmarkCount' => $bookmarkCount,
+            'cvCount' => $cvCount,
         ]);
     }
 }
