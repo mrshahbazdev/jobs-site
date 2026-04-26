@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\CityApiController;
 use App\Http\Controllers\Api\ScraperApiController;
 use App\Http\Controllers\Api\LandingGroupApiController;
+use App\Http\Controllers\Api\JobApiController;
 
 // ── CORS OPTIONS preflight (allows test.html file:// access) ──────────────────
 Route::options('/{any}', function () {
@@ -16,7 +17,7 @@ Route::options('/{any}', function () {
         ->header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, X-Requested-With');
 })->where('any', '.*');
 
-// ── Core API Routes ──────────────────────────────────────────────────────────
+// ── Core API Routes (legacy — kept for backward compatibility) ───────────────
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -25,8 +26,22 @@ Route::get('/pending-images', [JobArticleController::class, 'pendingImages']);
 Route::get('/internal-links', [JobArticleController::class, 'internalLinks']);
 Route::post('/submit-article', [JobArticleController::class, 'submitArticle']);
 Route::post('/post-job', [JobArticleController::class, 'postJob']); // ← test.html se direct post
-Route::get('/jobs', [JobArticleController::class, 'jobsList']);
+Route::get('/jobs', [JobArticleController::class, 'jobsList']);       // legacy (basic list)
 Route::post('/skip-image', [JobArticleController::class, 'skipImage']);
+
+// ── Enhanced Job API ─────────────────────────────────────────────────────────
+// Advanced listing with pagination, filters, search, sorting
+Route::get('/v2/jobs',                   [JobApiController::class, 'index']);
+Route::get('/v2/jobs/stats',             [JobApiController::class, 'stats']);
+Route::get('/v2/jobs/{idOrSlug}',        [JobApiController::class, 'show']);
+Route::post('/v2/jobs',                  [JobApiController::class, 'store']);
+Route::put('/v2/jobs/{id}',              [JobApiController::class, 'update']);
+Route::delete('/v2/jobs/{id}',           [JobApiController::class, 'destroy']);
+Route::post('/v2/jobs/{id}/toggle',      [JobApiController::class, 'toggleStatus']);
+Route::post('/v2/jobs/{id}/duplicate',   [JobApiController::class, 'duplicate']);
+Route::post('/v2/jobs/bulk',             [JobApiController::class, 'bulkStore']);
+Route::post('/v2/jobs/bulk-status',      [JobApiController::class, 'bulkUpdateStatus']);
+Route::delete('/v2/jobs/bulk',           [JobApiController::class, 'bulkDelete']);
 
 // Category APIs
 Route::get('/categories', [CategoryApiController::class, 'index']);
