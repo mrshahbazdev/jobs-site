@@ -4052,6 +4052,15 @@ ${(articleText || "").substring(0, 2000)}`;
           document.getElementById('postSuccessBox').classList.remove('hidden');
           await onJobPublished(jobId);
           resetPostForm();
+        } else if (res.status === 409) {
+          showQueueProgress(`⚠️ Duplicate: "${title}" pehle se exist karti hai — skipping...`);
+          if (currentQueueItem && queueStarted) {
+            await skipQueueItem();
+            resetPostForm();
+          } else {
+            document.getElementById('postErrorMsg').textContent = 'Duplicate: is title ki job pehle se exist karti hai.';
+            document.getElementById('postErrorBox').classList.remove('hidden');
+          }
         } else {
           const errMsg = data.message || JSON.stringify(data.errors || data);
           document.getElementById('postErrorMsg').textContent = 'Error: ' + errMsg;
@@ -4219,7 +4228,7 @@ ${(articleText || "").substring(0, 2000)}`;
             if (data.status === 'completed' || data.status === 'error') {
               clearInterval(interval);
               showQueueProgress(data.status === 'completed'
-                ? `✅ Scrape complete! ${data.current}/${data.total} jobs found.`
+                ? `✅ Scrape complete! New: ${data.current}, Skipped: ${data.skipped || 0}, Total: ${data.total}`
                 : `❌ Scrape error: ${data.message || 'Unknown'}`);
               await refreshQueue();
             } else if (data.status === 'running') {

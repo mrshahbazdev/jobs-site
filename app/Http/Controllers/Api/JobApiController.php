@@ -148,6 +148,16 @@ class JobApiController extends Controller
 
     public function store(StoreJobRequest $request): JsonResponse
     {
+        $title = $request->validated()['title'];
+        $duplicate = JobListing::where('title', $title)->first();
+        if ($duplicate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Duplicate job: is title ki job pehle se exist karti hai.',
+                'existing_job' => new JobListingResource($duplicate->load(['category', 'city'])),
+            ], 409);
+        }
+
         $job = $this->createJobFromRequest($request);
 
         return response()->json([
