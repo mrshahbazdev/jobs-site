@@ -1686,6 +1686,13 @@
     .queue-btn.skip { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
     .queue-btn.refresh { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
     .queue-btn.scrape { background: linear-gradient(135deg, #ec4899, #db2777); color: #fff; }
+    .queue-btn.start {
+      background: linear-gradient(135deg, #10b981, #047857);
+      color: #fff; font-size: 1rem; padding: .7rem 2rem;
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: .5rem;
+      letter-spacing: .03em;
+    }
+    .queue-running-controls { display: none; }
     .queue-empty {
       text-align: center; padding: 1rem; color: var(--muted); font-size: .85rem;
     }
@@ -1824,8 +1831,12 @@
         <div class="queue-current hidden" id="queueCurrent">
           <div class="queue-current-title" id="qCurrentTitle"></div>
           <div class="queue-current-meta" id="qCurrentMeta"></div>
-          <div class="queue-actions">
-            <button class="queue-btn load" onclick="loadQueueItem()">📥 Load & Process</button>
+          <!-- START BUTTON (shown first time) -->
+          <div class="queue-actions" id="queueStartActions">
+            <button class="queue-btn start" onclick="startQueueProcessing()">▶️ Start — Pehli Pending Job Load Karo</button>
+          </div>
+          <!-- RUNNING CONTROLS (shown after start) -->
+          <div class="queue-actions queue-running-controls" id="queueRunningControls">
             <button class="queue-btn skip" onclick="skipQueueItem()">⏭️ Skip</button>
             <button class="queue-btn refresh" onclick="refreshQueue()">🔄 Refresh</button>
             <button class="queue-btn scrape" onclick="triggerNewScrape()">🕷️ Scrape New Jobs</button>
@@ -1833,7 +1844,7 @@
         </div>
       </div>
 
-      <div class="queue-auto-bar">
+      <div class="queue-auto-bar hidden" id="queueAutoBar">
         <label class="toggle" style="margin:0"><input type="checkbox" id="autoQueueToggle"><span class="toggle-slider"></span></label>
         <label>Auto-Next: Publish ke baad auto next pending image load ho</label>
       </div>
@@ -4085,6 +4096,7 @@ ${(articleText || "").substring(0, 2000)}`;
     // ─── SCRAPER QUEUE SYSTEM ─────────────────────────────────────────────────────
     let currentQueueItem = null;
     let queueRetryCount = 0;
+    let queueStarted = false;
     const MAX_RETRIES = 3;
 
     async function refreshQueue() {
@@ -4114,6 +4126,13 @@ ${(articleText || "").substring(0, 2000)}`;
               <span>Status: ${currentQueueItem.publish_status}</span>
               <span>${currentQueueItem.local_image_url ? '📷 Image Ready' : '⚠️ No Image'}</span>
             `;
+            if (queueStarted) {
+              document.getElementById('queueStartActions').style.display = 'none';
+              document.getElementById('queueRunningControls').style.display = 'flex';
+            } else {
+              document.getElementById('queueStartActions').style.display = 'flex';
+              document.getElementById('queueRunningControls').style.display = 'none';
+            }
           } else {
             currentQueueItem = null;
             document.getElementById('queueEmpty').classList.remove('hidden');
@@ -4126,6 +4145,20 @@ ${(articleText || "").substring(0, 2000)}`;
         document.getElementById('queueEmpty').classList.remove('hidden');
         document.getElementById('queueCurrent').classList.add('hidden');
       }
+    }
+
+    function startQueueProcessing() {
+      if (!currentQueueItem) { alert('Koi pending item nahi hai queue mein.'); return; }
+      queueStarted = true;
+
+      document.getElementById('autoQueueToggle').checked = true;
+      document.getElementById('queueAutoBar').classList.remove('hidden');
+
+      document.getElementById('queueStartActions').style.display = 'none';
+      document.getElementById('queueRunningControls').style.display = 'flex';
+
+      loadQueueItem();
+      showQueueProgress('▶️ Queue started! Publish ke baad auto next load hoga.');
     }
 
     function loadQueueItem() {
@@ -4150,6 +4183,9 @@ ${(articleText || "").substring(0, 2000)}`;
         });
         showQueueProgress(`⏭️ Skipped: ${currentQueueItem.title.substring(0, 50)}...`);
         await refreshQueue();
+        if (queueStarted && currentQueueItem) {
+          loadQueueItem();
+        }
       } catch (e) {
         alert('Skip failed: ' + e.message);
       }
