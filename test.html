@@ -2935,17 +2935,28 @@
     });
 
     async function fetchImageAsBase64(url) {
-      const isSameOrigin = url.startsWith(window.location.origin) || url.startsWith('/');
       const apiBase = getApiBase();
-      const isSameApi = apiBase && url.startsWith(apiBase);
-
       const strategies = [];
 
-      if (isSameOrigin || isSameApi) {
+      // If URL is already a proxy URL (/api/v2/scraper-queue/{id}/image), use it first
+      if (url.includes('/api/v2/scraper-queue/') && url.includes('/image')) {
         strategies.push(u => u);
       }
 
+      // If queue item has proxy_image_url, add it as first strategy
+      if (currentQueueItem && currentQueueItem.proxy_image_url) {
+        strategies.push(() => currentQueueItem.proxy_image_url);
+      }
+
+      // If URL is a /storage/ URL, construct proxy URL from queue item ID
+      if (currentQueueItem && currentQueueItem.id && url.includes('/storage/')) {
+        strategies.push(() => `${apiBase}/api/v2/scraper-queue/${currentQueueItem.id}/image`);
+      }
+
+      // Direct fetch (works for same-origin)
       strategies.push(u => u);
+
+      // CORS proxies for external URLs
       strategies.push(u => `https://corsproxy.io/?${encodeURIComponent(u)}`);
       strategies.push(u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
 
