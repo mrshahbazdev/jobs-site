@@ -12,4 +12,9 @@ class City extends Model
     {
         return $this->hasMany(JobListing::class);
     }
+
+    public function jobs()
+    {
+        return $this->hasMany(JobListing::class);
+    }
 }
