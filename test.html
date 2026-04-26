@@ -3561,10 +3561,23 @@ Format: Clear markers WATERMARK_STATUS, OCR_TEXT, ARTICLE_MARKDOWN, LSI_TAGS_DAT
         // Show auto-post panel and resolve metadata
         document.getElementById('autoPostPanel').classList.remove('hidden');
         currentArticleHtml = articleHtml;
-        resolveJobMetadata(ocrTxt, articleTxt);
+        await resolveJobMetadata(ocrTxt, articleTxt);
 
         // Sticky toolbar
         document.querySelector('.sticky-toolbar')?.classList.add('show');
+
+        // Auto-flow: if queue started, auto-generate thumbnail then auto-post
+        if (queueStarted) {
+          showQueueProgress('🖼️ Auto-generating thumbnail...');
+          try {
+            await generateAiThumb();
+            showQueueProgress('📤 Auto-posting job to database...');
+          } catch (thumbErr) {
+            showQueueProgress('⚠️ Thumbnail failed, posting without thumbnail...');
+          }
+          await new Promise(r => setTimeout(r, 500));
+          await postJobToDatabase();
+        }
 
       } catch (e) {
         showStatus('Error: ' + e.message, 'error');
