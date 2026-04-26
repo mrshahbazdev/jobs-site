@@ -2935,15 +2935,27 @@
     });
 
     async function fetchImageAsBase64(url) {
-      const proxies = [
-        u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-        u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
-      ];
-      for (const proxy of proxies) {
+      const isSameOrigin = url.startsWith(window.location.origin) || url.startsWith('/');
+      const apiBase = getApiBase();
+      const isSameApi = apiBase && url.startsWith(apiBase);
+
+      const strategies = [];
+
+      if (isSameOrigin || isSameApi) {
+        strategies.push(u => u);
+      }
+
+      strategies.push(u => u);
+      strategies.push(u => `https://corsproxy.io/?${encodeURIComponent(u)}`);
+      strategies.push(u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`);
+
+      for (const strategy of strategies) {
         try {
-          const res = await fetch(proxy(url));
+          const fetchUrl = strategy(url);
+          const res = await fetch(fetchUrl);
           if (res.ok) {
             const blob = await res.blob();
+            if (blob.size < 100) continue;
             return new Promise(resolve => {
               const r = new FileReader();
               r.onloadend = () => resolve(r.result);
@@ -2952,7 +2964,20 @@
           }
         } catch (e) { continue; }
       }
-      throw new Error('Image load nahi hui. File upload karein.');
+
+      return await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => reject(new Error('Image load nahi hui. URL check karein ya file upload karein.'));
+        img.src = url;
+      });
     }
 
     // ─── GEMINI CALL ─────────────────────────────────────────────────────────────
