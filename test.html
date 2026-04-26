@@ -4269,7 +4269,11 @@ ${(articleText || "").substring(0, 2000)}`;
       document.getElementById('queueRunningControls').style.display = 'flex';
 
       loadQueueItem();
-      showQueueProgress('▶️ Queue started! Publish ke baad auto next load hoga.');
+      showQueueProgress('▶️ Queue started! Auto-generating SEO content...');
+
+      setTimeout(() => {
+        document.getElementById('processBtn').click();
+      }, 500);
     }
 
     function loadQueueItem() {
@@ -4444,7 +4448,10 @@ ${(articleText || "").substring(0, 2000)}`;
         if (currentQueueItem) {
           setTimeout(() => {
             loadQueueItem();
-            showQueueProgress(`📥 Auto-loaded next: ${currentQueueItem.title.substring(0, 50)}...`);
+            showQueueProgress(`📥 Auto-loaded next: ${currentQueueItem.title.substring(0, 50)}... Auto-generating...`);
+            setTimeout(() => {
+              document.getElementById('processBtn').click();
+            }, 500);
           }, 1500);
         } else {
           showQueueProgress('🎉 Queue khatam! Sab pending jobs publish ho chuki hain.');
