@@ -120,6 +120,7 @@ class ScrapePakistanJobsBank extends Command
 
             $count = 0;
             $errors = 0;
+            $skipped = 0;
 
             foreach ($rows as $row) {
                 if ($limit !== null && $count >= $limit) {
@@ -142,12 +143,19 @@ class ScrapePakistanJobsBank extends Command
                     $relativeLink = $titleNode->getAttribute('href');
                     $fullJobUrl = self::BASE_URL . $relativeLink;
 
-                    $sourceRecord = JobSourceImage::firstOrCreate(
-                        ['source_page_url' => $fullJobUrl],
-                        ['title' => $title, 'is_processed' => false]
-                    );
+                    $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
+                    if ($existing) {
+                        $skipped++;
+                        continue;
+                    }
 
-                    if (!$onlyLinks && !$sourceRecord->local_image_path) {
+                    $sourceRecord = JobSourceImage::create([
+                        'title' => $title,
+                        'source_page_url' => $fullJobUrl,
+                        'is_processed' => false,
+                    ]);
+
+                    if (!$onlyLinks) {
                         $this->processSingleImage($sourceRecord->id);
                     }
 
@@ -175,8 +183,9 @@ class ScrapePakistanJobsBank extends Command
                 'status' => 'completed',
                 'current' => $count,
                 'errors' => $errors,
+                'skipped' => $skipped,
             ]);
-            $this->info("Successfully updated {$count} job sources. Errors: {$errors}.");
+            $this->info("New: {$count}, Skipped (duplicate): {$skipped}, Errors: {$errors}.");
         } catch (\Throwable $e) {
             Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $e->getMessage()], 600);
             Log::error('[Scraper] listing fatal error', ['error' => $e->getMessage()]);
