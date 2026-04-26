@@ -69,3 +69,4 @@ Route::get('/v2/scraper-queue/next', [ScraperQueueController::class, 'next']);
 Route::put('/v2/scraper-queue/{id}/status', [ScraperQueueController::class, 'updateStatus']);
 Route::post('/v2/scraper-queue/{id}/skip', [ScraperQueueController::class, 'skip']);
 Route::post('/v2/scraper-queue/{id}/reset', [ScraperQueueController::class, 'resetStatus']);
+Route::get('/v2/scraper-queue/{id}/image', [ScraperQueueController::class, 'imageProxy']);

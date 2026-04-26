@@ -4303,7 +4303,7 @@ ${(articleText || "").substring(0, 2000)}`;
 
     function loadQueueItem() {
       if (!currentQueueItem) { alert('Koi pending item nahi hai queue mein.'); return; }
-      const imageUrl = currentQueueItem.image_url || currentQueueItem.source_image_url;
+      const imageUrl = currentQueueItem.proxy_image_url || currentQueueItem.image_url || currentQueueItem.source_image_url;
       if (!imageUrl) { alert('Is item ki image URL nahi hai.'); return; }
 
       document.getElementById('imageUrl').value = imageUrl;
