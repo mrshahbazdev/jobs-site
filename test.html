@@ -1636,6 +1636,69 @@
     .api-key-save-btn:hover { transform:translateY(-1px); }
     .api-key-status { font-size:.75rem; font-weight:600; }
 
+    /* ─── SCRAPER QUEUE PANEL ────────────────────────── */
+    .queue-panel {
+      background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+      border: 1.5px solid #6ee7b7;
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    body.dark .queue-panel { background: linear-gradient(135deg, #022c22, #052e16); border-color: #065f46; }
+    .queue-header {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; flex-wrap: wrap;
+    }
+    .queue-header h3 { margin: 0; font-size: .95rem; font-weight: 800; color: #065f46; font-family: 'Syne', sans-serif; }
+    body.dark .queue-header h3 { color: #6ee7b7; }
+    .queue-stats {
+      display: flex; gap: .6rem; flex-wrap: wrap;
+    }
+    .queue-stat {
+      font-size: .72rem; font-weight: 700; padding: .25rem .6rem; border-radius: 8px; font-family: 'Syne', sans-serif;
+    }
+    .queue-stat.pending { background: #fef3c7; color: #92400e; }
+    .queue-stat.published { background: #d1fae5; color: #065f46; }
+    .queue-stat.total { background: #e0e7ff; color: #3730a3; }
+    body.dark .queue-stat.pending { background: #451a03; color: #fbbf24; }
+    body.dark .queue-stat.published { background: #022c22; color: #34d399; }
+    body.dark .queue-stat.total { background: #1e1b4b; color: #818cf8; }
+    .queue-current {
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: .85rem; margin-top: .5rem;
+    }
+    body.dark .queue-current { background: var(--bg); }
+    .queue-current-title {
+      font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; line-height: 1.4;
+    }
+    .queue-current-meta {
+      display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem;
+    }
+    .queue-current-meta span {
+      font-size: .7rem; color: var(--muted); background: var(--bg); padding: .2rem .5rem; border-radius: 6px;
+    }
+    .queue-actions {
+      display: flex; gap: .5rem; flex-wrap: wrap;
+    }
+    .queue-btn {
+      padding: .45rem .85rem; border: none; border-radius: 8px; font-size: .78rem; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; transition: all .15s;
+    }
+    .queue-btn:hover { transform: translateY(-1px); }
+    .queue-btn.load { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .queue-btn.skip { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .queue-btn.refresh { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+    .queue-btn.scrape { background: linear-gradient(135deg, #ec4899, #db2777); color: #fff; }
+    .queue-empty {
+      text-align: center; padding: 1rem; color: var(--muted); font-size: .85rem;
+    }
+    .queue-auto-bar {
+      display: flex; align-items: center; gap: .75rem; margin-top: .75rem; padding: .6rem .85rem;
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+    }
+    body.dark .queue-auto-bar { background: var(--bg); }
+    .queue-auto-bar label { font-size: .78rem; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .queue-progress {
+      margin-top: .5rem; font-size: .75rem; color: var(--emerald); font-weight: 600;
+    }
+
     /* ─── HISTORY PANEL ──────────────────────────────── */
     .history-panel {
       display: none;
@@ -1740,9 +1803,41 @@
 
     <!-- HEADER -->
     <div class="header">
-      <div class="version-badge">🚀 v4 Pro — Dark Mode • History • Analytics</div>
+      <div class="version-badge">🚀 v5 Pro — Queue • Auto-Publish • Dark Mode • History • Analytics</div>
       <h1>AI SEO <span>Master Engine</span></h1>
       <p>Image se 2000-4000 word SEO article • Auto Category/City • AI Thumbnail • 90%+ Coverage</p>
+    </div>
+
+    <!-- SCRAPER QUEUE PANEL -->
+    <div class="queue-panel" id="queuePanel">
+      <div class="queue-header">
+        <h3>📋 Scraper Queue</h3>
+        <div class="queue-stats" id="queueStats">
+          <span class="queue-stat pending" id="qStatPending">⏳ 0 Pending</span>
+          <span class="queue-stat published" id="qStatPublished">✓ 0 Published</span>
+          <span class="queue-stat total" id="qStatTotal">📊 0 Total</span>
+        </div>
+      </div>
+
+      <div id="queueContent">
+        <div class="queue-empty" id="queueEmpty">Loading queue...</div>
+        <div class="queue-current hidden" id="queueCurrent">
+          <div class="queue-current-title" id="qCurrentTitle"></div>
+          <div class="queue-current-meta" id="qCurrentMeta"></div>
+          <div class="queue-actions">
+            <button class="queue-btn load" onclick="loadQueueItem()">📥 Load & Process</button>
+            <button class="queue-btn skip" onclick="skipQueueItem()">⏭️ Skip</button>
+            <button class="queue-btn refresh" onclick="refreshQueue()">🔄 Refresh</button>
+            <button class="queue-btn scrape" onclick="triggerNewScrape()">🕷️ Scrape New Jobs</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="queue-auto-bar">
+        <label class="toggle" style="margin:0"><input type="checkbox" id="autoQueueToggle"><span class="toggle-slider"></span></label>
+        <label>Auto-Next: Publish ke baad auto next pending image load ho</label>
+      </div>
+      <div class="queue-progress hidden" id="queueProgressMsg"></div>
     </div>
 
     <!-- INPUT CARD -->
@@ -3944,6 +4039,7 @@ ${(articleText || "").substring(0, 2000)}`;
           document.getElementById('postJobLink').href = jobUrl;
           document.getElementById('postJobLink').textContent = 'View Job Post → ' + jobUrl;
           document.getElementById('postSuccessBox').classList.remove('hidden');
+          await onJobPublished(jobId);
           resetPostForm();
         } else {
           const errMsg = data.message || JSON.stringify(data.errors || data);
@@ -3985,6 +4081,173 @@ ${(articleText || "").substring(0, 2000)}`;
     function scrollToPost() {
       document.getElementById('autoPostPanel')?.scrollIntoView({ behavior: 'smooth' });
     }
+
+    // ─── SCRAPER QUEUE SYSTEM ─────────────────────────────────────────────────────
+    let currentQueueItem = null;
+    let queueRetryCount = 0;
+    const MAX_RETRIES = 3;
+
+    async function refreshQueue() {
+      const base = getApiBase();
+      try {
+        const [statsRes, nextRes] = await Promise.all([
+          fetch(`${base}/api/v2/scraper-queue/stats`, { headers: { 'Accept': 'application/json' } }),
+          fetch(`${base}/api/v2/scraper-queue/next`, { headers: { 'Accept': 'application/json' } })
+        ]);
+
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('qStatPending').textContent = `⏳ ${stats.pending_with_image || 0} Pending`;
+          document.getElementById('qStatPublished').textContent = `✓ ${stats.published || 0} Published`;
+          document.getElementById('qStatTotal').textContent = `📊 ${stats.total || 0} Total`;
+        }
+
+        if (nextRes.ok) {
+          const nextData = await nextRes.json();
+          if (nextData.data) {
+            currentQueueItem = nextData.data;
+            document.getElementById('queueEmpty').classList.add('hidden');
+            document.getElementById('queueCurrent').classList.remove('hidden');
+            document.getElementById('qCurrentTitle').textContent = currentQueueItem.title;
+            document.getElementById('qCurrentMeta').innerHTML = `
+              <span>ID: ${currentQueueItem.id}</span>
+              <span>Status: ${currentQueueItem.publish_status}</span>
+              <span>${currentQueueItem.local_image_url ? '📷 Image Ready' : '⚠️ No Image'}</span>
+            `;
+          } else {
+            currentQueueItem = null;
+            document.getElementById('queueEmpty').classList.remove('hidden');
+            document.getElementById('queueCurrent').classList.add('hidden');
+            document.getElementById('queueEmpty').textContent = '✅ Sab jobs process ho chuki hain! Scrape New Jobs se aur laayein.';
+          }
+        }
+      } catch (e) {
+        document.getElementById('queueEmpty').textContent = '⚠️ Queue API unavailable — check Laravel URL';
+        document.getElementById('queueEmpty').classList.remove('hidden');
+        document.getElementById('queueCurrent').classList.add('hidden');
+      }
+    }
+
+    function loadQueueItem() {
+      if (!currentQueueItem) { alert('Koi pending item nahi hai queue mein.'); return; }
+      const imageUrl = currentQueueItem.image_url || currentQueueItem.source_image_url;
+      if (!imageUrl) { alert('Is item ki image URL nahi hai.'); return; }
+
+      document.getElementById('imageUrl').value = imageUrl;
+      showQueueProgress(`📥 Loaded: ${currentQueueItem.title.substring(0, 60)}...`);
+
+      document.getElementById('imageUrl').scrollIntoView({ behavior: 'smooth' });
+      queueRetryCount = 0;
+    }
+
+    async function skipQueueItem() {
+      if (!currentQueueItem) return;
+      const base = getApiBase();
+      try {
+        await fetch(`${base}/api/v2/scraper-queue/${currentQueueItem.id}/skip`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        });
+        showQueueProgress(`⏭️ Skipped: ${currentQueueItem.title.substring(0, 50)}...`);
+        await refreshQueue();
+      } catch (e) {
+        alert('Skip failed: ' + e.message);
+      }
+    }
+
+    async function triggerNewScrape() {
+      const base = getApiBase();
+      try {
+        const res = await fetch(`${base}/api/trigger-scrape`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ mode: 'all' })
+        });
+        if (res.ok) {
+          showQueueProgress('🕷️ Scraping started! Queue worker process kare ga. Thodi der mein Refresh karein.');
+          pollScrapeStatus();
+        }
+      } catch (e) {
+        alert('Scrape trigger failed: ' + e.message);
+      }
+    }
+
+    async function pollScrapeStatus() {
+      const base = getApiBase();
+      let polling = true;
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${base}/api/scraper-status`, { headers: { 'Accept': 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'completed' || data.status === 'error') {
+              clearInterval(interval);
+              showQueueProgress(data.status === 'completed'
+                ? `✅ Scrape complete! ${data.current}/${data.total} jobs found.`
+                : `❌ Scrape error: ${data.message || 'Unknown'}`);
+              await refreshQueue();
+            } else if (data.status === 'running') {
+              showQueueProgress(`🕷️ Scraping... ${data.current}/${data.total} jobs`);
+            }
+          }
+        } catch (e) { clearInterval(interval); }
+      }, 3000);
+      setTimeout(() => clearInterval(interval), 300000);
+    }
+
+    async function onJobPublished(jobId) {
+      if (!currentQueueItem) return;
+      const base = getApiBase();
+      try {
+        await fetch(`${base}/api/v2/scraper-queue/${currentQueueItem.id}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ status: 'published', published_job_id: jobId || null })
+        });
+        showQueueProgress(`✅ Published! ID: ${jobId} — Queue item #${currentQueueItem.id} done.`);
+      } catch (e) {
+        console.warn('Queue status update failed:', e);
+      }
+
+      if (document.getElementById('autoQueueToggle').checked) {
+        showQueueProgress('⏳ Auto-loading next pending job...');
+        await refreshQueue();
+        if (currentQueueItem) {
+          setTimeout(() => {
+            loadQueueItem();
+            showQueueProgress(`📥 Auto-loaded next: ${currentQueueItem.title.substring(0, 50)}...`);
+          }, 1500);
+        } else {
+          showQueueProgress('🎉 Queue khatam! Sab pending jobs publish ho chuki hain.');
+        }
+      } else {
+        await refreshQueue();
+      }
+    }
+
+    function validateBeforePublish() {
+      const issues = [];
+      const categoryId = document.getElementById('resolvedCategoryId')?.value;
+      const cityId = document.getElementById('resolvedCityId')?.value;
+      const title = document.getElementById('postTitle')?.value?.trim();
+
+      if (!categoryId) issues.push('Category not set');
+      if (!cityId) issues.push('City not set');
+      if (!title) issues.push('Title empty');
+      if (!currentArticleHtml) issues.push('Article content empty');
+
+      return issues;
+    }
+
+    function showQueueProgress(msg) {
+      const el = document.getElementById('queueProgressMsg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(refreshQueue, 500);
+    });
 
   </script>
 </body>

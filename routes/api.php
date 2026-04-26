@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CityApiController;
 use App\Http\Controllers\Api\ScraperApiController;
 use App\Http\Controllers\Api\LandingGroupApiController;
 use App\Http\Controllers\Api\JobApiController;
+use App\Http\Controllers\Api\ScraperQueueController;
 
 // ── CORS OPTIONS preflight (allows test.html file:// access) ──────────────────
 Route::options('/{any}', function () {
@@ -60,3 +61,11 @@ Route::post('/cities', [CityApiController::class, 'store']);
 Route::get('/scraper-status', [ScraperApiController::class, 'status']);
 Route::post('/trigger-scrape', [ScraperApiController::class, 'trigger']);
 Route::post('/scrape-image', [ScraperApiController::class, 'scrapeImage']);
+
+// Scraper Queue APIs
+Route::get('/v2/scraper-queue/stats', [ScraperQueueController::class, 'stats']);
+Route::get('/v2/scraper-queue/pending', [ScraperQueueController::class, 'pending']);
+Route::get('/v2/scraper-queue/next', [ScraperQueueController::class, 'next']);
+Route::put('/v2/scraper-queue/{id}/status', [ScraperQueueController::class, 'updateStatus']);
+Route::post('/v2/scraper-queue/{id}/skip', [ScraperQueueController::class, 'skip']);
+Route::post('/v2/scraper-queue/{id}/reset', [ScraperQueueController::class, 'resetStatus']);
