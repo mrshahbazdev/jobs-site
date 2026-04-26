@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\JobSourceImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ScraperQueueController extends Controller
 {
@@ -60,10 +61,30 @@ class ScraperQueueController extends Controller
                     ? asset('storage/' . $image->local_image_path)
                     : null,
                 'image_url' => $imageUrl,
+                'proxy_image_url' => $image->local_image_path
+                    ? url('/api/v2/scraper-queue/' . $image->id . '/image')
+                    : null,
                 'publish_status' => $image->publish_status,
                 'created_at' => $image->created_at,
             ],
         ]);
+    }
+
+    public function imageProxy($id)
+    {
+        $image = JobSourceImage::findOrFail($id);
+
+        if (!$image->local_image_path || !Storage::disk('public')->exists($image->local_image_path)) {
+            return response()->json(['error' => 'Image not found'], 404);
+        }
+
+        $file = Storage::disk('public')->get($image->local_image_path);
+        $mime = Storage::disk('public')->mimeType($image->local_image_path);
+
+        return response($file, 200)
+            ->header('Content-Type', $mime)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Cache-Control', 'public, max-age=86400');
     }
 
     public function updateStatus(Request $request, $id)
