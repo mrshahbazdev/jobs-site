@@ -1890,6 +1890,14 @@
     <!-- SCRAPER CONTROL PANEL -->
     <div class="scraper-panel" id="scraperPanel">
       <h3>🕷️ Scraper Control</h3>
+      <div style="margin-bottom:.75rem">
+        <label class="label">Source Website</label>
+        <select id="scraperSource" style="padding:.5rem .75rem;border-radius:8px;border:1.5px solid var(--border);font-size:.85rem;background:var(--white);color:var(--ink);width:100%;max-width:320px">
+          <option value="pakistan-jobs">PakistanJobsBank.com</option>
+          <option value="jobsalert">JobsAlert.pk</option>
+          <option value="jobz-pk">Jobz.pk</option>
+        </select>
+      </div>
       <div class="scraper-controls">
         <button class="scraper-btn links" id="scrapeLinksBtn" onclick="triggerScrape('links')">📋 Scrape Links Only</button>
         <button class="scraper-btn full" id="scrapeFullBtn" onclick="triggerScrape('all')">📷 Scrape with Images</button>
@@ -4358,8 +4366,13 @@ ${(articleText || "").substring(0, 2000)}`;
     // ─── SCRAPER CONTROL PANEL FUNCTIONS ─────────────────────────────────────────
     let scraperPollingInterval = null;
 
+    function getSelectedSource() {
+      return document.getElementById('scraperSource')?.value || 'pakistan-jobs';
+    }
+
     async function triggerScrape(mode) {
       const base = getApiBase();
+      const source = getSelectedSource();
       const linksBtn = document.getElementById('scrapeLinksBtn');
       const fullBtn = document.getElementById('scrapeFullBtn');
       linksBtn.disabled = true;
@@ -4369,7 +4382,7 @@ ${(articleText || "").substring(0, 2000)}`;
         const res = await fetch(`${base}/api/trigger-scrape`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ mode })
+          body: JSON.stringify({ mode, source })
         });
         if (res.ok) {
           updateScraperUI({ status: 'starting', current: 0, total: 0 });
@@ -4392,8 +4405,9 @@ ${(articleText || "").substring(0, 2000)}`;
 
     async function checkScraperStatus() {
       const base = getApiBase();
+      const source = getSelectedSource();
       try {
-        const res = await fetch(`${base}/api/scraper-status`, { headers: { 'Accept': 'application/json' } });
+        const res = await fetch(`${base}/api/scraper-status?source=${source}`, { headers: { 'Accept': 'application/json' } });
         if (res.ok) {
           const data = await res.json();
           updateScraperUI(data);
@@ -4410,8 +4424,9 @@ ${(articleText || "").substring(0, 2000)}`;
       if (scraperPollingInterval) clearInterval(scraperPollingInterval);
       scraperPollingInterval = setInterval(async () => {
         const base = getApiBase();
+        const source = getSelectedSource();
         try {
-          const res = await fetch(`${base}/api/scraper-status`, { headers: { 'Accept': 'application/json' } });
+          const res = await fetch(`${base}/api/scraper-status?source=${source}`, { headers: { 'Accept': 'application/json' } });
           if (res.ok) {
             const data = await res.json();
             updateScraperUI(data);
