@@ -4472,7 +4472,7 @@ ${(articleText || "").substring(0, 2000)}`;
       fill.style.width = pct + '%';
 
       document.getElementById('scraperCount').textContent = `Progress: ${current}/${total}`;
-      document.getElementById('scraperNew').textContent = `New: ${current}`;
+      document.getElementById('scraperNew').textContent = `New: ${data.new ?? current}`;
       document.getElementById('scraperSkipped').textContent = `Skipped: ${data.skipped || 0}`;
       document.getElementById('scraperErrors').textContent = `Errors: ${data.errors || 0}`;
 
