@@ -61,6 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Bookmark::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function cvs()
     {
         return $this->hasMany(Cv::class)->orderByDesc('updated_at');

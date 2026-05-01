@@ -77,6 +77,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookmarks/{job}/toggle', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
 });
 
+// Comments (auth + throttle for spam protection)
+Route::post('/jobs/{slug}/comments', [\App\Http\Controllers\CommentController::class, 'store'])
+    ->middleware(['auth', 'throttle:5,1'])
+    ->name('comments.store');
+
 // Blog Routes
 Route::get('/blog', [\App\Http\Controllers\PostController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [\App\Http\Controllers\PostController::class, 'show'])->name('blog.show');
