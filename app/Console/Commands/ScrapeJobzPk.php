@@ -76,7 +76,7 @@ class ScrapeJobzPk extends Command
 
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);
-            $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+            $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
             libxml_clear_errors();
             $xpath = new \DOMXPath($dom);
 
@@ -97,6 +97,24 @@ class ScrapeJobzPk extends Command
             }
 
             $total = count($jobRows);
+
+            $this->info("XPath found " . $rows->length . " row_container divs, " . $total . " with job links.");
+
+            if ($total === 0) {
+                // Regex fallback: extract _jobs- links directly from HTML
+                preg_match_all('/<a[^>]*href="(https?:\/\/(?:www\.)?jobz\.pk\/[^"]*_jobs-[^"]*\.html)"[^>]*>([^<]+)<\/a>/i', $html, $matches, PREG_SET_ORDER);
+                if (!empty($matches)) {
+                    $this->info("Regex fallback found " . count($matches) . " job links.");
+                    $seen = [];
+                    foreach ($matches as $m) {
+                        $mUrl = trim($m[1]);
+                        if (isset($seen[$mUrl])) continue;
+                        $seen[$mUrl] = true;
+                        $jobRows[] = ['url' => $mUrl, 'title' => trim($m[2])];
+                    }
+                    $total = count($jobRows);
+                }
+            }
 
             if ($limit !== null && $limit > 0) {
                 $total = min($total, $limit);
@@ -121,13 +139,18 @@ class ScrapeJobzPk extends Command
                 }
 
                 try {
-                    $anchor = $xpath->query(".//div[contains(@class, 'cell1')]//a[contains(@href, '_jobs-')]", $row)->item(0);
-                    if (!$anchor) {
-                        continue;
+                    // Handle both DOMElement (XPath result) and array (regex fallback)
+                    if (is_array($row)) {
+                        $title = $row['title'];
+                        $fullJobUrl = $row['url'];
+                    } else {
+                        $anchor = $xpath->query(".//div[contains(@class, 'cell1')]//a[contains(@href, '_jobs-')]", $row)->item(0);
+                        if (!$anchor) {
+                            continue;
+                        }
+                        $title = trim($anchor->textContent);
+                        $fullJobUrl = trim($anchor->getAttribute('href'));
                     }
-
-                    $title = trim($anchor->textContent);
-                    $fullJobUrl = trim($anchor->getAttribute('href'));
 
                     // Ensure absolute URL
                     if (Str::startsWith($fullJobUrl, '/')) {
@@ -141,6 +164,14 @@ class ScrapeJobzPk extends Command
                     $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
                     if ($existing) {
                         $skipped++;
+                        $processed = $count + $skipped;
+                        $this->updateProgress([
+                            'current' => $processed,
+                            'total' => $total,
+                            'status' => 'running',
+                            'new' => $count,
+                            'skipped' => $skipped,
+                        ]);
                         continue;
                     }
 
@@ -155,6 +186,7 @@ class ScrapeJobzPk extends Command
                     }
 
                     $count++;
+                    $processed = $count + $skipped;
 
                     $progress = Cache::get($cacheKey, []);
                     $findings = $progress['latest_findings'] ?? [];
@@ -162,9 +194,11 @@ class ScrapeJobzPk extends Command
                     $findings = array_slice($findings, 0, 5);
 
                     Cache::put($cacheKey, array_merge($progress, [
-                        'current' => $count,
+                        'current' => $processed,
                         'total' => $total,
                         'status' => 'running',
+                        'new' => $count,
+                        'skipped' => $skipped,
                         'latest_findings' => $findings,
                     ]), 600);
                 } catch (\Throwable $e) {
@@ -244,7 +278,7 @@ class ScrapeJobzPk extends Command
 
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 

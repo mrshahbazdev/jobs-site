@@ -83,7 +83,7 @@ class ScrapePakistanJobsBank extends Command
             // libxml_use_internal_errors silences warnings from malformed HTML,
             // which the source frequently contains.
             libxml_use_internal_errors(true);
-            $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+            $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
             libxml_clear_errors();
             $xpath = new \DOMXPath($dom);
 
@@ -146,6 +146,14 @@ class ScrapePakistanJobsBank extends Command
                     $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
                     if ($existing) {
                         $skipped++;
+                        $processed = $count + $skipped;
+                        $this->updateProgress([
+                            'current' => $processed,
+                            'total' => $total,
+                            'status' => 'running',
+                            'new' => $count,
+                            'skipped' => $skipped,
+                        ]);
                         continue;
                     }
 
@@ -160,6 +168,7 @@ class ScrapePakistanJobsBank extends Command
                     }
 
                     $count++;
+                    $processed = $count + $skipped;
 
                     $progress = Cache::get('scraper_progress', []);
                     $findings = $progress['latest_findings'] ?? [];
@@ -167,9 +176,11 @@ class ScrapePakistanJobsBank extends Command
                     $findings = array_slice($findings, 0, 5);
 
                     Cache::put('scraper_progress', array_merge($progress, [
-                        'current' => $count,
+                        'current' => $processed,
                         'total' => $total,
                         'status' => 'running',
+                        'new' => $count,
+                        'skipped' => $skipped,
                         'latest_findings' => $findings,
                     ]), 600);
                 } catch (\Throwable $e) {
@@ -247,7 +258,7 @@ class ScrapePakistanJobsBank extends Command
 
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $dom->loadHTML(mb_convert_encoding($response->body(), 'HTML-ENTITIES', 'UTF-8'));
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $response->body());
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 

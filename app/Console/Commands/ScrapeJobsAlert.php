@@ -76,7 +76,7 @@ class ScrapeJobsAlert extends Command
 
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);
-            $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+            $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
             libxml_clear_errors();
             $xpath = new \DOMXPath($dom);
 
@@ -85,11 +85,32 @@ class ScrapeJobsAlert extends Command
             //   td[0] = posted date, td[1] = link, td[2] = newspaper, td[3] = last date
             $table = $xpath->query("//table[contains(@class, 'table-striped')]//tbody//tr");
             $total = $table->length;
+            $useRegex = false;
+            $regexRows = [];
+
+            $this->info("XPath found {$total} rows in table-striped tbody.");
 
             if ($total === 0) {
                 // Fallback: any table row with an anchor that links to jobsalert.pk
                 $table = $xpath->query("//table[contains(@class, 'table-striped')]//tr[td/a[contains(@href, 'jobsalert.pk')]]");
                 $total = $table->length;
+            }
+
+            if ($total === 0) {
+                // Regex fallback: extract links directly from HTML
+                preg_match_all('/<a[^>]*href="(https?:\/\/jobsalert\.pk\/[^"]+\/\d+)"[^>]*>([^<]+)<\/a>/i', $html, $matches, PREG_SET_ORDER);
+                if (!empty($matches)) {
+                    $this->info("Regex fallback found " . count($matches) . " job links.");
+                    $seen = [];
+                    foreach ($matches as $m) {
+                        $mUrl = trim($m[1]);
+                        if (isset($seen[$mUrl])) continue;
+                        $seen[$mUrl] = true;
+                        $regexRows[] = ['url' => $mUrl, 'title' => trim($m[2])];
+                    }
+                    $total = count($regexRows);
+                    $useRegex = true;
+                }
             }
 
             if ($limit !== null && $limit > 0) {
@@ -109,26 +130,33 @@ class ScrapeJobsAlert extends Command
             $errors = 0;
             $skipped = 0;
 
-            foreach ($table as $row) {
+            $iterableRows = $useRegex ? $regexRows : $table;
+            foreach ($iterableRows as $row) {
                 if ($limit !== null && $count >= $limit) {
                     break;
                 }
 
                 try {
-                    $tds = $xpath->query("td", $row);
-                    if ($tds->length < 2) {
-                        continue;
-                    }
+                    // Handle both DOMElement (XPath result) and array (regex fallback)
+                    if (is_array($row)) {
+                        $title = $row['title'];
+                        $fullJobUrl = $row['url'];
+                    } else {
+                        $tds = $xpath->query("td", $row);
+                        if ($tds->length < 2) {
+                            continue;
+                        }
 
-                    // The job link is inside the second <td>
-                    $linkTd = $tds->item(1);
-                    $anchor = $xpath->query(".//a", $linkTd)->item(0);
-                    if (!$anchor) {
-                        continue;
-                    }
+                        // The job link is inside the second <td>
+                        $linkTd = $tds->item(1);
+                        $anchor = $xpath->query(".//a", $linkTd)->item(0);
+                        if (!$anchor) {
+                            continue;
+                        }
 
-                    $title = trim($anchor->textContent);
-                    $fullJobUrl = trim($anchor->getAttribute('href'));
+                        $title = trim($anchor->textContent);
+                        $fullJobUrl = trim($anchor->getAttribute('href'));
+                    }
 
                     // Ensure absolute URL
                     if (Str::startsWith($fullJobUrl, '/')) {
@@ -142,6 +170,14 @@ class ScrapeJobsAlert extends Command
                     $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
                     if ($existing) {
                         $skipped++;
+                        $processed = $count + $skipped;
+                        $this->updateProgress([
+                            'current' => $processed,
+                            'total' => $total,
+                            'status' => 'running',
+                            'new' => $count,
+                            'skipped' => $skipped,
+                        ]);
                         continue;
                     }
 
@@ -156,6 +192,7 @@ class ScrapeJobsAlert extends Command
                     }
 
                     $count++;
+                    $processed = $count + $skipped;
 
                     $progress = Cache::get($cacheKey, []);
                     $findings = $progress['latest_findings'] ?? [];
@@ -163,9 +200,11 @@ class ScrapeJobsAlert extends Command
                     $findings = array_slice($findings, 0, 5);
 
                     Cache::put($cacheKey, array_merge($progress, [
-                        'current' => $count,
+                        'current' => $processed,
                         'total' => $total,
                         'status' => 'running',
+                        'new' => $count,
+                        'skipped' => $skipped,
                         'latest_findings' => $findings,
                     ]), 600);
                 } catch (\Throwable $e) {
@@ -245,7 +284,7 @@ class ScrapeJobsAlert extends Command
 
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 
