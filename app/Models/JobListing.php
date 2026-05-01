@@ -40,6 +40,16 @@ class JobListing extends Model
         return $this->hasMany(Bookmark::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function approvedComments()
+    {
+        return $this->hasMany(Comment::class)->where('is_approved', true);
+    }
+
     public function bookmarkedByUsers()
     {
         return $this->belongsToMany(User::class, 'bookmarks', 'user_id', 'job_listing_id')->withTimestamps();

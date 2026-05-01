@@ -241,6 +241,80 @@
                     @endif
 
                 </div>
+
+                <!-- Comments Section -->
+                <div class="border-t border-slate-200 dark:border-slate-700 mt-10 pt-8">
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">forum</span>
+                        Comments ({{ $job->approvedComments()->count() }})
+                    </h3>
+
+                    @if(session('comment_success'))
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 mb-6 font-semibold text-sm">
+                            {{ session('comment_success') }}
+                        </div>
+                    @endif
+
+                    @if(session('comment_error'))
+                        <div class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl border border-red-200 dark:border-red-800 mb-6 font-semibold text-sm">
+                            {{ session('comment_error') }}
+                        </div>
+                    @endif
+
+                    <!-- Comment Form (logged-in users only) -->
+                    @auth
+                        <form action="{{ route('comments.store', $job->slug) }}" method="POST" class="mb-8">
+                            @csrf
+                            <input type="text" name="hp_field" value="" class="hidden" tabindex="-1" autocomplete="off">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                                    <span class="text-primary font-black text-sm">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <textarea name="body" rows="3" placeholder="Share your thoughts about this job..." required minlength="3" maxlength="1000"
+                                        class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none transition-all">{{ old('body') }}</textarea>
+                                    @error('body')
+                                        <p class="text-red-500 text-xs mt-1 font-semibold">{{ $message }}</p>
+                                    @enderror
+                                    <div class="flex items-center justify-between mt-2">
+                                        <p class="text-[10px] text-slate-400">Comments are reviewed before publishing.</p>
+                                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md">
+                                            Post Comment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-6 mb-8 text-center border border-slate-200 dark:border-slate-700">
+                            <p class="text-slate-600 dark:text-slate-400 text-sm font-semibold">
+                                <a href="{{ route('login') }}" class="text-primary hover:underline font-bold">Login</a> or
+                                <a href="{{ route('register') }}" class="text-primary hover:underline font-bold">Register</a>
+                                to post a comment.
+                            </p>
+                        </div>
+                    @endauth
+
+                    <!-- Approved Comments List -->
+                    <div class="space-y-4">
+                        @forelse($job->approvedComments()->with('user')->latest()->get() as $comment)
+                            <div class="flex gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                                    <span class="text-primary font-black text-sm">{{ strtoupper(substr($comment->user->name, 0, 1)) }}</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-bold text-sm text-slate-900 dark:text-white">{{ $comment->user->name }}</span>
+                                        <span class="text-[10px] text-slate-400 font-semibold">{{ $comment->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{{ $comment->body }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-6">No comments yet. Be the first to comment!</p>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         </article>
 
