@@ -58,7 +58,13 @@ class SitemapController extends Controller
      */
     public function images(): Response
     {
-        $jobs = JobListing::active()->whereNotNull('job_source_image_id')->orderBy('created_at', 'desc')->take(1000)->get();
+        $jobs = JobListing::active()
+            ->whereNotNull('job_source_image_id')
+            ->whereHas('sourceImage', fn ($q) => $q->whereNotNull('image_path')->where('image_path', '!=', ''))
+            ->with('sourceImage', 'city')
+            ->orderBy('created_at', 'desc')
+            ->take(1000)
+            ->get();
 
         return response()->view('image_sitemap', [
             'jobs' => $jobs,
