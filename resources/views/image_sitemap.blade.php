@@ -5,7 +5,7 @@
     <url>
         <loc>{{ route('jobs.show', $job->slug) }}</loc>
         <image:image>
-            <image:loc>{{ asset('storage/'.$job->sourceImage->image_path) }}</image:loc>
+            <image:loc>{{ asset('storage/'.$job->sourceImage->local_image_path) }}</image:loc>
             <image:title>{{ htmlspecialchars($job->title, ENT_XML1, 'UTF-8') }} Advertisement</image:title>
             <image:caption>Check latest {{ htmlspecialchars($job->title, ENT_XML1, 'UTF-8') }} in {{ $job->city->name ?? 'Pakistan' }} - JobsPic Pakistan</image:caption>
         </image:image>

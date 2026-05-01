@@ -60,7 +60,7 @@ class SitemapController extends Controller
     {
         $jobs = JobListing::active()
             ->whereNotNull('job_source_image_id')
-            ->whereHas('sourceImage', fn ($q) => $q->whereNotNull('image_path')->where('image_path', '!=', ''))
+            ->whereHas('sourceImage', fn ($q) => $q->withImage())
             ->with('sourceImage', 'city')
             ->orderBy('created_at', 'desc')
             ->take(1000)
