@@ -55,148 +55,152 @@ class ScrapePakistanJobsBank extends Command
         Cache::put('scraper_progress', array_merge($progress, $patch), 600);
     }
 
+    private const LISTING_PAGES = [
+        '/',
+        '/Loc/Lahore/',
+        '/Loc/Karachi/',
+        '/Loc/Islamabad/',
+        '/Loc/Peshawar/',
+        '/Loc/Punjab/',
+        '/Loc/Sindh/',
+        '/Loc/KPK/',
+    ];
+
     private function fetchListing(bool $onlyLinks = false, ?int $limit = null)
     {
-        $url = self::BASE_URL . '/';
-        $this->info("Fetching job list from {$url}...");
+        $count = 0;
+        $errors = 0;
+        $skipped = 0;
+        $seenUrls = [];
+
+        Cache::put('scraper_progress', [
+            'current' => 0,
+            'total' => 0,
+            'status' => 'running',
+            'errors' => 0,
+            'latest_findings' => [],
+        ], 600);
 
         try {
-            $response = $this->httpClient()->get($url);
-
-            if (!$response->successful()) {
-                $msg = "Failed to fetch the page. Status: " . $response->status();
-                Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $msg], 600);
-                Log::warning('[Scraper] listing fetch failed', ['status' => $response->status()]);
-                if ($this->output) {
-                    $this->error($msg);
-                }
-                return 1;
-            }
-
-            $html = $response->body();
-            if (empty($html)) {
-                Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => 'Empty HTML response'], 600);
-                return 1;
-            }
-
-            $dom = new \DOMDocument();
-            // libxml_use_internal_errors silences warnings from malformed HTML,
-            // which the source frequently contains.
-            libxml_use_internal_errors(true);
-            $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
-            libxml_clear_errors();
-            $xpath = new \DOMXPath($dom);
-
-            // Actual job rows use exactly class="job-ad". Using contains() here
-            // was matching the date header rows ("job-ads-list-header") too,
-            // which inflated the "total" counter and caused misleading progress.
-            $rows = $xpath->query("//tr[@class='job-ad']");
-            $total = $rows->length;
-
-            if ($total === 0) {
-                // Fallback: loose match with explicit class separator.
-                $rows = $xpath->query("//tr[contains(concat(' ', normalize-space(@class), ' '), ' job-ad ')]");
-                $total = $rows->length;
-            }
-
-            if ($total === 0) {
-                // Final fallback: any table row linking into /Jobs/.
-                $rows = $xpath->query("//tr[td/strong/a[contains(@href, '/Jobs/')]]");
-                $total = $rows->length;
-            }
-
-            if ($limit !== null && $limit > 0) {
-                $total = min($total, $limit);
-            }
-
-            $this->info("Found " . $total . " potential job links.");
-            Cache::put('scraper_progress', [
-                'current' => 0,
-                'total' => $total,
-                'status' => 'running',
-                'errors' => 0,
-                'latest_findings' => [],
-            ], 600);
-
-            $count = 0;
-            $errors = 0;
-            $skipped = 0;
-
-            foreach ($rows as $row) {
+            foreach (self::LISTING_PAGES as $page) {
                 if ($limit !== null && $count >= $limit) {
                     break;
                 }
 
-                try {
-                    $tds = $xpath->query("td", $row);
-                    if ($tds->length < 2) {
-                        continue;
+                $url = self::BASE_URL . $page;
+                $this->info("Fetching {$url}...");
+
+                $response = $this->httpClient()->get($url);
+
+                if (!$response->successful()) {
+                    Log::warning('[Scraper] page fetch failed', ['url' => $url, 'status' => $response->status()]);
+                    $this->error("Failed: {$url} (status {$response->status()})");
+                    continue;
+                }
+
+                $html = $response->body();
+                if (empty($html)) {
+                    continue;
+                }
+
+                $dom = new \DOMDocument();
+                libxml_use_internal_errors(true);
+                $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+                libxml_clear_errors();
+                $xpath = new \DOMXPath($dom);
+
+                $rows = $xpath->query("//tr[@class='job-ad']");
+                if ($rows->length === 0) {
+                    $rows = $xpath->query("//tr[contains(concat(' ', normalize-space(@class), ' '), ' job-ad ')]");
+                }
+                if ($rows->length === 0) {
+                    $rows = $xpath->query("//tr[td/strong/a[contains(@href, '/Jobs/')]]");
+                }
+
+                $this->info("  Found {$rows->length} rows on {$page}");
+
+                foreach ($rows as $row) {
+                    if ($limit !== null && $count >= $limit) {
+                        break;
                     }
 
-                    $td1 = $tds->item(0);
-                    $titleNode = $xpath->query(".//strong/a", $td1)->item(0);
-                    if (!$titleNode) {
-                        continue;
-                    }
+                    try {
+                        $tds = $xpath->query("td", $row);
+                        if ($tds->length < 2) {
+                            continue;
+                        }
 
-                    $title = trim($titleNode->textContent);
-                    $relativeLink = $titleNode->getAttribute('href');
-                    $fullJobUrl = self::BASE_URL . $relativeLink;
+                        $td1 = $tds->item(0);
+                        $titleNode = $xpath->query(".//strong/a", $td1)->item(0);
+                        if (!$titleNode) {
+                            continue;
+                        }
 
-                    $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
-                    if ($existing) {
-                        $skipped++;
+                        $title = trim($titleNode->textContent);
+                        $relativeLink = $titleNode->getAttribute('href');
+                        $fullJobUrl = self::BASE_URL . $relativeLink;
+
+                        if (isset($seenUrls[$fullJobUrl])) {
+                            continue;
+                        }
+                        $seenUrls[$fullJobUrl] = true;
+
+                        $existing = JobSourceImage::where('source_page_url', $fullJobUrl)->first();
+                        if ($existing) {
+                            $skipped++;
+                            $processed = $count + $skipped;
+                            $this->updateProgress([
+                                'current' => $processed,
+                                'status' => 'running',
+                                'new' => $count,
+                                'skipped' => $skipped,
+                            ]);
+                            continue;
+                        }
+
+                        $sourceRecord = JobSourceImage::create([
+                            'title' => $title,
+                            'source_page_url' => $fullJobUrl,
+                            'is_processed' => false,
+                        ]);
+
+                        if (!$onlyLinks) {
+                            $this->processSingleImage($sourceRecord->id);
+                        }
+
+                        $count++;
                         $processed = $count + $skipped;
-                        $this->updateProgress([
+
+                        $progress = Cache::get('scraper_progress', []);
+                        $findings = $progress['latest_findings'] ?? [];
+                        array_unshift($findings, $title);
+                        $findings = array_slice($findings, 0, 5);
+
+                        Cache::put('scraper_progress', array_merge($progress, [
                             'current' => $processed,
-                            'total' => $total,
+                            'total' => count($seenUrls),
                             'status' => 'running',
                             'new' => $count,
                             'skipped' => $skipped,
-                        ]);
-                        continue;
+                            'latest_findings' => $findings,
+                        ]), 600);
+                    } catch (\Throwable $e) {
+                        $errors++;
+                        Log::error('[Scraper] row processing failed', ['error' => $e->getMessage()]);
+                        $this->updateProgress(['errors' => $errors]);
                     }
-
-                    $sourceRecord = JobSourceImage::create([
-                        'title' => $title,
-                        'source_page_url' => $fullJobUrl,
-                        'is_processed' => false,
-                    ]);
-
-                    if (!$onlyLinks) {
-                        $this->processSingleImage($sourceRecord->id);
-                    }
-
-                    $count++;
-                    $processed = $count + $skipped;
-
-                    $progress = Cache::get('scraper_progress', []);
-                    $findings = $progress['latest_findings'] ?? [];
-                    array_unshift($findings, $title);
-                    $findings = array_slice($findings, 0, 5);
-
-                    Cache::put('scraper_progress', array_merge($progress, [
-                        'current' => $processed,
-                        'total' => $total,
-                        'status' => 'running',
-                        'new' => $count,
-                        'skipped' => $skipped,
-                        'latest_findings' => $findings,
-                    ]), 600);
-                } catch (\Throwable $e) {
-                    $errors++;
-                    Log::error('[Scraper] row processing failed', ['error' => $e->getMessage()]);
-                    $this->updateProgress(['errors' => $errors]);
                 }
             }
 
             $this->updateProgress([
                 'status' => 'completed',
-                'current' => $count,
+                'current' => $count + $skipped,
+                'total' => count($seenUrls),
+                'new' => $count,
                 'errors' => $errors,
                 'skipped' => $skipped,
             ]);
-            $this->info("New: {$count}, Skipped (duplicate): {$skipped}, Errors: {$errors}.");
+            $this->info("Total unique: " . count($seenUrls) . ", New: {$count}, Skipped: {$skipped}, Errors: {$errors}.");
         } catch (\Throwable $e) {
             Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $e->getMessage()], 600);
             Log::error('[Scraper] listing fatal error', ['error' => $e->getMessage()]);
