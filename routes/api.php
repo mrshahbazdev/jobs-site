@@ -59,6 +59,7 @@ Route::post('/cities', [CityApiController::class, 'store']);
 
 // Scraper APIs
 Route::get('/scraper-status', [ScraperApiController::class, 'status']);
+Route::get('/scraper-status-all', [ScraperApiController::class, 'statusAll']);
 Route::post('/trigger-scrape', [ScraperApiController::class, 'trigger']);
 Route::post('/scrape-image', [ScraperApiController::class, 'scrapeImage']);
 

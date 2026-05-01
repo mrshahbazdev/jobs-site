@@ -1,8 +1,17 @@
 <div wire:poll.1s="pollProgress" class="p-4 space-y-4">
     @if(!$isScraping && (!$progress || $progress['status'] === 'completed'))
         <div class="text-center">
-            <h2 class="text-xl font-bold mb-4">Start Scraping Pakistan Jobs</h2>
-            <p class="mb-4 text-gray-600 italic">This will update the latest job listings and advertisements.</p>
+            <h2 class="text-xl font-bold mb-4">Start Scraping Jobs</h2>
+            <p class="mb-4 text-gray-600 italic">Select a source and start scraping the latest job listings.</p>
+
+            <div class="mb-4">
+                <select wire:model="source" class="px-4 py-2 border rounded-lg text-sm">
+                    <option value="pakistan-jobs">PakistanJobsBank.com</option>
+                    <option value="jobsalert">JobsAlert.pk</option>
+                    <option value="jobz-pk">Jobz.pk</option>
+                </select>
+            </div>
+
             <button wire:click="startScraping" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                 🚀 Start Scraper
             </button>
