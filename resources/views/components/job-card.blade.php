@@ -26,7 +26,24 @@
                 </p>
             </div>
         </div>
-        <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black uppercase text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 whitespace-nowrap">Apply Soon</span>
+        @php
+            $badge = null;
+            if ($job->deadline) {
+                $days = now()->diffInDays(\Carbon\Carbon::parse($job->deadline), false);
+                if ($days < 0) {
+                    $badge = ['text' => 'Closed', 'bg' => 'bg-red-100 dark:bg-red-900/30', 'color' => 'text-red-700 dark:text-red-400'];
+                } elseif ($days <= 3) {
+                    $badge = ['text' => 'Closing Today', 'bg' => 'bg-orange-100 dark:bg-orange-900/30', 'color' => 'text-orange-700 dark:text-orange-400'];
+                } elseif ($days <= 7) {
+                    $badge = ['text' => 'Closing Soon', 'bg' => 'bg-amber-100 dark:bg-amber-900/30', 'color' => 'text-amber-700 dark:text-amber-400'];
+                } else {
+                    $badge = ['text' => 'Apply Now', 'bg' => 'bg-emerald-100 dark:bg-emerald-900/30', 'color' => 'text-emerald-700 dark:text-emerald-400'];
+                }
+            } else {
+                $badge = ['text' => 'Apply Now', 'bg' => 'bg-emerald-100 dark:bg-emerald-900/30', 'color' => 'text-emerald-700 dark:text-emerald-400'];
+            }
+        @endphp
+        <span class="rounded-full {{ $badge['bg'] }} px-2.5 py-1 text-[10px] font-black uppercase {{ $badge['color'] }} whitespace-nowrap">{{ $badge['text'] }}</span>
     </div>
     
     <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase text-slate-600">
