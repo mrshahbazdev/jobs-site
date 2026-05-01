@@ -13,6 +13,8 @@ Route::get('/', [JobController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/news-sitemap.xml', [SitemapController::class, 'news']);
 Route::get('/image-sitemap.xml', [SitemapController::class, 'images']);
+Route::get('/amp-sitemap.xml', [SitemapController::class, 'amp']);
+Route::get('/stories-sitemap.xml', [SitemapController::class, 'stories']);
 Route::get('/feed', [SitemapController::class, 'feed']);
 Route::get('/robots.txt', [SitemapController::class, 'robots']);
 Route::get('/jobs/{slug}', [JobController::class, 'show'])->name('jobs.show');

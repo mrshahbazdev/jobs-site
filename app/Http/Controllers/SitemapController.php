@@ -66,11 +66,35 @@ class SitemapController extends Controller
     }
 
     /**
+     * Generate AMP pages XML sitemap.
+     */
+    public function amp(): Response
+    {
+        $jobs = JobListing::active()->orderBy('created_at', 'desc')->take(1000)->get();
+
+        return response()->view('amp_sitemap', [
+            'jobs' => $jobs,
+        ])->header('Content-Type', 'text/xml');
+    }
+
+    /**
+     * Generate Web Stories XML sitemap.
+     */
+    public function stories(): Response
+    {
+        $jobs = JobListing::active()->orderBy('created_at', 'desc')->take(1000)->get();
+
+        return response()->view('story_sitemap', [
+            'jobs' => $jobs,
+        ])->header('Content-Type', 'text/xml');
+    }
+
+    /**
      * Display a basic robots.txt.
      */
     public function robots(): Response
     {
-        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/image-sitemap.xml') . "\nSitemap: " . url('/feed');
+        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/image-sitemap.xml') . "\nSitemap: " . url('/amp-sitemap.xml') . "\nSitemap: " . url('/stories-sitemap.xml') . "\nSitemap: " . url('/feed');
         return response($content)->header('Content-Type', 'text/plain');
     }
 }
