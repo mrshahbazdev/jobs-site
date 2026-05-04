@@ -3589,6 +3589,21 @@ Format: Clear markers WATERMARK_STATUS, OCR_TEXT, ARTICLE_MARKDOWN, LSI_TAGS_DAT
 
       } catch (e) {
         showStatus('Error: ' + e.message, 'error');
+        // Auto-skip on error if queue is running
+        if (queueStarted && currentQueueItem) {
+          showQueueProgress(`⚠️ Error: ${e.message.substring(0, 80)} — auto-skipping to next...`);
+          try { await skipQueueItem(); } catch (skipErr) {}
+          resetPostForm();
+          await new Promise(r => setTimeout(r, 1500));
+          await refreshQueue();
+          if (currentQueueItem) {
+            loadQueueItem();
+            showQueueProgress(`📥 Auto-loaded next: ${currentQueueItem.title.substring(0, 50)}... Retrying...`);
+            setTimeout(() => { document.getElementById('processBtn').click(); }, 500);
+          } else {
+            showQueueProgress('🎉 Queue khatam!');
+          }
+        }
       } finally {
         setLoading(false);
       }
@@ -4128,10 +4143,28 @@ ${(articleText || "").substring(0, 2000)}`;
       const cityId = document.getElementById('resolvedCityId').value;
       const title = document.getElementById('postTitle').value.trim();
 
-      if (!categoryId) { alert('Category detect nahi hui. Manual override se select karein.'); return; }
-      if (!cityId) { alert('City detect nahi hui. Manual override se select karein.'); return; }
-      if (!title) { alert('Job title empty hai.'); return; }
-      if (!currentArticleHtml) { alert('Pehle SEO Content generate karein.'); return; }
+      if (!categoryId || !cityId || !title || !currentArticleHtml) {
+        const missing = [];
+        if (!categoryId) missing.push('Category');
+        if (!cityId) missing.push('City');
+        if (!title) missing.push('Title');
+        if (!currentArticleHtml) missing.push('SEO Content');
+        const msg = `Missing: ${missing.join(', ')}`;
+        if (queueStarted && currentQueueItem) {
+          showQueueProgress(`⚠️ ${msg} — auto-skipping...`);
+          try { await skipQueueItem(); } catch (e) {}
+          resetPostForm();
+          await new Promise(r => setTimeout(r, 1000));
+          await refreshQueue();
+          if (currentQueueItem) {
+            loadQueueItem();
+            setTimeout(() => { document.getElementById('processBtn').click(); }, 500);
+          }
+          return;
+        }
+        alert(msg + '. Manual override se fix karein.');
+        return;
+      }
 
       const btn = document.getElementById('postJobBtn');
       const btnTextEl = document.getElementById('postBtnText');
@@ -4222,15 +4255,27 @@ ${(articleText || "").substring(0, 2000)}`;
           }
         } else {
           const errMsg = data.message || JSON.stringify(data.errors || data);
-          document.getElementById('postErrorMsg').textContent = 'Error: ' + errMsg;
-          document.getElementById('postErrorBox').classList.remove('hidden');
+          if (queueStarted && currentQueueItem) {
+            showQueueProgress(`⚠️ Post error: ${errMsg.substring(0, 60)} — auto-skipping...`);
+            try { await skipQueueItem(); } catch (se) {}
+            resetPostForm();
+          } else {
+            document.getElementById('postErrorMsg').textContent = 'Error: ' + errMsg;
+            document.getElementById('postErrorBox').classList.remove('hidden');
+          }
         }
       } catch (e) {
-        const isCors = e.name === 'TypeError';
-        document.getElementById('postErrorMsg').textContent = isCors
-          ? 'CORS Error: is page ko https://jobspic.com/test.html se open karo, local file:// se nahi.'
-          : 'Network Error: ' + e.message;
-        document.getElementById('postErrorBox').classList.remove('hidden');
+        if (queueStarted && currentQueueItem) {
+          showQueueProgress(`⚠️ Network error — auto-skipping...`);
+          try { await skipQueueItem(); } catch (se) {}
+          resetPostForm();
+        } else {
+          const isCors = e.name === 'TypeError';
+          document.getElementById('postErrorMsg').textContent = isCors
+            ? 'CORS Error: is page ko https://jobspic.com/test.html se open karo, local file:// se nahi.'
+            : 'Network Error: ' + e.message;
+          document.getElementById('postErrorBox').classList.remove('hidden');
+        }
       } finally {
         btn.disabled = false;
         btnTextEl.textContent = 'Post Job to Database';
