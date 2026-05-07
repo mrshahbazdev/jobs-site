@@ -35,6 +35,6 @@ return [
     |
     */
 
-    'endpoint' => env('INDEXNOW_ENDPOINT', 'https://api.indexnow.org/IndexNow'),
+    'endpoint' => env('INDEXNOW_ENDPOINT', 'https://api.indexnow.org/indexnow'),
 
 ];
