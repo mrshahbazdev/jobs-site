@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\JobListing;
+use App\Observers\JobListingObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        JobListing::observe(JobListingObserver::class);
+
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
 
         // Prevent crashes during migrations or before DB is setup
