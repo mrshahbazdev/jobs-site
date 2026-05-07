@@ -16,6 +16,15 @@ class IndexNowSubmitAll extends Command
     {
         $limit = (int) $this->option('limit');
 
+        $host = parse_url(config('app.url'), PHP_URL_HOST);
+        $key  = config('indexnow.key');
+
+        $this->line("Host: {$host}");
+        $this->line("Key: {$key}");
+        $this->line("Key file: " . url("/{$key}.txt"));
+        $this->line("Endpoint: " . config('indexnow.endpoint'));
+        $this->newLine();
+
         $jobs = JobListing::where('is_active', true)
             ->orderBy('updated_at', 'desc')
             ->get(['slug']);
@@ -31,13 +40,20 @@ class IndexNowSubmitAll extends Command
 
         $this->info("Submitting {$jobs->count()} URL(s) in " . count($chunks) . " batch(es)...");
 
+        $allOk = true;
         foreach ($chunks as $i => $chunk) {
-            $ok = IndexNowService::submitBatch($chunk);
-            $status = $ok ? 'OK' : 'FAILED';
-            $this->line("  Batch " . ($i + 1) . ": {$status} (" . count($chunk) . " URLs)");
+            $result = IndexNowService::submitBatch($chunk);
+            if ($result['ok']) {
+                $this->info("  Batch " . ($i + 1) . ": OK (" . count($chunk) . " URLs)");
+            } else {
+                $allOk = false;
+                $this->error("  Batch " . ($i + 1) . ": FAILED (" . count($chunk) . " URLs)");
+                $this->error("  Error: " . ($result['error'] ?? 'Unknown'));
+            }
         }
 
+        $this->newLine();
         $this->info('Done.');
-        return self::SUCCESS;
+        return $allOk ? self::SUCCESS : self::FAILURE;
     }
 }
