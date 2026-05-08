@@ -2647,6 +2647,11 @@
                 <div>
                   <p class="text-sm text-muted mb2">AI thumbnail generate karein ya manually upload karein. WebP format
                     mein optimize ho ga automatically.</p>
+                  <label class="label">AI Image Model</label>
+                  <select id="thumbModelSelect" style="padding:.5rem .75rem;border-radius:8px;border:1.5px solid var(--border);font-size:.85rem;background:var(--white);color:var(--ink);width:100%;max-width:320px;margin-bottom:.75rem">
+                    <option value="imagen-4">Imagen 4.0 (High Quality)</option>
+                    <option value="gemini-flash">Gemini 3.1 Flash Image</option>
+                  </select>
                   <button type="button" onclick="generateAiThumb()" class="ai-thumb-btn mb2">
                     <span id="aiThumbBtnTxt">✨ Generate AI Thumbnail</span>
                   </button>
@@ -4064,6 +4069,13 @@ ${(articleText || "").substring(0, 2000)}`;
       const title = (document.getElementById('postTitle').value || 'Professional').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
       const dept = (document.getElementById('postDepartment').value || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
       const prompt = `Professional corporate office background for ${title} ${dept}, clean desk, high quality, 8k, photorealistic, without text, textless, empty space for copy.`;
+      const selectedModel = document.getElementById('thumbModelSelect')?.value || 'imagen-4';
+      const apiKey = currentApiKey;
+
+      if (!apiKey) {
+        alert('API Key missing! Baraye meharbani top bar mein apna Gemini API key enter karein.');
+        return;
+      }
 
       btnTxt.innerHTML = '<span class="spin" style="width:14px;height:14px;border-color:#fff3;border-top-color:#fff;display:inline-block"></span> Generating...';
 
@@ -4072,19 +4084,32 @@ ${(articleText || "").substring(0, 2000)}`;
 
       while (!success) {
         try {
-          const url = getGeminiUrl('image');
-          const partsArray = [{ text: prompt }];
-          if (currentBase64Image && currentBase64Image.includes(',')) {
-            partsArray.push({ inlineData: { mimeType: 'image/png', data: currentBase64Image.split(',')[1] } });
+          let apiUrl, payload;
+
+          if (selectedModel === 'imagen-4') {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            payload = {
+              instances: [{ prompt: prompt }],
+              parameters: { sampleCount: 1 }
+            };
+          } else {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`;
+            payload = {
+              contents: [{
+                role: 'user',
+                parts: [{ text: prompt }]
+              }],
+              generationConfig: {
+                responseModalities: ['IMAGE'],
+                imageConfig: { aspectRatio: "1:1" }
+              }
+            };
           }
 
-          const response = await fetch(url, {
+          const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: partsArray }],
-              generationConfig: { responseModalities: ['IMAGE'] }
-            })
+            body: JSON.stringify(payload)
           });
 
           if (!response.ok) {
@@ -4098,7 +4123,13 @@ ${(articleText || "").substring(0, 2000)}`;
           }
 
           const data = await response.json();
-          const base64Image = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+          let base64Image = null;
+
+          if (selectedModel === 'imagen-4') {
+            base64Image = data.predictions?.[0]?.bytesBase64Encoded;
+          } else {
+            base64Image = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+          }
 
           if (base64Image) {
             await new Promise((resolveImg, rejectImg) => {
@@ -4115,10 +4146,10 @@ ${(articleText || "").substring(0, 2000)}`;
             });
             success = true;
           } else {
-            throw new Error('Gemini failed to generate an image.');
+            throw new Error('AI model failed to generate an image.');
           }
         } catch (e) {
-          alert('Gemini Image failed: ' + e.message);
+          alert('Image generation failed: ' + e.message);
           btnTxt.innerText = 'Generate AI Thumbnail';
           break;
         }
