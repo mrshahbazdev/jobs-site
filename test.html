@@ -2765,6 +2765,7 @@
     let currentSchemaJson = '';
     let currentOcrText = '';
     let currentMeta = { jobTitle: '', org: '', city: '', deadline: '' };
+    let watermarkDetected = false;
     let countdownTimer = null;
     let window_auditData = null;
 
@@ -3425,8 +3426,9 @@ Format: Clear markers WATERMARK_STATUS, OCR_TEXT, ARTICLE_MARKDOWN, LSI_TAGS_DAT
         const wmResult = document.getElementById('watermarkResultText');
         wmResult.textContent = wmTxt;
         wmBox.style.display = 'flex';
-        wmBox.style.background = wmTxt.toLowerCase().includes('yes') ? '#fef2f2' : '#f0fdf4';
-        wmBox.style.borderColor = wmTxt.toLowerCase().includes('yes') ? '#fecaca' : '#bbf7d0';
+        watermarkDetected = wmTxt.toLowerCase().includes('yes');
+        wmBox.style.background = watermarkDetected ? '#fef2f2' : '#f0fdf4';
+        wmBox.style.borderColor = watermarkDetected ? '#fecaca' : '#bbf7d0';
 
         // OCR
         currentOcrText = ocrTxt;
@@ -4211,9 +4213,16 @@ ${(articleText || "").substring(0, 2000)}`;
       const gn = id => parseFloat(document.getElementById(id)?.value) || null;
       const gc = id => document.getElementById(id)?.checked || false;
 
+      // If no watermark detected, embed the original image at the top of the article
+      let finalArticleHtml = currentArticleHtml;
+      if (!watermarkDetected && currentBase64Image) {
+        const imgTag = `<img src="${currentBase64Image}" alt="${title}" style="width:100%;height:auto;display:block;object-fit:cover;border-radius:12px;margin-bottom:1.5rem;">`;
+        finalArticleHtml = imgTag + finalArticleHtml;
+      }
+
       const payload = {
         title: title,
-        description: currentArticleHtml,
+        description: finalArticleHtml,
         category_id: categoryId,
         city_id: cityId,
         is_active: isActive,
@@ -4317,6 +4326,7 @@ ${(articleText || "").substring(0, 2000)}`;
       currentArticleHtml = '';
       currentSchemaJson = '';
       processedThumbnailBase64 = null;
+      watermarkDetected = false;
       const inputs = ['postTitle', 'postMetaDesc', 'postDeadline', 'postDepartment', 'postJobRole', 'postExperience', 'postSalaryMin', 'postSalaryMax', 'postQualDegree', 'postSkills', 'postRegCouncil', 'postSubSector', 'postWhatsapp', 'resolvedCategoryId', 'resolvedCityId', 'resolvedGroupId'];
       inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       const selects = ['postProvince', 'postGender', 'postBps', 'postSector', 'postEducation', 'postTestingService', 'postNewspaper', 'postContractType'];
