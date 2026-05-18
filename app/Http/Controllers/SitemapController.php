@@ -65,7 +65,7 @@ class SitemapController extends Controller
         $xml = Cache::remember("sitemap:jobs:{$page}", self::CACHE_TTL, function () use ($page) {
             $jobs = JobListing::active()
                 ->select('slug', 'updated_at')
-                ->orderBy('id')
+                ->orderBy('id', 'desc')
                 ->skip(($page - 1) * self::JOBS_PER_PAGE)
                 ->take(self::JOBS_PER_PAGE)
                 ->get();
