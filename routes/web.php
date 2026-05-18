@@ -11,6 +11,10 @@ use App\Http\Controllers\SitemapController;
 // Homepage & Main Job Routes
 Route::get('/', [JobController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/sitemap-static.xml', [SitemapController::class, 'staticSitemap']);
+Route::get('/sitemap-categories.xml', [SitemapController::class, 'categoriesSitemap']);
+Route::get('/sitemap-cities.xml', [SitemapController::class, 'citiesSitemap']);
+Route::get('/sitemap-jobs-{page}.xml', [SitemapController::class, 'jobsSitemap'])->where('page', '[0-9]+');
 Route::get('/news-sitemap.xml', [SitemapController::class, 'news']);
 Route::get('/image-sitemap.xml', [SitemapController::class, 'images']);
 Route::get('/amp-sitemap.xml', [SitemapController::class, 'amp']);
