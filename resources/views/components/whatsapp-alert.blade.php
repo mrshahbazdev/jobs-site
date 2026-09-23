@@ -1,6 +1,7 @@
 @props(['variant' => 'sidebar', 'title' => null, 'subtitle' => null, 'icon' => null])
 
-@if($variant === 'sidebar')
+@if(($settings['whatsapp_alert_number'] ?? '') === '')
+@elseif($variant === 'sidebar')
 <div class="bg-gradient-to-br from-[#075E54] to-[#128C7E] rounded-3xl p-6 text-white shadow-xl mb-4 relative overflow-hidden group">
     <!-- Decorative background elements -->
     <div class="absolute -right-6 -bottom-6 opacity-20 group-hover:scale-110 transition-transform duration-700">
@@ -47,7 +48,7 @@
         if(!number) return alert('Please enter your WhatsApp number');
         
         const text = `Assalamu Alaikum! I want to subscribe to Jobs Alerts.%0AName: ${name}%0ANumber: ${number}`;
-        window.open(`https://wa.me/{{ $settings['whatsapp_alert_number'] ?? '923000000000' }}?text=${text}`, '_blank');
+        window.open(`https://wa.me/{{ $settings['whatsapp_alert_number'] }}?text=${text}`, '_blank');
     }
 </script>
 
