@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\DetectsStaleAds;
+use App\Models\JobSourceImage;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use App\Models\JobListing;
-use App\Models\Category;
-use App\Models\City;
-use App\Models\JobSourceImage;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class ScrapePakistanJobsBank extends Command
 {
+    use DetectsStaleAds;
+
     protected $signature = 'scrape:pakistan-jobs {--only-links} {--image-id=} {--limit=}';
+
     protected $description = 'Scrape latest jobs from PakistanJobsBank.com (Listing or Deep Scrape)';
 
     /**
@@ -87,14 +87,15 @@ class ScrapePakistanJobsBank extends Command
                     break;
                 }
 
-                $url = self::BASE_URL . $page;
+                $url = self::BASE_URL.$page;
                 $this->info("Fetching {$url}...");
 
                 $response = $this->httpClient()->get($url);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::warning('[Scraper] page fetch failed', ['url' => $url, 'status' => $response->status()]);
                     $this->error("Failed: {$url} (status {$response->status()})");
+
                     continue;
                 }
 
@@ -103,9 +104,9 @@ class ScrapePakistanJobsBank extends Command
                     continue;
                 }
 
-                $dom = new \DOMDocument();
+                $dom = new \DOMDocument;
                 libxml_use_internal_errors(true);
-                $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+                $dom->loadHTML('<?xml encoding="UTF-8">'.$html);
                 libxml_clear_errors();
                 $xpath = new \DOMXPath($dom);
 
@@ -125,20 +126,28 @@ class ScrapePakistanJobsBank extends Command
                     }
 
                     try {
-                        $tds = $xpath->query("td", $row);
+                        $tds = $xpath->query('td', $row);
                         if ($tds->length < 2) {
                             continue;
                         }
 
                         $td1 = $tds->item(0);
-                        $titleNode = $xpath->query(".//strong/a", $td1)->item(0);
-                        if (!$titleNode) {
+                        $titleNode = $xpath->query('.//strong/a', $td1)->item(0);
+                        if (! $titleNode) {
+                            continue;
+                        }
+
+                        // Skip recycled ads: any parseable date on the row that is clearly old
+                        $postedAt = $this->dateFromText($row->textContent);
+                        if ($this->listingIsStale($postedAt)) {
+                            $skipped++;
+
                             continue;
                         }
 
                         $title = trim($titleNode->textContent);
                         $relativeLink = $titleNode->getAttribute('href');
-                        $fullJobUrl = self::BASE_URL . $relativeLink;
+                        $fullJobUrl = self::BASE_URL.$relativeLink;
 
                         if (isset($seenUrls[$fullJobUrl])) {
                             continue;
@@ -155,6 +164,7 @@ class ScrapePakistanJobsBank extends Command
                                 'new' => $count,
                                 'skipped' => $skipped,
                             ]);
+
                             continue;
                         }
 
@@ -164,7 +174,7 @@ class ScrapePakistanJobsBank extends Command
                             'is_processed' => false,
                         ]);
 
-                        if (!$onlyLinks) {
+                        if (! $onlyLinks) {
                             $this->processSingleImage($sourceRecord->id);
                         }
 
@@ -200,13 +210,14 @@ class ScrapePakistanJobsBank extends Command
                 'errors' => $errors,
                 'skipped' => $skipped,
             ]);
-            $this->info("Total unique: " . count($seenUrls) . ", New: {$count}, Skipped: {$skipped}, Errors: {$errors}.");
+            $this->info('Total unique: '.count($seenUrls).", New: {$count}, Skipped: {$skipped}, Errors: {$errors}.");
         } catch (\Throwable $e) {
             Cache::put('scraper_progress', ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $e->getMessage()], 600);
             Log::error('[Scraper] listing fatal error', ['error' => $e->getMessage()]);
             if ($this->output) {
-                $this->error("Error: " . $e->getMessage());
+                $this->error('Error: '.$e->getMessage());
             }
+
             return 1;
         }
 
@@ -216,15 +227,16 @@ class ScrapePakistanJobsBank extends Command
     public function processSingleImage($id)
     {
         $source = JobSourceImage::find($id);
-        if (!$source) {
+        if (! $source) {
             if ($this->output) {
-                $this->error("Source image record not found.");
+                $this->error('Source image record not found.');
             }
+
             return 1;
         }
 
         if ($this->output) {
-            $this->info("Processing: " . $source->title);
+            $this->info('Processing: '.$source->title);
         }
 
         try {
@@ -234,6 +246,15 @@ class ScrapePakistanJobsBank extends Command
             $result = null;
         }
 
+        if ($result && ($result['stale'] ?? false)) {
+            $source->update(['publish_status' => 'skipped', 'is_processed' => true]);
+            if ($this->output) {
+                $this->warn('  -> Skipped: ad image is older than '.self::STALE_IMAGE_DAYS.' days (recycled ad).');
+            }
+
+            return 0;
+        }
+
         if ($result) {
             $source->update([
                 'local_image_path' => $result['path'],
@@ -241,50 +262,61 @@ class ScrapePakistanJobsBank extends Command
                 'is_processed' => true,
             ]);
             if ($this->output) {
-                $this->info("  -> Image saved: " . $result['path']);
+                $this->info('  -> Image saved: '.$result['path']);
             }
+
             return 0;
         }
 
         if ($this->output) {
-            $this->error("  -> Failed to fetch image.");
+            $this->error('  -> Failed to fetch image.');
         }
+
         return 1;
     }
 
     private function deepScrapeImage($url, $title)
     {
         $response = $this->httpClient()->get($url);
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning('[Scraper] detail page fetch failed', ['url' => $url, 'status' => $response->status()]);
+
             return null;
         }
 
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="UTF-8">' . $response->body());
+        $dom->loadHTML('<?xml encoding="UTF-8">'.$response->body());
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 
         $imgNode = $xpath->query("//img[@id='Contents_AdImage']")->item(0);
-        if (!$imgNode) {
+        if (! $imgNode) {
             Log::info('[Scraper] ad image not present on detail page', ['url' => $url]);
+
             return null;
         }
 
         $imgSrc = $imgNode->getAttribute('src');
+        if ($this->imageUrlIsOld($imgSrc)) {
+            Log::info('[Scraper] stale ad image (old upload month)', ['url' => $url, 'image' => $imgSrc]);
+
+            return ['stale' => true];
+        }
+
         $fullImgUrl = $imgSrc;
         if (Str::startsWith($imgSrc, '/')) {
-            $fullImgUrl = self::BASE_URL . $imgSrc;
-        } elseif (!Str::startsWith($imgSrc, ['http://', 'https://'])) {
-            $fullImgUrl = self::BASE_URL . '/' . ltrim($imgSrc, '/');
+            $fullImgUrl = self::BASE_URL.$imgSrc;
+        } elseif (! Str::startsWith($imgSrc, ['http://', 'https://'])) {
+            $fullImgUrl = self::BASE_URL.'/'.ltrim($imgSrc, '/');
         }
 
         Cache::put('last_scraped_img_url', $fullImgUrl, 60);
 
         $imgResponse = $this->httpClient()->get($fullImgUrl);
-        if (!$imgResponse->successful()) {
+        if (! $imgResponse->successful()) {
             Log::warning('[Scraper] image fetch failed', ['url' => $fullImgUrl, 'status' => $imgResponse->status()]);
+
             return null;
         }
 
@@ -295,7 +327,7 @@ class ScrapePakistanJobsBank extends Command
 
         // Derive extension from URL/content-type rather than hardcoding .gif
         $ext = strtolower(pathinfo(parse_url($fullImgUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
-        if (!in_array($ext, ['gif', 'jpg', 'jpeg', 'png', 'webp'], true)) {
+        if (! in_array($ext, ['gif', 'jpg', 'jpeg', 'png', 'webp'], true)) {
             $contentType = $imgResponse->header('Content-Type') ?? '';
             $ext = match (true) {
                 str_contains($contentType, 'jpeg') => 'jpg',
@@ -306,7 +338,7 @@ class ScrapePakistanJobsBank extends Command
             };
         }
 
-        $filename = 'job-sources/' . Str::slug($title) . '-' . time() . '.' . $ext;
+        $filename = 'job-sources/'.Str::slug($title).'-'.time().'.'.$ext;
         Storage::disk('public')->put($filename, $imgData, 'public');
 
         return [

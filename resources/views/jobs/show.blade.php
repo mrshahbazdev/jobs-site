@@ -34,7 +34,7 @@
             <script type="application/ld+json">
             {!! $job->schema_json !!}
             </script>
-        @else
+        @elseif($job->generateSchema())
             <script type="application/ld+json">
             {!! $job->generateSchema() !!}
             </script>
