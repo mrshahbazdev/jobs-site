@@ -37,7 +37,7 @@ Environment (read from process env, falling back to the repo root `.env`):
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `JOBS_SITE_URL` | `APP_URL` or `http://127.0.0.1:8000` | Base URL of the Laravel app |
+| `JOBS_SITE_URL` | `APP_URL` or `https://jobspic.com` | Base URL of the Laravel app |
 | `MCP_API_TOKEN` | – | Bearer token for `/api/mcp/*` (required) |
 | `JOBS_SITE_MCP_PORT` | `3040` | Port for `--http` mode |
 | `JOBS_SITE_MCP_HTTP_TOKEN` | `MCP_API_TOKEN` | Bearer token clients must send to the HTTP transport |
@@ -52,7 +52,7 @@ Environment (read from process env, falling back to the repo root `.env`):
       "command": "node",
       "args": ["/absolute/path/jobs-site/mcp/server.js"],
       "env": {
-        "JOBS_SITE_URL": "https://your-domain.com",
+        "JOBS_SITE_URL": "https://jobspic.com",
         "MCP_API_TOKEN": "<token>"
       }
     }
@@ -63,7 +63,7 @@ Environment (read from process env, falling back to the repo root `.env`):
 ### Streamable HTTP (remote agents)
 
 ```bash
-JOBS_SITE_URL=https://your-domain.com MCP_API_TOKEN=<token> npm run start:http
+JOBS_SITE_URL=https://jobspic.com MCP_API_TOKEN=<token> npm run start:http
 # POST http://localhost:3040/mcp  with  Authorization: Bearer <token>
 # GET  http://localhost:3040/healthz
 ```

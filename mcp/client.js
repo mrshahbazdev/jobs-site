@@ -24,7 +24,7 @@ function loadDotEnv() {
 loadDotEnv();
 
 export const config = {
-  baseUrl: (process.env.JOBS_SITE_URL || process.env.APP_URL || 'http://127.0.0.1:8000').replace(/\/+$/, ''),
+  baseUrl: (process.env.JOBS_SITE_URL || process.env.APP_URL || 'https://jobspic.com').replace(/\/+$/, ''),
   token: process.env.MCP_API_TOKEN || '',
   timeoutMs: parseInt(process.env.JOBS_SITE_MCP_TIMEOUT_MS || '120000', 10),
   httpPort: parseInt(process.env.JOBS_SITE_MCP_PORT || '3040', 10),
