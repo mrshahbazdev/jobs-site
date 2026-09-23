@@ -1,0 +1,3914 @@
+[
+  {
+    "name": "site_overview",
+    "title": "Site overview & health",
+    "description": "Full health snapshot: app/Laravel/PHP versions, DB connectivity, cache/queue drivers, integration flags (Gemini, VAPID, IndexNow, cron), record counts, queue depth and scraper states.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/health"
+    }
+  },
+  {
+    "name": "db_schema",
+    "title": "Database schema",
+    "description": "List tables and columns (type, nullable, default). Optionally restrict to one table and include row counts.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "description": "Only this table.",
+          "type": "string"
+        },
+        "with_counts": {
+          "description": "Include row counts per table.",
+          "type": "boolean"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/schema"
+    }
+  },
+  {
+    "name": "db_query",
+    "title": "Read-only SQL query",
+    "description": "Run a single read-only SQL statement (SELECT / WITH / EXPLAIN / PRAGMA). Mutating statements are rejected server-side; rows are capped.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/sql"
+    }
+  },
+  {
+    "name": "routes_list",
+    "title": "Application routes",
+    "description": "List registered Laravel routes (methods, URI, name, action, middleware). Optional substring filter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "description": "Substring matched against URI, name or action.",
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/routes"
+    }
+  },
+  {
+    "name": "logs_tail",
+    "title": "Tail application logs",
+    "description": "Return the last N lines from storage/logs/<file>, optionally filtered by level (ERROR, WARNING, INFO...).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "level": {
+          "description": "Log level filter, e.g. ERROR.",
+          "type": "string"
+        },
+        "file": {
+          "description": "Log file name (default laravel.log).",
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/logs"
+    }
+  },
+  {
+    "name": "artisan_commands",
+    "title": "Allowed Artisan commands",
+    "description": "List Artisan commands (and their permitted options) that artisan_run may execute.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/artisan"
+    }
+  },
+  {
+    "name": "artisan_run",
+    "title": "Run Artisan command",
+    "description": "Execute an allow-listed Artisan command (scrapers, push, IndexNow, queue, migrate, cache/config/route/view clear+cache, about). Returns output and exit code.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "e.g. scrape:jobsalert, push:send-new-jobs, optimize:clear"
+        },
+        "arguments": {
+          "description": "Option map, e.g. {\"--limit\": 5, \"--dry-run\": true}",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      },
+      "required": [
+        "command"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/artisan"
+    }
+  },
+  {
+    "name": "queue_status",
+    "title": "Queue & failed jobs",
+    "description": "Pending and failed database queue jobs plus per-source scraper progress.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/queue"
+    }
+  },
+  {
+    "name": "cache_manage",
+    "title": "Cache: clear / forget / get",
+    "description": "Flush the whole application cache, forget one key, or read one key.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "clear",
+            "forget",
+            "get"
+          ]
+        },
+        "key": {
+          "description": "Cache key (required for forget/get).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/cache"
+    }
+  },
+  {
+    "name": "jobs_search",
+    "title": "Search job listings",
+    "description": "Advanced filtered/paginated search over job listings (text, taxonomy, salary, flags, dates, deadlines, sorting).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "description": "Full-text search across title, description, company, department.",
+          "type": "string"
+        },
+        "category_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "city_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "province": {
+          "type": "string"
+        },
+        "job_type": {
+          "type": "string"
+        },
+        "contract_type": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "sector": {
+          "type": "string"
+        },
+        "sub_sector": {
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "newspaper": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "bps_scale": {
+          "type": "string"
+        },
+        "testing_service": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "salary_min": {
+          "type": "number"
+        },
+        "salary_max": {
+          "type": "number"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "is_featured": {
+          "type": "boolean"
+        },
+        "is_premium": {
+          "type": "boolean"
+        },
+        "is_overseas": {
+          "type": "boolean"
+        },
+        "is_remote": {
+          "type": "boolean"
+        },
+        "has_walkin_interview": {
+          "type": "boolean"
+        },
+        "is_whatsapp_apply": {
+          "type": "boolean"
+        },
+        "is_retired_army": {
+          "type": "boolean"
+        },
+        "is_student_friendly": {
+          "type": "boolean"
+        },
+        "has_accommodation": {
+          "type": "boolean"
+        },
+        "has_transport": {
+          "type": "boolean"
+        },
+        "has_medical_insurance": {
+          "type": "boolean"
+        },
+        "is_special_quota": {
+          "type": "boolean"
+        },
+        "is_minority_quota": {
+          "type": "boolean"
+        },
+        "date_from": {
+          "description": "Created on/after (Y-m-d).",
+          "type": "string"
+        },
+        "date_to": {
+          "description": "Created on/before (Y-m-d).",
+          "type": "string"
+        },
+        "deadline_from": {
+          "type": "string"
+        },
+        "deadline_to": {
+          "type": "string"
+        },
+        "expired": {
+          "description": "true = only expired deadlines, false = only non-expired.",
+          "type": "boolean"
+        },
+        "sort_by": {
+          "description": "created_at | deadline | title | salary_min | salary_max | is_featured ...",
+          "type": "string"
+        },
+        "sort_order": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/v2/jobs"
+    }
+  },
+  {
+    "name": "jobs_get",
+    "title": "Get job",
+    "description": "Fetch one job listing by numeric ID or slug, including category, city and schema.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id_or_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id_or_slug"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/v2/jobs/{id_or_slug}"
+    }
+  },
+  {
+    "name": "jobs_stats",
+    "title": "Job stats",
+    "description": "Aggregate job statistics (totals, active, featured, per category/city, recent).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/v2/jobs/stats"
+    }
+  },
+  {
+    "name": "jobs_analytics",
+    "title": "Job analytics",
+    "description": "Time-windowed analytics: jobs created per day, expiring soon, top sectors/provinces/education/newspapers/job types/testing services/departments/companies, flag counts, subscribers, push, comments.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/analytics"
+    }
+  },
+  {
+    "name": "jobs_create",
+    "title": "Create job",
+    "description": "Create a job listing. Slug, thumbnail and JobPosting schema are generated automatically when omitted.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "category_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "city_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "slug": {
+          "type": "string"
+        },
+        "schema_json": {
+          "description": "Raw JSON-LD JobPosting string; auto-generated when omitted.",
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "is_featured": {
+          "type": "boolean"
+        },
+        "is_premium": {
+          "type": "boolean"
+        },
+        "deadline": {
+          "description": "Free-form or Y-m-d deadline.",
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "whatsapp_number": {
+          "type": "string"
+        },
+        "salary_min": {
+          "type": "number"
+        },
+        "salary_max": {
+          "type": "number"
+        },
+        "salary_range": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "string"
+        },
+        "job_type": {
+          "type": "string"
+        },
+        "contract_type": {
+          "type": "string"
+        },
+        "job_role": {
+          "type": "string"
+        },
+        "skills": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "qualification_degree": {
+          "type": "string"
+        },
+        "newspaper": {
+          "type": "string"
+        },
+        "province": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "bps_scale": {
+          "type": "string"
+        },
+        "testing_service": {
+          "type": "string"
+        },
+        "sector": {
+          "type": "string"
+        },
+        "sub_sector": {
+          "type": "string"
+        },
+        "registration_council": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "is_overseas": {
+          "type": "boolean"
+        },
+        "is_remote": {
+          "type": "boolean"
+        },
+        "has_walkin_interview": {
+          "type": "boolean"
+        },
+        "is_whatsapp_apply": {
+          "type": "boolean"
+        },
+        "is_retired_army": {
+          "type": "boolean"
+        },
+        "is_student_friendly": {
+          "type": "boolean"
+        },
+        "has_accommodation": {
+          "type": "boolean"
+        },
+        "has_transport": {
+          "type": "boolean"
+        },
+        "has_medical_insurance": {
+          "type": "boolean"
+        },
+        "is_special_quota": {
+          "type": "boolean"
+        },
+        "is_minority_quota": {
+          "type": "boolean"
+        },
+        "meta_description": {
+          "description": "SEO meta description (max 160 chars).",
+          "type": "string"
+        },
+        "meta_keywords": {
+          "type": "string"
+        },
+        "job_source_image_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "category_id",
+        "city_id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/v2/jobs"
+    }
+  },
+  {
+    "name": "jobs_update",
+    "title": "Update job",
+    "description": "Partially update a job listing by ID.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "description": "Job title (max 500).",
+          "type": "string"
+        },
+        "description": {
+          "description": "Job description HTML/text (stored as description_html).",
+          "type": "string"
+        },
+        "category_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "city_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "slug": {
+          "type": "string"
+        },
+        "schema_json": {
+          "description": "Raw JSON-LD JobPosting string; auto-generated when omitted.",
+          "type": "string"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "is_featured": {
+          "type": "boolean"
+        },
+        "is_premium": {
+          "type": "boolean"
+        },
+        "deadline": {
+          "description": "Free-form or Y-m-d deadline.",
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "whatsapp_number": {
+          "type": "string"
+        },
+        "salary_min": {
+          "type": "number"
+        },
+        "salary_max": {
+          "type": "number"
+        },
+        "salary_range": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "string"
+        },
+        "job_type": {
+          "type": "string"
+        },
+        "contract_type": {
+          "type": "string"
+        },
+        "job_role": {
+          "type": "string"
+        },
+        "skills": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "qualification_degree": {
+          "type": "string"
+        },
+        "newspaper": {
+          "type": "string"
+        },
+        "province": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "bps_scale": {
+          "type": "string"
+        },
+        "testing_service": {
+          "type": "string"
+        },
+        "sector": {
+          "type": "string"
+        },
+        "sub_sector": {
+          "type": "string"
+        },
+        "registration_council": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "is_overseas": {
+          "type": "boolean"
+        },
+        "is_remote": {
+          "type": "boolean"
+        },
+        "has_walkin_interview": {
+          "type": "boolean"
+        },
+        "is_whatsapp_apply": {
+          "type": "boolean"
+        },
+        "is_retired_army": {
+          "type": "boolean"
+        },
+        "is_student_friendly": {
+          "type": "boolean"
+        },
+        "has_accommodation": {
+          "type": "boolean"
+        },
+        "has_transport": {
+          "type": "boolean"
+        },
+        "has_medical_insurance": {
+          "type": "boolean"
+        },
+        "is_special_quota": {
+          "type": "boolean"
+        },
+        "is_minority_quota": {
+          "type": "boolean"
+        },
+        "meta_description": {
+          "description": "SEO meta description (max 160 chars).",
+          "type": "string"
+        },
+        "meta_keywords": {
+          "type": "string"
+        },
+        "job_source_image_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/v2/jobs/{id}"
+    }
+  },
+  {
+    "name": "jobs_delete",
+    "title": "Delete job",
+    "description": "Permanently delete a job listing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/v2/jobs/{id}"
+    }
+  },
+  {
+    "name": "jobs_toggle",
+    "title": "Toggle job flag",
+    "description": "Toggle is_active / is_featured / is_premium on a job.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "is_active",
+            "is_featured",
+            "is_premium"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "field"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/v2/jobs/{id}/toggle"
+    }
+  },
+  {
+    "name": "jobs_duplicate",
+    "title": "Duplicate job",
+    "description": "Clone a job listing (new slug, inactive copy).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/v2/jobs/{id}/duplicate"
+    }
+  },
+  {
+    "name": "jobs_bulk_create",
+    "title": "Bulk create jobs",
+    "description": "Create many job listings in one call.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "jobs": {
+          "minItems": 1,
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "category_id": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "city_id": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "slug": {
+                "type": "string"
+              },
+              "schema_json": {
+                "description": "Raw JSON-LD JobPosting string; auto-generated when omitted.",
+                "type": "string"
+              },
+              "is_active": {
+                "type": "boolean"
+              },
+              "is_featured": {
+                "type": "boolean"
+              },
+              "is_premium": {
+                "type": "boolean"
+              },
+              "deadline": {
+                "description": "Free-form or Y-m-d deadline.",
+                "type": "string"
+              },
+              "department": {
+                "type": "string"
+              },
+              "company_name": {
+                "type": "string"
+              },
+              "whatsapp_number": {
+                "type": "string"
+              },
+              "salary_min": {
+                "type": "number"
+              },
+              "salary_max": {
+                "type": "number"
+              },
+              "salary_range": {
+                "type": "string"
+              },
+              "experience": {
+                "type": "string"
+              },
+              "job_type": {
+                "type": "string"
+              },
+              "contract_type": {
+                "type": "string"
+              },
+              "job_role": {
+                "type": "string"
+              },
+              "skills": {
+                "type": "string"
+              },
+              "education": {
+                "type": "string"
+              },
+              "qualification_degree": {
+                "type": "string"
+              },
+              "newspaper": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "gender": {
+                "type": "string"
+              },
+              "bps_scale": {
+                "type": "string"
+              },
+              "testing_service": {
+                "type": "string"
+              },
+              "sector": {
+                "type": "string"
+              },
+              "sub_sector": {
+                "type": "string"
+              },
+              "registration_council": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "is_overseas": {
+                "type": "boolean"
+              },
+              "is_remote": {
+                "type": "boolean"
+              },
+              "has_walkin_interview": {
+                "type": "boolean"
+              },
+              "is_whatsapp_apply": {
+                "type": "boolean"
+              },
+              "is_retired_army": {
+                "type": "boolean"
+              },
+              "is_student_friendly": {
+                "type": "boolean"
+              },
+              "has_accommodation": {
+                "type": "boolean"
+              },
+              "has_transport": {
+                "type": "boolean"
+              },
+              "has_medical_insurance": {
+                "type": "boolean"
+              },
+              "is_special_quota": {
+                "type": "boolean"
+              },
+              "is_minority_quota": {
+                "type": "boolean"
+              },
+              "meta_description": {
+                "description": "SEO meta description (max 160 chars).",
+                "type": "string"
+              },
+              "meta_keywords": {
+                "type": "string"
+              },
+              "job_source_image_id": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "title",
+              "description",
+              "category_id",
+              "city_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "jobs"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/v2/jobs/bulk"
+    }
+  },
+  {
+    "name": "jobs_bulk_status",
+    "title": "Bulk set job flag",
+    "description": "Set is_active / is_featured / is_premium for many jobs at once.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "is_active",
+            "is_featured",
+            "is_premium"
+          ]
+        },
+        "value": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ids",
+        "field",
+        "value"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/v2/jobs/bulk-status"
+    }
+  },
+  {
+    "name": "jobs_bulk_delete",
+    "title": "Bulk delete jobs",
+    "description": "Permanently delete many jobs.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/v2/jobs/bulk"
+    }
+  },
+  {
+    "name": "jobs_deactivate_expired",
+    "title": "Deactivate expired jobs",
+    "description": "Mark jobs whose deadline passed (minus grace days) as inactive. Use dry_run to preview.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "grace_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "dry_run": {
+          "type": "boolean"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/jobs/deactivate-expired"
+    }
+  },
+  {
+    "name": "jobs_regenerate_schema",
+    "title": "Regenerate JobPosting schema",
+    "description": "Rebuild schema_json (JSON-LD JobPosting) for given IDs, or for jobs missing it. force=true overwrites existing.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "only_missing": {
+          "type": "boolean"
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/jobs/regenerate-schema"
+    }
+  },
+  {
+    "name": "categories_list",
+    "title": "List categories",
+    "description": "All job categories (id, name, slug, icon).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/categories"
+    }
+  },
+  {
+    "name": "categories_create",
+    "title": "Create category",
+    "description": "Create (or fetch existing) category by name; optional landing group attachment.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "landing_group_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/categories"
+    }
+  },
+  {
+    "name": "categories_resolve",
+    "title": "Resolve category from title",
+    "description": "Heuristically pick the best category for a job title.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/categories/resolve"
+    }
+  },
+  {
+    "name": "categories_update",
+    "title": "Update category",
+    "description": "Update category",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "icon_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/categories/{id}"
+    }
+  },
+  {
+    "name": "categories_delete",
+    "title": "Delete category",
+    "description": "Delete a category. If it has jobs you must pass reassign_to (another category id).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reassign_to": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/categories/{id}"
+    }
+  },
+  {
+    "name": "categories_merge",
+    "title": "Merge categories",
+    "description": "Move all jobs & subscribers from source categories into target and delete the sources.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source_ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "target_id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "source_ids",
+        "target_id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/categories/merge"
+    }
+  },
+  {
+    "name": "cities_list",
+    "title": "List cities",
+    "description": "All cities (id, name, slug).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/cities"
+    }
+  },
+  {
+    "name": "cities_create",
+    "title": "Create city",
+    "description": "Create city",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/cities"
+    }
+  },
+  {
+    "name": "cities_update",
+    "title": "Update city",
+    "description": "Update city",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/cities/{id}"
+    }
+  },
+  {
+    "name": "cities_delete",
+    "title": "Delete city",
+    "description": "Delete a city. If it has jobs you must pass reassign_to (another city id).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reassign_to": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/cities/{id}"
+    }
+  },
+  {
+    "name": "scraper_status",
+    "title": "Scraper status",
+    "description": "Progress of one scraper source, or all sources when omitted.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "pakistan-jobs",
+            "jobsalert",
+            "jobz-pk"
+          ]
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/scraper-status"
+    }
+  },
+  {
+    "name": "scraper_trigger",
+    "title": "Trigger scraper",
+    "description": "Queue a scrape run for a source. mode=links collects new job links only; mode=full also processes images/AI.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "pakistan-jobs",
+            "jobsalert",
+            "jobz-pk"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "links",
+            "full"
+          ]
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/trigger-scrape"
+    }
+  },
+  {
+    "name": "scraper_process_image",
+    "title": "Process one queued image",
+    "description": "Run the scraper pipeline for a single job_source_images row (download + extract).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "pakistan-jobs",
+            "jobsalert",
+            "jobz-pk"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/scrape-image"
+    }
+  },
+  {
+    "name": "scraper_queue_stats",
+    "title": "Scraper queue stats",
+    "description": "Scraper queue stats",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/v2/scraper-queue/stats"
+    }
+  },
+  {
+    "name": "scraper_queue_search",
+    "title": "Search scraper queue",
+    "description": "Search job_source_images by status, text and source domain.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "published",
+            "skipped",
+            "failed"
+          ]
+        },
+        "q": {
+          "type": "string"
+        },
+        "source": {
+          "description": "Substring of source_page_url, e.g. jobsalert.pk",
+          "type": "string"
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/scraper-queue"
+    }
+  },
+  {
+    "name": "scraper_queue_next",
+    "title": "Next pending scraped item",
+    "description": "Fetch the next pending scraped item to publish.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/v2/scraper-queue/next"
+    }
+  },
+  {
+    "name": "scraper_queue_set_status",
+    "title": "Set scraped item status",
+    "description": "Set scraped item status",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "published",
+            "skipped",
+            "failed"
+          ]
+        },
+        "published_job_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "status"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/v2/scraper-queue/{id}/status"
+    }
+  },
+  {
+    "name": "scraper_queue_bulk_status",
+    "title": "Bulk set scraped item status",
+    "description": "Bulk set scraped item status",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "published",
+            "skipped",
+            "failed"
+          ]
+        }
+      },
+      "required": [
+        "ids",
+        "status"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/scraper-queue/bulk-status"
+    }
+  },
+  {
+    "name": "scraper_queue_purge",
+    "title": "Purge scraper queue",
+    "description": "Delete skipped/failed/published scraped items older than N days. dry_run previews the count.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "skipped",
+            "failed",
+            "published"
+          ]
+        },
+        "older_than_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "dry_run": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/scraper-queue/purge"
+    }
+  },
+  {
+    "name": "seo_audit",
+    "title": "SEO audit",
+    "description": "Audit active jobs for missing meta descriptions, keywords, schema, short titles/descriptions, missing deadlines and duplicate slugs.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/seo/audit"
+    }
+  },
+  {
+    "name": "indexnow_submit",
+    "title": "Submit URLs to IndexNow",
+    "description": "Ping IndexNow (Bing/Yandex/etc.) with explicit URLs and/or job IDs (resolved to job URLs).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "job_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/indexnow"
+    }
+  },
+  {
+    "name": "ai_extract_job",
+    "title": "AI extract job metadata (Gemini)",
+    "description": "Use Gemini to extract structured metadata from raw HTML or from an existing job. apply=true writes the extracted fields back to the job.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "html": {
+          "description": "Raw job advert HTML/text.",
+          "type": "string"
+        },
+        "job_id": {
+          "description": "Existing job to analyse (uses its description).",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "apply": {
+          "type": "boolean"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/ai/extract"
+    }
+  },
+  {
+    "name": "push_stats",
+    "title": "Web push stats",
+    "description": "VAPID configuration, subscription totals, failing endpoints, breakdown by category/city, jobs awaiting push.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/push/stats"
+    }
+  },
+  {
+    "name": "push_broadcast",
+    "title": "Broadcast web push",
+    "description": "Send a custom push notification to all (or category/city-filtered) subscribers. dry_run returns recipient count only.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "category_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "city_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "dry_run": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "title",
+        "body"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/push/broadcast"
+    }
+  },
+  {
+    "name": "posts_list",
+    "title": "List blog posts",
+    "description": "List blog posts",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string"
+        },
+        "published": {
+          "type": "boolean"
+        },
+        "with_content": {
+          "type": "boolean"
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/posts"
+    }
+  },
+  {
+    "name": "posts_get",
+    "title": "Get blog post",
+    "description": "Get blog post",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id_or_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id_or_slug"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/posts/{id_or_slug}"
+    }
+  },
+  {
+    "name": "posts_create",
+    "title": "Create blog post",
+    "description": "Create blog post",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "content": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "is_published": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "title",
+        "content"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/posts"
+    }
+  },
+  {
+    "name": "posts_update",
+    "title": "Update blog post",
+    "description": "Update blog post",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "is_published": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/posts/{id}"
+    }
+  },
+  {
+    "name": "posts_delete",
+    "title": "Delete blog post",
+    "description": "Delete blog post",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/posts/{id}"
+    }
+  },
+  {
+    "name": "settings_get",
+    "title": "Get site settings",
+    "description": "All key/value site settings (ad slots, header tags, etc.).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/settings"
+    }
+  },
+  {
+    "name": "settings_set",
+    "title": "Upsert site settings",
+    "description": "Upsert site settings",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "settings"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/settings"
+    }
+  },
+  {
+    "name": "settings_delete",
+    "title": "Delete setting",
+    "description": "Delete setting",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/settings/{key}"
+    }
+  },
+  {
+    "name": "comments_list",
+    "title": "List comments",
+    "description": "Comments by moderation status (pending default, approved, all).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "all"
+          ]
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/comments"
+    }
+  },
+  {
+    "name": "comments_moderate",
+    "title": "Moderate comments",
+    "description": "Moderate comments",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "approve",
+            "reject",
+            "delete"
+          ]
+        }
+      },
+      "required": [
+        "ids",
+        "action"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/comments/moderate"
+    }
+  },
+  {
+    "name": "subscribers_list",
+    "title": "List subscribers",
+    "description": "Email/WhatsApp job-alert subscribers with summary counts.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/subscribers"
+    }
+  },
+  {
+    "name": "subscribers_update",
+    "title": "Update subscriber",
+    "description": "Update subscriber",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "category_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "city_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/subscribers/{id}"
+    }
+  },
+  {
+    "name": "subscribers_delete",
+    "title": "Delete subscriber",
+    "description": "Delete subscriber",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/subscribers/{id}"
+    }
+  },
+  {
+    "name": "landing_get",
+    "title": "Landing groups & links",
+    "description": "All landing-page groups with their links and attached categories.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/landing"
+    }
+  },
+  {
+    "name": "landing_group_create",
+    "title": "Create landing group",
+    "description": "Create landing group",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/landing-groups"
+    }
+  },
+  {
+    "name": "landing_group_update",
+    "title": "Update landing group",
+    "description": "Update landing group",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "sub_label": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "section_type": {
+          "type": "string",
+          "enum": [
+            "grid",
+            "strip",
+            "industry"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/landing-groups/{id}"
+    }
+  },
+  {
+    "name": "landing_group_delete",
+    "title": "Delete landing group",
+    "description": "Delete landing group",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/landing-groups/{id}"
+    }
+  },
+  {
+    "name": "landing_link_create",
+    "title": "Create landing link",
+    "description": "Create landing link",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "route_name": {
+          "type": "string"
+        },
+        "route_param": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "landing_group_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "title",
+        "landing_group_id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/landing-links"
+    }
+  },
+  {
+    "name": "landing_link_update",
+    "title": "Update landing link",
+    "description": "Update landing link",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "landing_group_id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "route_name": {
+          "type": "string"
+        },
+        "route_param": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/landing-links/{id}"
+    }
+  },
+  {
+    "name": "landing_link_delete",
+    "title": "Delete landing link",
+    "description": "Delete landing link",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/landing-links/{id}"
+    }
+  },
+  {
+    "name": "home_blocks_list",
+    "title": "List home/page blocks",
+    "description": "List home/page blocks",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_slug": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/home-blocks"
+    }
+  },
+  {
+    "name": "home_blocks_create",
+    "title": "Create home block",
+    "description": "Create home block",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_slug": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "list_source": {
+          "type": "string"
+        },
+        "display_type": {
+          "type": "string"
+        },
+        "heading_text": {
+          "type": "string"
+        },
+        "sub_text": {
+          "type": "string"
+        },
+        "job_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "show_sidebar": {
+          "type": "boolean"
+        },
+        "variant": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "settings": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/home-blocks"
+    }
+  },
+  {
+    "name": "home_blocks_update",
+    "title": "Update home block",
+    "description": "Update home block",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "page_slug": {
+          "type": "string"
+        },
+        "type": {
+          "description": "Block type key used by the home page renderer.",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "list_source": {
+          "type": "string"
+        },
+        "display_type": {
+          "type": "string"
+        },
+        "heading_text": {
+          "type": "string"
+        },
+        "sub_text": {
+          "type": "string"
+        },
+        "job_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "show_sidebar": {
+          "type": "boolean"
+        },
+        "variant": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "settings": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "is_active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/home-blocks/{id}"
+    }
+  },
+  {
+    "name": "home_blocks_delete",
+    "title": "Delete home block",
+    "description": "Delete home block",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/home-blocks/{id}"
+    }
+  },
+  {
+    "name": "home_blocks_reorder",
+    "title": "Reorder home blocks",
+    "description": "Set sort_order according to the given ID order.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/home-blocks/reorder"
+    }
+  },
+  {
+    "name": "users_list",
+    "title": "List users",
+    "description": "Registered users with CV/bookmark/comment counts and a summary (roles, new signups, CVs, push subs).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/users"
+    }
+  },
+  {
+    "name": "users_get",
+    "title": "Get user",
+    "description": "User profile with CVs, bookmarked jobs and profile completion.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/users/{id}"
+    }
+  },
+  {
+    "name": "users_create",
+    "title": "Create user",
+    "description": "Create a user (password auto-generated and returned if omitted).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "seeker",
+            "employer",
+            "admin"
+          ]
+        },
+        "phone": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/users"
+    }
+  },
+  {
+    "name": "users_update",
+    "title": "Update user",
+    "description": "Change name/email/role/phone/verified state or set a new password.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "seeker",
+            "employer",
+            "admin"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/users/{id}"
+    }
+  },
+  {
+    "name": "users_reset_password",
+    "title": "Reset user password",
+    "description": "Sets a new password (random if omitted) and invalidates remember-me sessions.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/users/{id}/reset-password"
+    }
+  },
+  {
+    "name": "users_delete",
+    "title": "Delete user",
+    "description": "Deletes the user with their bookmarks, comments and CVs. Refuses the last admin unless force=true.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "force": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/users/{id}"
+    }
+  },
+  {
+    "name": "cvs_list",
+    "title": "List CVs",
+    "description": "CV builder documents with summary (templates, public count, views).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "public": {
+          "type": "boolean"
+        },
+        "template": {
+          "type": "string",
+          "enum": [
+            "modern",
+            "classic",
+            "minimal"
+          ]
+        },
+        "page": {
+          "description": "Page number (1-based).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "per_page": {
+          "description": "Results per page (max 100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/cvs"
+    }
+  },
+  {
+    "name": "cvs_get",
+    "title": "Get CV",
+    "description": "Full CV JSON (personal, experience, education, skills...).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/cvs/{id}"
+    }
+  },
+  {
+    "name": "cvs_update",
+    "title": "Update CV",
+    "description": "Edit CV sections/template/visibility. Making it public generates a share URL.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string",
+          "enum": [
+            "modern",
+            "classic",
+            "minimal"
+          ]
+        },
+        "theme_color": {
+          "type": "string"
+        },
+        "font_family": {
+          "type": "string"
+        },
+        "personal": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "experience": {
+          "type": "array",
+          "items": {}
+        },
+        "education": {
+          "type": "array",
+          "items": {}
+        },
+        "skills": {
+          "type": "array",
+          "items": {}
+        },
+        "languages": {
+          "type": "array",
+          "items": {}
+        },
+        "certifications": {
+          "type": "array",
+          "items": {}
+        },
+        "projects": {
+          "type": "array",
+          "items": {}
+        },
+        "references_list": {
+          "type": "array",
+          "items": {}
+        },
+        "section_order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "is_public": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/cvs/{id}"
+    }
+  },
+  {
+    "name": "cvs_delete",
+    "title": "Delete CV",
+    "description": "Delete CV",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/cvs/{id}"
+    }
+  },
+  {
+    "name": "bookmarks_stats",
+    "title": "Bookmark stats",
+    "description": "Most-bookmarked jobs in a window plus totals (demand signal).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "description": "0 = all time",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/bookmarks"
+    }
+  },
+  {
+    "name": "bookmarks_toggle",
+    "title": "Toggle bookmark",
+    "description": "Toggle bookmark",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "job_id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "user_id",
+        "job_id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/bookmarks/toggle"
+    }
+  },
+  {
+    "name": "source_image_get",
+    "title": "Get source image",
+    "description": "A scraper-queue item (job ad image) with its OCR/article text and linked job.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/source-images/{id}"
+    }
+  },
+  {
+    "name": "source_image_add",
+    "title": "Add job ad image to scraper queue",
+    "description": "Manually ingest a job ad image (by URL or base64) into job_source_images so it can be published via the normal pipeline.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "image_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "image_base64": {
+          "type": "string"
+        },
+        "source_page_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "article_text": {
+          "type": "string"
+        },
+        "publish_status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "published",
+            "skipped"
+          ]
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/source-images"
+    }
+  },
+  {
+    "name": "source_image_update",
+    "title": "Update source image",
+    "description": "Update source image",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "title": {
+          "type": "string"
+        },
+        "article_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_page_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publish_status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "published",
+            "skipped"
+          ]
+        },
+        "published_job_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "PUT",
+      "path": "/api/mcp/source-images/{id}"
+    }
+  },
+  {
+    "name": "source_image_publish",
+    "title": "Link source image to job",
+    "description": "Attach the ad image to an existing job listing and mark the queue item published.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "job_id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "job_id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/source-images/{id}/publish"
+    }
+  },
+  {
+    "name": "source_image_delete",
+    "title": "Delete source image",
+    "description": "Delete source image",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "delete_file": {
+          "description": "Also remove the stored image file (default true).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/source-images/{id}"
+    }
+  },
+  {
+    "name": "sitemaps_status",
+    "title": "Sitemap status",
+    "description": "All sitemap/feed URLs, job sitemap page count and which are cached.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/sitemaps"
+    }
+  },
+  {
+    "name": "sitemaps_flush",
+    "title": "Flush sitemap caches",
+    "description": "Forces sitemaps/feeds to regenerate on next crawl (run after bulk job changes).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/sitemaps/flush"
+    }
+  },
+  {
+    "name": "alerts_preview",
+    "title": "Preview job alerts",
+    "description": "Which subscribers would receive alerts for jobs created in the last N hours.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 720
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/alerts/preview"
+    }
+  },
+  {
+    "name": "alerts_send",
+    "title": "Send job alerts",
+    "description": "Email matching jobs (last 24h) to all active subscribers, or only the given subscriber_ids.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscriber_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/alerts/send"
+    }
+  },
+  {
+    "name": "mail_test",
+    "title": "Send test email",
+    "description": "Send test email",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/mail/test"
+    }
+  },
+  {
+    "name": "storage_list",
+    "title": "List public storage",
+    "description": "Files/dirs under storage/app/public with sizes, totals and storage:link status.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/storage"
+    }
+  },
+  {
+    "name": "storage_delete",
+    "title": "Delete storage files",
+    "description": "Delete storage files",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "paths"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/storage/delete"
+    }
+  },
+  {
+    "name": "storage_orphans",
+    "title": "Find/clean orphan job images",
+    "description": "Image files in job-sources/ not referenced by any queue item, and records whose file is missing. delete_orphans=true removes the files.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "delete_orphans": {
+          "type": "boolean"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/storage/orphans"
+    }
+  },
+  {
+    "name": "maintenance_mode",
+    "title": "Maintenance mode",
+    "description": "Put the site down (with optional bypass secret) or bring it back up.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "down",
+            "up"
+          ]
+        },
+        "secret": {
+          "type": "string"
+        },
+        "retry": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "action"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/artisan"
+    }
+  },
+  {
+    "name": "schedule_list",
+    "title": "List scheduled tasks",
+    "description": "List scheduled tasks",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/artisan"
+    }
+  }
+]

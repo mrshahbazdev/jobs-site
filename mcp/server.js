@@ -12,6 +12,8 @@ import { api, ApiError, config } from './client.js';
 const SERVER_NAME = 'jobs-site-mcp';
 const SERVER_VERSION = '1.1.0';
 
+export const TOOL_DEFS = [];
+
 const READ = { readOnlyHint: true, openWorldHint: false };
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 const IDEMPOTENT = { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false };
@@ -40,9 +42,10 @@ function errorResult(err) {
 }
 
 function tool(server, name, meta, handler) {
+  if (!TOOL_DEFS.some((t) => t.name === name)) TOOL_DEFS.push({ name, meta, handler });
   server.registerTool(name, meta, async (args = {}) => {
     try {
-      return jsonResult(await handler(args));
+      return jsonResult(await handler(args, api));
     } catch (err) {
       return errorResult(err);
     }
@@ -159,7 +162,7 @@ function registerSystemTools(server) {
     description: 'Full health snapshot: app/Laravel/PHP versions, DB connectivity, cache/queue drivers, integration flags (Gemini, VAPID, IndexNow, cron), record counts, queue depth and scraper states.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/health'));
+  }, (_, api) => api.get('/api/mcp/health'));
 
   tool(server, 'db_schema', {
     title: 'Database schema',
@@ -169,21 +172,21 @@ function registerSystemTools(server) {
       with_counts: bool.describe('Include row counts per table.'),
     },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/schema', a));
+  }, (a, api) => api.get('/api/mcp/schema', a));
 
   tool(server, 'db_query', {
     title: 'Read-only SQL query',
     description: 'Run a single read-only SQL statement (SELECT / WITH / EXPLAIN / PRAGMA). Mutating statements are rejected server-side; rows are capped.',
     inputSchema: { query: z.string().min(1).max(5000) },
     annotations: READ,
-  }, (a) => api.post('/api/mcp/sql', a));
+  }, (a, api) => api.post('/api/mcp/sql', a));
 
   tool(server, 'routes_list', {
     title: 'Application routes',
     description: 'List registered Laravel routes (methods, URI, name, action, middleware). Optional substring filter.',
     inputSchema: { filter: str.describe('Substring matched against URI, name or action.') },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/routes', a));
+  }, (a, api) => api.get('/api/mcp/routes', a));
 
   tool(server, 'logs_tail', {
     title: 'Tail application logs',
@@ -194,14 +197,14 @@ function registerSystemTools(server) {
       file: str.describe('Log file name (default laravel.log).'),
     },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/logs', a));
+  }, (a, api) => api.get('/api/mcp/logs', a));
 
   tool(server, 'artisan_commands', {
     title: 'Allowed Artisan commands',
     description: 'List Artisan commands (and their permitted options) that artisan_run may execute.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/artisan'));
+  }, (_, api) => api.get('/api/mcp/artisan'));
 
   tool(server, 'artisan_run', {
     title: 'Run Artisan command',
@@ -212,14 +215,14 @@ function registerSystemTools(server) {
         .describe('Option map, e.g. {"--limit": 5, "--dry-run": true}'),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/artisan', a));
+  }, (a, api) => api.post('/api/mcp/artisan', a));
 
   tool(server, 'queue_status', {
     title: 'Queue & failed jobs',
     description: 'Pending and failed database queue jobs plus per-source scraper progress.',
     inputSchema: { limit: z.number().int().min(1).max(100).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/queue', a));
+  }, (a, api) => api.get('/api/mcp/queue', a));
 
   tool(server, 'cache_manage', {
     title: 'Cache: clear / forget / get',
@@ -229,7 +232,7 @@ function registerSystemTools(server) {
       key: str.describe('Cache key (required for forget/get).'),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/cache', a));
+  }, (a, api) => api.post('/api/mcp/cache', a));
 }
 
 // ---------------------------------------------------------------------------
@@ -241,28 +244,28 @@ function registerJobTools(server) {
     description: 'Advanced filtered/paginated search over job listings (text, taxonomy, salary, flags, dates, deadlines, sorting).',
     inputSchema: JOB_FILTERS,
     annotations: READ,
-  }, (a) => api.get('/api/v2/jobs', a));
+  }, (a, api) => api.get('/api/v2/jobs', a));
 
   tool(server, 'jobs_get', {
     title: 'Get job',
     description: 'Fetch one job listing by numeric ID or slug, including category, city and schema.',
     inputSchema: { id_or_slug: z.string() },
     annotations: READ,
-  }, ({ id_or_slug }) => api.get(`/api/v2/jobs/${encodeURIComponent(id_or_slug)}`));
+  }, ({ id_or_slug }, api) => api.get(`/api/v2/jobs/${encodeURIComponent(id_or_slug)}`));
 
   tool(server, 'jobs_stats', {
     title: 'Job stats',
     description: 'Aggregate job statistics (totals, active, featured, per category/city, recent).',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/v2/jobs/stats'));
+  }, (_, api) => api.get('/api/v2/jobs/stats'));
 
   tool(server, 'jobs_analytics', {
     title: 'Job analytics',
     description: 'Time-windowed analytics: jobs created per day, expiring soon, top sectors/provinces/education/newspapers/job types/testing services/departments/companies, flag counts, subscribers, push, comments.',
     inputSchema: { days: z.number().int().min(1).max(365).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/analytics', a));
+  }, (a, api) => api.get('/api/mcp/analytics', a));
 
   tool(server, 'jobs_create', {
     title: 'Create job',
@@ -275,35 +278,35 @@ function registerJobTools(server) {
       city_id: z.number().int(),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/v2/jobs', a));
+  }, (a, api) => api.post('/api/v2/jobs', a));
 
   tool(server, 'jobs_update', {
     title: 'Update job',
     description: 'Partially update a job listing by ID.',
     inputSchema: { id, ...JOB_FIELDS },
     annotations: IDEMPOTENT,
-  }, ({ id: jobId, ...rest }) => api.put(`/api/v2/jobs/${jobId}`, rest));
+  }, ({ id: jobId, ...rest }, api) => api.put(`/api/v2/jobs/${jobId}`, rest));
 
   tool(server, 'jobs_delete', {
     title: 'Delete job',
     description: 'Permanently delete a job listing.',
     inputSchema: { id },
     annotations: DESTRUCTIVE,
-  }, ({ id: jobId }) => api.del(`/api/v2/jobs/${jobId}`));
+  }, ({ id: jobId }, api) => api.del(`/api/v2/jobs/${jobId}`));
 
   tool(server, 'jobs_toggle', {
     title: 'Toggle job flag',
     description: 'Toggle is_active / is_featured / is_premium on a job.',
     inputSchema: { id, field: z.enum(['is_active', 'is_featured', 'is_premium']) },
     annotations: IDEMPOTENT,
-  }, ({ id: jobId, ...rest }) => api.post(`/api/v2/jobs/${jobId}/toggle`, rest));
+  }, ({ id: jobId, ...rest }, api) => api.post(`/api/v2/jobs/${jobId}/toggle`, rest));
 
   tool(server, 'jobs_duplicate', {
     title: 'Duplicate job',
     description: 'Clone a job listing (new slug, inactive copy).',
     inputSchema: { id },
     annotations: WRITE,
-  }, ({ id: jobId }) => api.post(`/api/v2/jobs/${jobId}/duplicate`));
+  }, ({ id: jobId }, api) => api.post(`/api/v2/jobs/${jobId}/duplicate`));
 
   tool(server, 'jobs_bulk_create', {
     title: 'Bulk create jobs',
@@ -318,28 +321,28 @@ function registerJobTools(server) {
       })).min(1).max(100),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/v2/jobs/bulk', a));
+  }, (a, api) => api.post('/api/v2/jobs/bulk', a));
 
   tool(server, 'jobs_bulk_status', {
     title: 'Bulk set job flag',
     description: 'Set is_active / is_featured / is_premium for many jobs at once.',
     inputSchema: { ids, field: z.enum(['is_active', 'is_featured', 'is_premium']), value: z.boolean() },
     annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/v2/jobs/bulk-status', a));
+  }, (a, api) => api.post('/api/v2/jobs/bulk-status', a));
 
   tool(server, 'jobs_bulk_delete', {
     title: 'Bulk delete jobs',
     description: 'Permanently delete many jobs.',
     inputSchema: { ids },
     annotations: DESTRUCTIVE,
-  }, (a) => api.del('/api/v2/jobs/bulk', a));
+  }, (a, api) => api.del('/api/v2/jobs/bulk', a));
 
   tool(server, 'jobs_deactivate_expired', {
     title: 'Deactivate expired jobs',
     description: 'Mark jobs whose deadline passed (minus grace days) as inactive. Use dry_run to preview.',
     inputSchema: { grace_days: z.number().int().min(0).max(365).optional(), dry_run: bool },
     annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/mcp/jobs/deactivate-expired', a));
+  }, (a, api) => api.post('/api/mcp/jobs/deactivate-expired', a));
 
   tool(server, 'jobs_regenerate_schema', {
     title: 'Regenerate JobPosting schema',
@@ -351,7 +354,7 @@ function registerJobTools(server) {
       limit: z.number().int().min(1).max(1000).optional(),
     },
     annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/mcp/jobs/regenerate-schema', a));
+  }, (a, api) => api.post('/api/mcp/jobs/regenerate-schema', a));
 }
 
 // ---------------------------------------------------------------------------
@@ -360,60 +363,60 @@ function registerJobTools(server) {
 function registerTaxonomyTools(server) {
   tool(server, 'categories_list', {
     title: 'List categories', description: 'All job categories (id, name, slug, icon).', inputSchema: {}, annotations: READ,
-  }, () => api.get('/api/categories'));
+  }, (_, api) => api.get('/api/categories'));
 
   tool(server, 'categories_create', {
     title: 'Create category',
     description: 'Create (or fetch existing) category by name; optional landing group attachment.',
     inputSchema: { name: z.string(), landing_group_id: z.number().int().optional() },
     annotations: WRITE,
-  }, (a) => api.post('/api/categories', a));
+  }, (a, api) => api.post('/api/categories', a));
 
   tool(server, 'categories_resolve', {
     title: 'Resolve category from title',
     description: 'Heuristically pick the best category for a job title.',
     inputSchema: { title: z.string() },
     annotations: READ,
-  }, (a) => api.post('/api/categories/resolve', a));
+  }, (a, api) => api.post('/api/categories/resolve', a));
 
   tool(server, 'categories_update', {
     title: 'Update category',
     inputSchema: { id, name: str, slug: str, icon_name: str },
     annotations: IDEMPOTENT,
-  }, ({ id: catId, ...rest }) => api.put(`/api/mcp/categories/${catId}`, rest));
+  }, ({ id: catId, ...rest }, api) => api.put(`/api/mcp/categories/${catId}`, rest));
 
   tool(server, 'categories_delete', {
     title: 'Delete category',
     description: 'Delete a category. If it has jobs you must pass reassign_to (another category id).',
     inputSchema: { id, reassign_to: z.number().int().optional() },
     annotations: DESTRUCTIVE,
-  }, ({ id: catId, ...rest }) => api.del(`/api/mcp/categories/${catId}`, rest));
+  }, ({ id: catId, ...rest }, api) => api.del(`/api/mcp/categories/${catId}`, rest));
 
   tool(server, 'categories_merge', {
     title: 'Merge categories',
     description: 'Move all jobs & subscribers from source categories into target and delete the sources.',
     inputSchema: { source_ids: ids, target_id: id },
     annotations: DESTRUCTIVE,
-  }, (a) => api.post('/api/mcp/categories/merge', a));
+  }, (a, api) => api.post('/api/mcp/categories/merge', a));
 
   tool(server, 'cities_list', {
     title: 'List cities', description: 'All cities (id, name, slug).', inputSchema: {}, annotations: READ,
-  }, () => api.get('/api/cities'));
+  }, (_, api) => api.get('/api/cities'));
 
   tool(server, 'cities_create', {
     title: 'Create city', inputSchema: { name: z.string() }, annotations: WRITE,
-  }, (a) => api.post('/api/cities', a));
+  }, (a, api) => api.post('/api/cities', a));
 
   tool(server, 'cities_update', {
     title: 'Update city', inputSchema: { id, name: str, slug: str }, annotations: IDEMPOTENT,
-  }, ({ id: cityId, ...rest }) => api.put(`/api/mcp/cities/${cityId}`, rest));
+  }, ({ id: cityId, ...rest }, api) => api.put(`/api/mcp/cities/${cityId}`, rest));
 
   tool(server, 'cities_delete', {
     title: 'Delete city',
     description: 'Delete a city. If it has jobs you must pass reassign_to (another city id).',
     inputSchema: { id, reassign_to: z.number().int().optional() },
     annotations: DESTRUCTIVE,
-  }, ({ id: cityId, ...rest }) => api.del(`/api/mcp/cities/${cityId}`, rest));
+  }, ({ id: cityId, ...rest }, api) => api.del(`/api/mcp/cities/${cityId}`, rest));
 }
 
 // ---------------------------------------------------------------------------
@@ -427,25 +430,25 @@ function registerScraperTools(server) {
     description: 'Progress of one scraper source, or all sources when omitted.',
     inputSchema: { source: SOURCES.optional() },
     annotations: READ,
-  }, ({ source }) => (source ? api.get('/api/scraper-status', { source }) : api.get('/api/scraper-status-all')));
+  }, ({ source }, api) => (source ? api.get('/api/scraper-status', { source }) : api.get('/api/scraper-status-all')));
 
   tool(server, 'scraper_trigger', {
     title: 'Trigger scraper',
     description: 'Queue a scrape run for a source. mode=links collects new job links only; mode=full also processes images/AI.',
     inputSchema: { source: SOURCES.optional(), mode: z.enum(['links', 'full']).optional() },
     annotations: WRITE,
-  }, (a) => api.post('/api/trigger-scrape', a));
+  }, (a, api) => api.post('/api/trigger-scrape', a));
 
   tool(server, 'scraper_process_image', {
     title: 'Process one queued image',
     description: 'Run the scraper pipeline for a single job_source_images row (download + extract).',
     inputSchema: { id, source: SOURCES.optional() },
     annotations: WRITE,
-  }, (a) => api.post('/api/scrape-image', a));
+  }, (a, api) => api.post('/api/scrape-image', a));
 
   tool(server, 'scraper_queue_stats', {
     title: 'Scraper queue stats', inputSchema: {}, annotations: READ,
-  }, () => api.get('/api/v2/scraper-queue/stats'));
+  }, (_, api) => api.get('/api/v2/scraper-queue/stats'));
 
   tool(server, 'scraper_queue_search', {
     title: 'Search scraper queue',
@@ -458,14 +461,14 @@ function registerScraperTools(server) {
       per_page: perPage,
     },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/scraper-queue', a));
+  }, (a, api) => api.get('/api/mcp/scraper-queue', a));
 
   tool(server, 'scraper_queue_next', {
     title: 'Next pending scraped item',
     description: 'Fetch the next pending scraped item to publish.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/v2/scraper-queue/next'));
+  }, (_, api) => api.get('/api/v2/scraper-queue/next'));
 
   tool(server, 'scraper_queue_set_status', {
     title: 'Set scraped item status',
@@ -475,13 +478,13 @@ function registerScraperTools(server) {
       published_job_id: z.number().int().optional(),
     },
     annotations: IDEMPOTENT,
-  }, ({ id: itemId, ...rest }) => api.put(`/api/v2/scraper-queue/${itemId}/status`, rest));
+  }, ({ id: itemId, ...rest }, api) => api.put(`/api/v2/scraper-queue/${itemId}/status`, rest));
 
   tool(server, 'scraper_queue_bulk_status', {
     title: 'Bulk set scraped item status',
     inputSchema: { ids, status: z.enum(['pending', 'published', 'skipped', 'failed']) },
     annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/mcp/scraper-queue/bulk-status', a));
+  }, (a, api) => api.post('/api/mcp/scraper-queue/bulk-status', a));
 
   tool(server, 'scraper_queue_purge', {
     title: 'Purge scraper queue',
@@ -492,7 +495,7 @@ function registerScraperTools(server) {
       dry_run: bool,
     },
     annotations: DESTRUCTIVE,
-  }, (a) => api.post('/api/mcp/scraper-queue/purge', a));
+  }, (a, api) => api.post('/api/mcp/scraper-queue/purge', a));
 }
 
 // ---------------------------------------------------------------------------
@@ -504,7 +507,7 @@ function registerGrowthTools(server) {
     description: 'Audit active jobs for missing meta descriptions, keywords, schema, short titles/descriptions, missing deadlines and duplicate slugs.',
     inputSchema: { limit: z.number().int().min(1).max(200).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/seo/audit', a));
+  }, (a, api) => api.get('/api/mcp/seo/audit', a));
 
   tool(server, 'indexnow_submit', {
     title: 'Submit URLs to IndexNow',
@@ -514,7 +517,7 @@ function registerGrowthTools(server) {
       job_ids: z.array(z.number().int()).optional(),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/indexnow', a));
+  }, (a, api) => api.post('/api/mcp/indexnow', a));
 
   tool(server, 'ai_extract_job', {
     title: 'AI extract job metadata (Gemini)',
@@ -525,14 +528,14 @@ function registerGrowthTools(server) {
       apply: bool,
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/ai/extract', a));
+  }, (a, api) => api.post('/api/mcp/ai/extract', a));
 
   tool(server, 'push_stats', {
     title: 'Web push stats',
     description: 'VAPID configuration, subscription totals, failing endpoints, breakdown by category/city, jobs awaiting push.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/push/stats'));
+  }, (_, api) => api.get('/api/mcp/push/stats'));
 
   tool(server, 'push_broadcast', {
     title: 'Broadcast web push',
@@ -547,7 +550,7 @@ function registerGrowthTools(server) {
       dry_run: bool,
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/push/broadcast', a));
+  }, (a, api) => api.post('/api/mcp/push/broadcast', a));
 }
 
 // ---------------------------------------------------------------------------
@@ -558,64 +561,64 @@ function registerContentTools(server) {
     title: 'List blog posts',
     inputSchema: { q: str, published: bool, with_content: bool, page, per_page: perPage },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/posts', a));
+  }, (a, api) => api.get('/api/mcp/posts', a));
 
   tool(server, 'posts_get', {
     title: 'Get blog post', inputSchema: { id_or_slug: z.string() }, annotations: READ,
-  }, ({ id_or_slug }) => api.get(`/api/mcp/posts/${encodeURIComponent(id_or_slug)}`));
+  }, ({ id_or_slug }, api) => api.get(`/api/mcp/posts/${encodeURIComponent(id_or_slug)}`));
 
   tool(server, 'posts_create', {
     title: 'Create blog post',
     inputSchema: { title: z.string().max(255), content: z.string(), slug: str, image: str, is_published: bool },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/posts', a));
+  }, (a, api) => api.post('/api/mcp/posts', a));
 
   tool(server, 'posts_update', {
     title: 'Update blog post',
     inputSchema: { id, title: str, content: str, slug: str, image: str, is_published: bool },
     annotations: IDEMPOTENT,
-  }, ({ id: postId, ...rest }) => api.put(`/api/mcp/posts/${postId}`, rest));
+  }, ({ id: postId, ...rest }, api) => api.put(`/api/mcp/posts/${postId}`, rest));
 
   tool(server, 'posts_delete', {
     title: 'Delete blog post', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: postId }) => api.del(`/api/mcp/posts/${postId}`));
+  }, ({ id: postId }, api) => api.del(`/api/mcp/posts/${postId}`));
 
   tool(server, 'settings_get', {
     title: 'Get site settings',
     description: 'All key/value site settings (ad slots, header tags, etc.).',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/settings'));
+  }, (_, api) => api.get('/api/mcp/settings'));
 
   tool(server, 'settings_set', {
     title: 'Upsert site settings',
     inputSchema: { settings: z.array(z.object({ key: z.string().max(191), value: z.string().nullable() })).min(1) },
     annotations: IDEMPOTENT,
-  }, (a) => api.put('/api/mcp/settings', a));
+  }, (a, api) => api.put('/api/mcp/settings', a));
 
   tool(server, 'settings_delete', {
     title: 'Delete setting', inputSchema: { key: z.string() }, annotations: DESTRUCTIVE,
-  }, ({ key }) => api.del(`/api/mcp/settings/${encodeURIComponent(key)}`));
+  }, ({ key }, api) => api.del(`/api/mcp/settings/${encodeURIComponent(key)}`));
 
   tool(server, 'comments_list', {
     title: 'List comments',
     description: 'Comments by moderation status (pending default, approved, all).',
     inputSchema: { status: z.enum(['pending', 'approved', 'all']).optional(), page, per_page: perPage },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/comments', a));
+  }, (a, api) => api.get('/api/mcp/comments', a));
 
   tool(server, 'comments_moderate', {
     title: 'Moderate comments',
     inputSchema: { ids, action: z.enum(['approve', 'reject', 'delete']) },
     annotations: DESTRUCTIVE,
-  }, (a) => api.post('/api/mcp/comments/moderate', a));
+  }, (a, api) => api.post('/api/mcp/comments/moderate', a));
 
   tool(server, 'subscribers_list', {
     title: 'List subscribers',
     description: 'Email/WhatsApp job-alert subscribers with summary counts.',
     inputSchema: { q: str, active: bool, page, per_page: perPage },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/subscribers', a));
+  }, (a, api) => api.get('/api/mcp/subscribers', a));
 
   tool(server, 'subscribers_update', {
     title: 'Update subscriber',
@@ -627,22 +630,22 @@ function registerContentTools(server) {
       city_id: z.number().int().nullable().optional(),
     },
     annotations: IDEMPOTENT,
-  }, ({ id: subId, ...rest }) => api.put(`/api/mcp/subscribers/${subId}`, rest));
+  }, ({ id: subId, ...rest }, api) => api.put(`/api/mcp/subscribers/${subId}`, rest));
 
   tool(server, 'subscribers_delete', {
     title: 'Delete subscriber', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: subId }) => api.del(`/api/mcp/subscribers/${subId}`));
+  }, ({ id: subId }, api) => api.del(`/api/mcp/subscribers/${subId}`));
 
   tool(server, 'landing_get', {
     title: 'Landing groups & links',
     description: 'All landing-page groups with their links and attached categories.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/landing'));
+  }, (_, api) => api.get('/api/mcp/landing'));
 
   tool(server, 'landing_group_create', {
     title: 'Create landing group', inputSchema: { name: z.string(), icon: str }, annotations: WRITE,
-  }, (a) => api.post('/api/landing-groups', a));
+  }, (a, api) => api.post('/api/landing-groups', a));
 
   tool(server, 'landing_group_update', {
     title: 'Update landing group',
@@ -653,11 +656,11 @@ function registerContentTools(server) {
       section_type: z.enum(['grid', 'strip', 'industry']).optional(),
     },
     annotations: IDEMPOTENT,
-  }, ({ id: gId, ...rest }) => api.put(`/api/mcp/landing-groups/${gId}`, rest));
+  }, ({ id: gId, ...rest }, api) => api.put(`/api/mcp/landing-groups/${gId}`, rest));
 
   tool(server, 'landing_group_delete', {
     title: 'Delete landing group', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: gId }) => api.del(`/api/mcp/landing-groups/${gId}`));
+  }, ({ id: gId }, api) => api.del(`/api/mcp/landing-groups/${gId}`));
 
   const LINK_FIELDS = {
     title: str, url: str, route_name: str, route_param: str, icon: str,
@@ -668,17 +671,17 @@ function registerContentTools(server) {
     title: 'Create landing link',
     inputSchema: { ...LINK_FIELDS, landing_group_id: z.number().int(), title: z.string() },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/landing-links', a));
+  }, (a, api) => api.post('/api/mcp/landing-links', a));
 
   tool(server, 'landing_link_update', {
     title: 'Update landing link',
     inputSchema: { id, landing_group_id: z.number().int().optional(), ...LINK_FIELDS },
     annotations: IDEMPOTENT,
-  }, ({ id: lId, ...rest }) => api.put(`/api/mcp/landing-links/${lId}`, rest));
+  }, ({ id: lId, ...rest }, api) => api.put(`/api/mcp/landing-links/${lId}`, rest));
 
   tool(server, 'landing_link_delete', {
     title: 'Delete landing link', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: lId }) => api.del(`/api/mcp/landing-links/${lId}`));
+  }, ({ id: lId }, api) => api.del(`/api/mcp/landing-links/${lId}`));
 
   const BLOCK_FIELDS = {
     page_slug: str, type: str.describe('Block type key used by the home page renderer.'), title: str, url: str, list_source: str, display_type: str,
@@ -693,35 +696,35 @@ function registerContentTools(server) {
 
   tool(server, 'home_blocks_list', {
     title: 'List home/page blocks', inputSchema: { page_slug: str }, annotations: READ,
-  }, (a) => api.get('/api/mcp/home-blocks', a));
+  }, (a, api) => api.get('/api/mcp/home-blocks', a));
 
   tool(server, 'home_blocks_create', {
     title: 'Create home block',
     inputSchema: { ...BLOCK_FIELDS, type: z.string() },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/home-blocks', a));
+  }, (a, api) => api.post('/api/mcp/home-blocks', a));
 
   tool(server, 'home_blocks_update', {
     title: 'Update home block', inputSchema: { id, ...BLOCK_FIELDS }, annotations: IDEMPOTENT,
-  }, ({ id: bId, ...rest }) => api.put(`/api/mcp/home-blocks/${bId}`, rest));
+  }, ({ id: bId, ...rest }, api) => api.put(`/api/mcp/home-blocks/${bId}`, rest));
 
   tool(server, 'home_blocks_delete', {
     title: 'Delete home block', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: bId }) => api.del(`/api/mcp/home-blocks/${bId}`));
+  }, ({ id: bId }, api) => api.del(`/api/mcp/home-blocks/${bId}`));
 
   tool(server, 'home_blocks_reorder', {
     title: 'Reorder home blocks',
     description: 'Set sort_order according to the given ID order.',
     inputSchema: { ids },
     annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/mcp/home-blocks/reorder', a));
+  }, (a, api) => api.post('/api/mcp/home-blocks/reorder', a));
 
   tool(server, 'users_list', {
     title: 'List users',
     description: 'Registered users with CV/bookmark/comment counts and a summary (roles, new signups, CVs, push subs).',
     inputSchema: { q: str, role: str, page, per_page: perPage },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/users', a));
+  }, (a, api) => api.get('/api/mcp/users', a));
 }
 
 // ---------------------------------------------------------------------------
@@ -736,46 +739,46 @@ function registerAdminTools(server) {
     description: 'User profile with CVs, bookmarked jobs and profile completion.',
     inputSchema: { id },
     annotations: READ,
-  }, ({ id: userId }) => api.get(`/api/mcp/users/${userId}`));
+  }, ({ id: userId }, api) => api.get(`/api/mcp/users/${userId}`));
 
   tool(server, 'users_create', {
     title: 'Create user',
     description: 'Create a user (password auto-generated and returned if omitted).',
     inputSchema: { name: z.string().max(255), email: z.string().email(), password: str, role: ROLE.optional(), phone: str, verified: bool },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/users', a));
+  }, (a, api) => api.post('/api/mcp/users', a));
 
   tool(server, 'users_update', {
     title: 'Update user',
     description: 'Change name/email/role/phone/verified state or set a new password.',
     inputSchema: { id, name: str, email: str, password: str, role: ROLE.optional(), phone: z.string().nullable().optional(), verified: bool },
     annotations: IDEMPOTENT,
-  }, ({ id: userId, ...rest }) => api.put(`/api/mcp/users/${userId}`, rest));
+  }, ({ id: userId, ...rest }, api) => api.put(`/api/mcp/users/${userId}`, rest));
 
   tool(server, 'users_reset_password', {
     title: 'Reset user password',
     description: 'Sets a new password (random if omitted) and invalidates remember-me sessions.',
     inputSchema: { id, password: str },
     annotations: WRITE,
-  }, ({ id: userId, ...rest }) => api.post(`/api/mcp/users/${userId}/reset-password`, rest));
+  }, ({ id: userId, ...rest }, api) => api.post(`/api/mcp/users/${userId}/reset-password`, rest));
 
   tool(server, 'users_delete', {
     title: 'Delete user',
     description: 'Deletes the user with their bookmarks, comments and CVs. Refuses the last admin unless force=true.',
     inputSchema: { id, force: bool },
     annotations: DESTRUCTIVE,
-  }, ({ id: userId, force }) => api.del(`/api/mcp/users/${userId}`, force ? { force: true } : undefined));
+  }, ({ id: userId, force }, api) => api.del(`/api/mcp/users/${userId}`, force ? { force: true } : undefined));
 
   tool(server, 'cvs_list', {
     title: 'List CVs',
     description: 'CV builder documents with summary (templates, public count, views).',
     inputSchema: { q: str, user_id: id.optional(), public: bool, template: z.enum(['modern', 'classic', 'minimal']).optional(), page, per_page: perPage },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/cvs', a));
+  }, (a, api) => api.get('/api/mcp/cvs', a));
 
   tool(server, 'cvs_get', {
     title: 'Get CV', description: 'Full CV JSON (personal, experience, education, skills...).', inputSchema: { id }, annotations: READ,
-  }, ({ id: cvId }) => api.get(`/api/mcp/cvs/${cvId}`));
+  }, ({ id: cvId }, api) => api.get(`/api/mcp/cvs/${cvId}`));
 
   tool(server, 'cvs_update', {
     title: 'Update CV',
@@ -787,29 +790,29 @@ function registerAdminTools(server) {
       projects: CV_ARRAY, references_list: CV_ARRAY, section_order: z.array(z.string()).optional(), is_public: bool,
     },
     annotations: IDEMPOTENT,
-  }, ({ id: cvId, ...rest }) => api.put(`/api/mcp/cvs/${cvId}`, rest));
+  }, ({ id: cvId, ...rest }, api) => api.put(`/api/mcp/cvs/${cvId}`, rest));
 
   tool(server, 'cvs_delete', {
     title: 'Delete CV', inputSchema: { id }, annotations: DESTRUCTIVE,
-  }, ({ id: cvId }) => api.del(`/api/mcp/cvs/${cvId}`));
+  }, ({ id: cvId }, api) => api.del(`/api/mcp/cvs/${cvId}`));
 
   tool(server, 'bookmarks_stats', {
     title: 'Bookmark stats',
     description: 'Most-bookmarked jobs in a window plus totals (demand signal).',
     inputSchema: { days: z.number().int().min(0).optional().describe('0 = all time'), limit: z.number().int().min(1).max(100).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/bookmarks', a));
+  }, (a, api) => api.get('/api/mcp/bookmarks', a));
 
   tool(server, 'bookmarks_toggle', {
     title: 'Toggle bookmark', inputSchema: { user_id: id, job_id: id }, annotations: IDEMPOTENT,
-  }, (a) => api.post('/api/mcp/bookmarks/toggle', a));
+  }, (a, api) => api.post('/api/mcp/bookmarks/toggle', a));
 
   tool(server, 'source_image_get', {
     title: 'Get source image',
     description: 'A scraper-queue item (job ad image) with its OCR/article text and linked job.',
     inputSchema: { id },
     annotations: READ,
-  }, ({ id: imgId }) => api.get(`/api/mcp/source-images/${imgId}`));
+  }, ({ id: imgId }, api) => api.get(`/api/mcp/source-images/${imgId}`));
 
   tool(server, 'source_image_add', {
     title: 'Add job ad image to scraper queue',
@@ -820,7 +823,7 @@ function registerAdminTools(server) {
       publish_status: z.enum(['pending', 'published', 'skipped']).optional(),
     },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/source-images', a));
+  }, (a, api) => api.post('/api/mcp/source-images', a));
 
   tool(server, 'source_image_update', {
     title: 'Update source image',
@@ -829,79 +832,79 @@ function registerAdminTools(server) {
       publish_status: z.enum(['pending', 'published', 'skipped']).optional(), published_job_id: id.nullable().optional(),
     },
     annotations: IDEMPOTENT,
-  }, ({ id: imgId, ...rest }) => api.put(`/api/mcp/source-images/${imgId}`, rest));
+  }, ({ id: imgId, ...rest }, api) => api.put(`/api/mcp/source-images/${imgId}`, rest));
 
   tool(server, 'source_image_publish', {
     title: 'Link source image to job',
     description: 'Attach the ad image to an existing job listing and mark the queue item published.',
     inputSchema: { id, job_id: id },
     annotations: IDEMPOTENT,
-  }, ({ id: imgId, job_id }) => api.post(`/api/mcp/source-images/${imgId}/publish`, { job_id }));
+  }, ({ id: imgId, job_id }, api) => api.post(`/api/mcp/source-images/${imgId}/publish`, { job_id }));
 
   tool(server, 'source_image_delete', {
     title: 'Delete source image',
     inputSchema: { id, delete_file: bool.describe('Also remove the stored image file (default true).') },
     annotations: DESTRUCTIVE,
-  }, ({ id: imgId, delete_file }) => api.del(`/api/mcp/source-images/${imgId}`, delete_file === undefined ? undefined : { delete_file }));
+  }, ({ id: imgId, delete_file }, api) => api.del(`/api/mcp/source-images/${imgId}`, delete_file === undefined ? undefined : { delete_file }));
 
   tool(server, 'sitemaps_status', {
     title: 'Sitemap status',
     description: 'All sitemap/feed URLs, job sitemap page count and which are cached.',
     inputSchema: {},
     annotations: READ,
-  }, () => api.get('/api/mcp/sitemaps'));
+  }, (_, api) => api.get('/api/mcp/sitemaps'));
 
   tool(server, 'sitemaps_flush', {
     title: 'Flush sitemap caches',
     description: 'Forces sitemaps/feeds to regenerate on next crawl (run after bulk job changes).',
     inputSchema: {},
     annotations: IDEMPOTENT,
-  }, () => api.post('/api/mcp/sitemaps/flush', {}));
+  }, (_, api) => api.post('/api/mcp/sitemaps/flush', {}));
 
   tool(server, 'alerts_preview', {
     title: 'Preview job alerts',
     description: 'Which subscribers would receive alerts for jobs created in the last N hours.',
     inputSchema: { hours: z.number().int().min(1).max(720).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/alerts/preview', a));
+  }, (a, api) => api.get('/api/mcp/alerts/preview', a));
 
   tool(server, 'alerts_send', {
     title: 'Send job alerts',
     description: 'Email matching jobs (last 24h) to all active subscribers, or only the given subscriber_ids.',
     inputSchema: { subscriber_ids: z.array(id).optional() },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/alerts/send', a));
+  }, (a, api) => api.post('/api/mcp/alerts/send', a));
 
   tool(server, 'mail_test', {
     title: 'Send test email',
     inputSchema: { to: z.string().email(), subject: str, body: str },
     annotations: WRITE,
-  }, (a) => api.post('/api/mcp/mail/test', a));
+  }, (a, api) => api.post('/api/mcp/mail/test', a));
 
   tool(server, 'storage_list', {
     title: 'List public storage',
     description: 'Files/dirs under storage/app/public with sizes, totals and storage:link status.',
     inputSchema: { dir: str, limit: z.number().int().min(1).max(500).optional() },
     annotations: READ,
-  }, (a) => api.get('/api/mcp/storage', a));
+  }, (a, api) => api.get('/api/mcp/storage', a));
 
   tool(server, 'storage_delete', {
     title: 'Delete storage files', inputSchema: { paths: z.array(z.string()).min(1) }, annotations: DESTRUCTIVE,
-  }, (a) => api.post('/api/mcp/storage/delete', a));
+  }, (a, api) => api.post('/api/mcp/storage/delete', a));
 
   tool(server, 'storage_orphans', {
     title: 'Find/clean orphan job images',
     description: 'Image files in job-sources/ not referenced by any queue item, and records whose file is missing. delete_orphans=true removes the files.',
     inputSchema: { delete_orphans: bool },
     annotations: DESTRUCTIVE,
-  }, ({ delete_orphans }) => (delete_orphans ? api.post('/api/mcp/storage/orphans', { delete_orphans: true }) : api.get('/api/mcp/storage/orphans')));
+  }, ({ delete_orphans }, api) => (delete_orphans ? api.post('/api/mcp/storage/orphans', { delete_orphans: true }) : api.get('/api/mcp/storage/orphans')));
 
   tool(server, 'maintenance_mode', {
     title: 'Maintenance mode',
     description: 'Put the site down (with optional bypass secret) or bring it back up.',
     inputSchema: { action: z.enum(['down', 'up']), secret: str, retry: z.number().int().optional() },
     annotations: IDEMPOTENT,
-  }, ({ action, secret, retry }) => {
+  }, ({ action, secret, retry }, api) => {
     const args = {};
     if (action === 'down') {
       if (secret) args['--secret'] = secret;
@@ -912,7 +915,7 @@ function registerAdminTools(server) {
 
   tool(server, 'schedule_list', {
     title: 'List scheduled tasks', inputSchema: {}, annotations: READ,
-  }, () => api.post('/api/mcp/artisan', { command: 'schedule:list', arguments: {} }));
+  }, (_, api) => api.post('/api/mcp/artisan', { command: 'schedule:list', arguments: {} }));
 }
 
 // ---------------------------------------------------------------------------
@@ -931,17 +934,17 @@ function jsonResource(server, name, uri, meta, loader) {
 }
 
 function registerResources(server) {
-  jsonResource(server, 'health', 'jobs-site://health', { title: 'Health', description: 'Live health snapshot.' }, () => api.get('/api/mcp/health'));
-  jsonResource(server, 'schema', 'jobs-site://schema', { title: 'DB schema', description: 'Tables and columns.' }, () => api.get('/api/mcp/schema'));
-  jsonResource(server, 'categories', 'jobs-site://categories', { title: 'Categories' }, () => api.get('/api/categories'));
-  jsonResource(server, 'cities', 'jobs-site://cities', { title: 'Cities' }, () => api.get('/api/cities'));
-  jsonResource(server, 'settings', 'jobs-site://settings', { title: 'Site settings' }, () => api.get('/api/mcp/settings'));
-  jsonResource(server, 'seo-audit', 'jobs-site://seo/audit', { title: 'SEO audit' }, () => api.get('/api/mcp/seo/audit'));
-  jsonResource(server, 'analytics', 'jobs-site://analytics', { title: 'Analytics (30d)' }, () => api.get('/api/mcp/analytics', { days: 30 }));
-  jsonResource(server, 'artisan-allowlist', 'jobs-site://artisan', { title: 'Artisan allow-list' }, () => api.get('/api/mcp/artisan'));
-  jsonResource(server, 'sitemaps', 'jobs-site://sitemaps', { title: 'Sitemaps' }, () => api.get('/api/mcp/sitemaps'));
-  jsonResource(server, 'queue', 'jobs-site://queue', { title: 'Queue status' }, () => api.get('/api/mcp/queue'));
-  jsonResource(server, 'users-summary', 'jobs-site://users', { title: 'Users summary' }, () => api.get('/api/mcp/users', { per_page: 1 }));
+  jsonResource(server, 'health', 'jobs-site://health', { title: 'Health', description: 'Live health snapshot.' }, (_, api) => api.get('/api/mcp/health'));
+  jsonResource(server, 'schema', 'jobs-site://schema', { title: 'DB schema', description: 'Tables and columns.' }, (_, api) => api.get('/api/mcp/schema'));
+  jsonResource(server, 'categories', 'jobs-site://categories', { title: 'Categories' }, (_, api) => api.get('/api/categories'));
+  jsonResource(server, 'cities', 'jobs-site://cities', { title: 'Cities' }, (_, api) => api.get('/api/cities'));
+  jsonResource(server, 'settings', 'jobs-site://settings', { title: 'Site settings' }, (_, api) => api.get('/api/mcp/settings'));
+  jsonResource(server, 'seo-audit', 'jobs-site://seo/audit', { title: 'SEO audit' }, (_, api) => api.get('/api/mcp/seo/audit'));
+  jsonResource(server, 'analytics', 'jobs-site://analytics', { title: 'Analytics (30d)' }, (_, api) => api.get('/api/mcp/analytics', { days: 30 }));
+  jsonResource(server, 'artisan-allowlist', 'jobs-site://artisan', { title: 'Artisan allow-list' }, (_, api) => api.get('/api/mcp/artisan'));
+  jsonResource(server, 'sitemaps', 'jobs-site://sitemaps', { title: 'Sitemaps' }, (_, api) => api.get('/api/mcp/sitemaps'));
+  jsonResource(server, 'queue', 'jobs-site://queue', { title: 'Queue status' }, (_, api) => api.get('/api/mcp/queue'));
+  jsonResource(server, 'users-summary', 'jobs-site://users', { title: 'Users summary' }, (_, api) => api.get('/api/mcp/users', { per_page: 1 }));
 }
 
 // ---------------------------------------------------------------------------

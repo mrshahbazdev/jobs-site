@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class McpApiTest extends TestCase
@@ -230,5 +231,57 @@ class McpApiTest extends TestCase
         } finally {
             $this->postJson('/api/mcp/artisan', ['command' => 'up', 'arguments' => []], $this->auth())->assertOk();
         }
+    }
+
+    private function rpc(string $method, array $params = []): TestResponse
+    {
+        return $this->postJson('/api/mcp/rpc', [
+            'jsonrpc' => '2.0', 'id' => 1, 'method' => $method, 'params' => $params,
+        ], $this->auth());
+    }
+
+    public function test_rpc_initialize_and_lists(): void
+    {
+        $this->rpc('initialize')->assertOk()
+            ->assertJsonPath('result.serverInfo.name', 'jobs-site-mcp')
+            ->assertJsonStructure(['result' => ['capabilities' => ['tools', 'resources', 'prompts']]]);
+
+        $tools = $this->rpc('tools/list')->assertOk()->json('result.tools');
+        $this->assertGreaterThanOrEqual(99, count($tools));
+        $this->assertNotEmpty(collect($tools)->firstWhere('name', 'jobs_create')['inputSchema']);
+
+        $this->rpc('resources/list')->assertOk()->assertJsonCount(11, 'result.resources');
+        $this->rpc('prompts/list')->assertOk()->assertJsonCount(9, 'result.prompts');
+        $this->rpc('ping')->assertOk();
+    }
+
+    public function test_rpc_tools_call_dispatches_internally(): void
+    {
+        $this->rpc('tools/call', ['name' => 'jobs_search', 'arguments' => ['per_page' => 1]])
+            ->assertOk()->assertJsonPath('result.structuredContent.success', true);
+
+        // Path-template substitution + body pass-through
+        $job = $this->makeJob();
+        $this->rpc('tools/call', ['name' => 'jobs_get', 'arguments' => ['id_or_slug' => (string) $job->id]])
+            ->assertOk()->assertJsonPath('result.structuredContent.data.id', $job->id);
+
+        // HTTP errors surface as isError, not RPC errors
+        $res = $this->rpc('tools/call', ['name' => 'jobs_update', 'arguments' => ['id' => 999999, 'title' => 'x']]);
+        $this->assertTrue($res->json('result.isError'));
+
+        $this->rpc('tools/call', ['name' => 'no_such_tool'])
+            ->assertOk()->assertJsonPath('result.isError', true);
+
+        $this->rpc('unknown/method')->assertOk()->assertJsonPath('error.code', -32601);
+        $this->rpc('resources/read', ['uri' => 'jobs-site://queue'])->assertOk()
+            ->assertJsonStructure(['result' => ['contents' => [['uri', 'text']]]]);
+        $this->rpc('prompts/get', ['name' => 'cv_review', 'arguments' => ['cv_id' => '1']])
+            ->assertOk()->assertJsonPath('result.messages.0.role', 'user');
+    }
+
+    public function test_rpc_requires_token(): void
+    {
+        $this->postJson('/api/mcp/rpc', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'])
+            ->assertUnauthorized();
     }
 }
