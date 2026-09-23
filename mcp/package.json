@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node server.js",
     "start:http": "node server.js --http",
-    "smoke": "node smoke.js"
+    "smoke": "node smoke.js",
+    "manifest": "node manifest.js"
   },
   "engines": {
     "node": ">=18"

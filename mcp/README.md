@@ -26,6 +26,23 @@ All `/api/mcp/*` routes go through `McpTokenMiddleware` and accept the token as
 `Authorization: Bearer <token>` or `X-MCP-Token: <token>`.
 Allow-listed Artisan commands and their options live in `config/mcp.php`.
 
+### Browser / remote clients (Streamable HTTP — no Node needed)
+
+The Laravel app itself exposes a spec-compliant MCP endpoint at:
+
+```
+POST https://jobspic.com/api/mcp/rpc
+Authorization: Bearer <MCP_API_TOKEN>
+```
+
+It speaks JSON-RPC 2.0 (Streamable HTTP): `initialize`, `ping`, `tools/list`, `tools/call`,
+`resources/list`, `resources/read`, `prompts/list`, `prompts/get` — the same 99 tools,
+11 resources and 9 prompts as the Node server, dispatched internally so no extra process is
+needed. Use this URL in claude.ai connectors, Cursor web, OpenAI MCP or any remote MCP client.
+
+The tool manifest lives in `mcp/tools.json`, generated from the Node server — after changing
+tools in `server.js`, regenerate it with `cd mcp && npm run manifest` and commit the result.
+
 ## 2. Node MCP server
 
 ```bash

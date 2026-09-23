@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\LandingGroupApiController;
 use App\Http\Controllers\Api\Mcp\McpAdminController;
 use App\Http\Controllers\Api\Mcp\McpContentController;
 use App\Http\Controllers\Api\Mcp\McpOpsController;
+use App\Http\Controllers\Api\Mcp\McpRpcController;
 use App\Http\Controllers\Api\Mcp\McpSystemController;
 use App\Http\Controllers\Api\ScraperApiController;
 use App\Http\Controllers\Api\ScraperQueueController;
@@ -78,6 +79,9 @@ Route::get('/v2/scraper-queue/{id}/image', [ScraperQueueController::class, 'imag
 
 // ── MCP control surface (token protected, see config/mcp.php + mcp/README.md) ─
 Route::prefix('mcp')->middleware('mcp.token')->group(function () {
+    // Streamable-HTTP MCP endpoint (JSON-RPC 2.0) for browser/remote MCP clients
+    Route::post('/rpc', [McpRpcController::class, 'handle']);
+
     // System / diagnostics
     Route::get('/health', [McpSystemController::class, 'health']);
     Route::get('/schema', [McpSystemController::class, 'schema']);
