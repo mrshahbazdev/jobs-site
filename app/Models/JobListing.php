@@ -12,7 +12,7 @@ class JobListing extends Model
         'salary_range', 'deadline', 'description_html', 'schema_json',
         'is_featured', 'is_premium', 'is_active', 'job_source_image_id',
         'meta_description', 'meta_keywords', 'experience', 'job_type',
-        'whatsapp_number', 'company_name', 'company_logo', 'salary_min', 'salary_max',
+        'whatsapp_number', 'company_name', 'company_logo', 'poster_path', 'salary_min', 'salary_max',
         'education', 'newspaper', 'province', 'gender', 'bps_scale',
         'qualification_degree', 'is_special_quota', 'is_minority_quota',
         'testing_service', 'country', 'is_overseas', 'sector',
