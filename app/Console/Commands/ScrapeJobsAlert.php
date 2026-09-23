@@ -2,17 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\DetectsStaleAds;
+use App\Models\JobSourceImage;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use App\Models\JobSourceImage;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ScrapeJobsAlert extends Command
 {
+    use DetectsStaleAds;
+
     protected $signature = 'scrape:jobsalert {--only-links} {--image-id=} {--limit=}';
+
     protected $description = 'Scrape latest jobs from JobsAlert.pk (Listing or Deep Scrape)';
 
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
@@ -50,7 +54,7 @@ class ScrapeJobsAlert extends Command
 
     private function fetchListing(bool $onlyLinks = false, ?int $limit = null)
     {
-        $url = self::BASE_URL . '/';
+        $url = self::BASE_URL.'/';
         $this->info("Fetching job list from {$url}...");
 
         $cacheKey = 'scraper_progress_jobsalert';
@@ -58,25 +62,27 @@ class ScrapeJobsAlert extends Command
         try {
             $response = $this->httpClient()->get($url);
 
-            if (!$response->successful()) {
-                $msg = "Failed to fetch the page. Status: " . $response->status();
+            if (! $response->successful()) {
+                $msg = 'Failed to fetch the page. Status: '.$response->status();
                 Cache::put($cacheKey, ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $msg], 600);
                 Log::warning('[ScrapeJobsAlert] listing fetch failed', ['status' => $response->status()]);
                 if ($this->output) {
                     $this->error($msg);
                 }
+
                 return 1;
             }
 
             $html = $response->body();
             if (empty($html)) {
                 Cache::put($cacheKey, ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => 'Empty HTML response'], 600);
+
                 return 1;
             }
 
-            $dom = new \DOMDocument();
+            $dom = new \DOMDocument;
             libxml_use_internal_errors(true);
-            $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+            $dom->loadHTML('<?xml encoding="UTF-8">'.$html);
             libxml_clear_errors();
             $xpath = new \DOMXPath($dom);
 
@@ -99,12 +105,14 @@ class ScrapeJobsAlert extends Command
             if ($total === 0) {
                 // Regex fallback: extract links directly from HTML
                 preg_match_all('/<a[^>]*href="(https?:\/\/jobsalert\.pk\/[^"]+\/\d+)"[^>]*>([^<]+)<\/a>/i', $html, $matches, PREG_SET_ORDER);
-                if (!empty($matches)) {
-                    $this->info("Regex fallback found " . count($matches) . " job links.");
+                if (! empty($matches)) {
+                    $this->info('Regex fallback found '.count($matches).' job links.');
                     $seen = [];
                     foreach ($matches as $m) {
                         $mUrl = trim($m[1]);
-                        if (isset($seen[$mUrl])) continue;
+                        if (isset($seen[$mUrl])) {
+                            continue;
+                        }
                         $seen[$mUrl] = true;
                         $regexRows[] = ['url' => $mUrl, 'title' => trim($m[2])];
                     }
@@ -117,7 +125,7 @@ class ScrapeJobsAlert extends Command
                 $total = min($total, $limit);
             }
 
-            $this->info("Found " . $total . " potential job links.");
+            $this->info('Found '.$total.' potential job links.');
             Cache::put($cacheKey, [
                 'current' => 0,
                 'total' => $total,
@@ -142,15 +150,25 @@ class ScrapeJobsAlert extends Command
                         $title = $row['title'];
                         $fullJobUrl = $row['url'];
                     } else {
-                        $tds = $xpath->query("td", $row);
+                        $tds = $xpath->query('td', $row);
                         if ($tds->length < 2) {
+                            continue;
+                        }
+
+                        // td[0] = posted date, td[3] = last date — skip recycled/expired ads
+                        $postedAt = $this->dateFromText($tds->item(0)->textContent ?? '');
+                        $lastDate = $tds->length > 3 ? $this->dateFromText($tds->item(3)->textContent ?? '') : null;
+                        if ($this->listingIsStale($postedAt, $lastDate)) {
+                            $skipped++;
+                            $this->updateProgress(['current' => $count + $skipped, 'skipped' => $skipped]);
+
                             continue;
                         }
 
                         // The job link is inside the second <td>
                         $linkTd = $tds->item(1);
-                        $anchor = $xpath->query(".//a", $linkTd)->item(0);
-                        if (!$anchor) {
+                        $anchor = $xpath->query('.//a', $linkTd)->item(0);
+                        if (! $anchor) {
                             continue;
                         }
 
@@ -160,7 +178,7 @@ class ScrapeJobsAlert extends Command
 
                     // Ensure absolute URL
                     if (Str::startsWith($fullJobUrl, '/')) {
-                        $fullJobUrl = self::BASE_URL . $fullJobUrl;
+                        $fullJobUrl = self::BASE_URL.$fullJobUrl;
                     }
 
                     if (empty($title) || empty($fullJobUrl)) {
@@ -178,6 +196,7 @@ class ScrapeJobsAlert extends Command
                             'new' => $count,
                             'skipped' => $skipped,
                         ]);
+
                         continue;
                     }
 
@@ -187,7 +206,7 @@ class ScrapeJobsAlert extends Command
                         'is_processed' => false,
                     ]);
 
-                    if (!$onlyLinks) {
+                    if (! $onlyLinks) {
                         $this->processSingleImage($sourceRecord->id);
                     }
 
@@ -225,8 +244,9 @@ class ScrapeJobsAlert extends Command
             Cache::put($cacheKey, ['current' => 0, 'total' => 0, 'status' => 'error', 'message' => $e->getMessage()], 600);
             Log::error('[ScrapeJobsAlert] listing fatal error', ['error' => $e->getMessage()]);
             if ($this->output) {
-                $this->error("Error: " . $e->getMessage());
+                $this->error('Error: '.$e->getMessage());
             }
+
             return 1;
         }
 
@@ -236,15 +256,16 @@ class ScrapeJobsAlert extends Command
     public function processSingleImage($id)
     {
         $source = JobSourceImage::find($id);
-        if (!$source) {
+        if (! $source) {
             if ($this->output) {
-                $this->error("Source image record not found.");
+                $this->error('Source image record not found.');
             }
+
             return 1;
         }
 
         if ($this->output) {
-            $this->info("Processing: " . $source->title);
+            $this->info('Processing: '.$source->title);
         }
 
         try {
@@ -254,6 +275,15 @@ class ScrapeJobsAlert extends Command
             $result = null;
         }
 
+        if ($result && ($result['stale'] ?? false)) {
+            $source->update(['publish_status' => 'skipped', 'is_processed' => true]);
+            if ($this->output) {
+                $this->warn('  -> Skipped: ad image is older than '.self::STALE_IMAGE_DAYS.' days (recycled ad).');
+            }
+
+            return 0;
+        }
+
         if ($result) {
             $source->update([
                 'local_image_path' => $result['path'],
@@ -261,30 +291,33 @@ class ScrapeJobsAlert extends Command
                 'is_processed' => true,
             ]);
             if ($this->output) {
-                $this->info("  -> Image saved: " . $result['path']);
+                $this->info('  -> Image saved: '.$result['path']);
             }
+
             return 0;
         }
 
         if ($this->output) {
-            $this->error("  -> Failed to fetch image.");
+            $this->error('  -> Failed to fetch image.');
         }
+
         return 1;
     }
 
     private function deepScrapeImage($url, $title)
     {
         $response = $this->httpClient()->get($url);
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::warning('[ScrapeJobsAlert] detail page fetch failed', ['url' => $url, 'status' => $response->status()]);
+
             return null;
         }
 
         $html = $response->body();
 
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+        $dom->loadHTML('<?xml encoding="UTF-8">'.$html);
         libxml_clear_errors();
         $xpath = new \DOMXPath($dom);
 
@@ -298,36 +331,45 @@ class ScrapeJobsAlert extends Command
             $imgSrc = null;
         }
 
-        if (!$imgSrc) {
+        if (! $imgSrc) {
             // Fallback: look for wp-content/uploads images in the article body
             $bodyImgs = $xpath->query("//img[contains(@src, 'wp-content/uploads')]");
             foreach ($bodyImgs as $img) {
                 $src = $img->getAttribute('src');
-                if (!str_contains($src, 'favicon') && !str_contains($src, '150x150')) {
+                if (! str_contains($src, 'favicon') && ! str_contains($src, '150x150')) {
                     $imgSrc = $src;
                     break;
                 }
             }
         }
 
-        if (!$imgSrc) {
+        if (! $imgSrc) {
             Log::info('[ScrapeJobsAlert] no image found on detail page', ['url' => $url]);
+
             return null;
+        }
+
+        // Recycled ads reuse images hosted under an old upload month
+        if ($this->imageUrlIsOld($imgSrc)) {
+            Log::info('[ScrapeJobsAlert] stale ad image (old upload month)', ['url' => $url, 'image' => $imgSrc]);
+
+            return ['stale' => true];
         }
 
         // Ensure absolute URL
         $fullImgUrl = $imgSrc;
         if (Str::startsWith($imgSrc, '/')) {
-            $fullImgUrl = self::BASE_URL . $imgSrc;
-        } elseif (!Str::startsWith($imgSrc, ['http://', 'https://'])) {
-            $fullImgUrl = self::BASE_URL . '/' . ltrim($imgSrc, '/');
+            $fullImgUrl = self::BASE_URL.$imgSrc;
+        } elseif (! Str::startsWith($imgSrc, ['http://', 'https://'])) {
+            $fullImgUrl = self::BASE_URL.'/'.ltrim($imgSrc, '/');
         }
 
         Cache::put('last_scraped_img_url', $fullImgUrl, 60);
 
         $imgResponse = $this->httpClient()->get($fullImgUrl);
-        if (!$imgResponse->successful()) {
+        if (! $imgResponse->successful()) {
             Log::warning('[ScrapeJobsAlert] image fetch failed', ['url' => $fullImgUrl, 'status' => $imgResponse->status()]);
+
             return null;
         }
 
@@ -337,7 +379,7 @@ class ScrapeJobsAlert extends Command
         }
 
         $ext = strtolower(pathinfo(parse_url($fullImgUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
-        if (!in_array($ext, ['gif', 'jpg', 'jpeg', 'png', 'webp'], true)) {
+        if (! in_array($ext, ['gif', 'jpg', 'jpeg', 'png', 'webp'], true)) {
             $contentType = $imgResponse->header('Content-Type') ?? '';
             $ext = match (true) {
                 str_contains($contentType, 'jpeg') => 'jpg',
@@ -348,7 +390,7 @@ class ScrapeJobsAlert extends Command
             };
         }
 
-        $filename = 'job-sources/' . Str::slug($title) . '-' . time() . '.' . $ext;
+        $filename = 'job-sources/'.Str::slug($title).'-'.time().'.'.$ext;
         Storage::disk('public')->put($filename, $imgData, 'public');
 
         return [

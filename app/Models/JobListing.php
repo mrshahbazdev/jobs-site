@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class JobListing extends Model
 {
     protected $fillable = [
-        'title', 'slug', 'category_id', 'city_id', 'department', 
+        'title', 'slug', 'category_id', 'city_id', 'department',
         'salary_range', 'deadline', 'description_html', 'schema_json',
         'is_featured', 'is_premium', 'is_active', 'job_source_image_id',
         'meta_description', 'meta_keywords', 'experience', 'job_type',
@@ -17,7 +18,7 @@ class JobListing extends Model
         'testing_service', 'country', 'is_overseas', 'sector',
         'job_role', 'registration_council',
         'has_walkin_interview', 'is_remote', 'is_whatsapp_apply', 'is_retired_army', 'is_student_friendly',
-        'sub_sector', 'contract_type', 'skills', 'has_accommodation', 'has_transport', 'has_medical_insurance'
+        'sub_sector', 'contract_type', 'skills', 'has_accommodation', 'has_transport', 'has_medical_insurance',
     ];
 
     public function category()
@@ -62,48 +63,61 @@ class JobListing extends Model
 
     /**
      * Generate a JobPosting Schema JSON-LD if none exists.
+     * Returns null for expired listings (no structured data for closed jobs).
      */
-    public function generateSchema()
+    public function generateSchema(): ?string
     {
+        if ($this->deadline && Carbon::parse($this->deadline)->isPast()) {
+            return null;
+        }
+
         if ($this->schema_json && strlen($this->schema_json) > 50) {
             return $this->schema_json;
         }
 
         $schema = [
-            "@context" => "https://schema.org/",
-            "@type" => "JobPosting",
-            "title" => $this->title,
-            "description" => strip_tags($this->description_html),
-            "datePosted" => $this->created_at->toIso8601String(),
-            "validThrough" => $this->deadline ? \Carbon\Carbon::parse($this->deadline)->toIso8601String() : $this->created_at->addMonths(3)->toIso8601String(),
-            "employmentType" => $this->job_type ?: "FULL_TIME",
-            "hiringOrganization" => [
-                "@type" => "Organization",
-                "name" => $this->company_name ?: "JobsPic Pakistan",
-                "sameAs" => url('/'),
-                "logo" => $this->company_logo ? asset('storage/'.$this->company_logo) : asset('icons/icon-192x192.png')
+            '@context' => 'https://schema.org/',
+            '@type' => 'JobPosting',
+            'title' => $this->title,
+            'description' => strip_tags($this->description_html),
+            'datePosted' => $this->created_at->toIso8601String(),
+            'validThrough' => $this->deadline ? Carbon::parse($this->deadline)->toIso8601String() : $this->created_at->addMonths(3)->toIso8601String(),
+            'employmentType' => ([
+                'full time' => 'FULL_TIME', 'full-time' => 'FULL_TIME',
+                'part time' => 'PART_TIME', 'part-time' => 'PART_TIME',
+                'contract' => 'CONTRACTOR',
+                'temporary' => 'TEMPORARY',
+                'internship' => 'INTERN', 'intern' => 'INTERN',
+                'daily wages' => 'PER_DIEM',
+            ])[strtolower(trim((string) $this->job_type))] ?? 'FULL_TIME',
+            'hiringOrganization' => array_filter([
+                '@type' => 'Organization',
+                'name' => $this->company_name ?: null,
+                'logo' => $this->company_logo ? asset('storage/'.$this->company_logo) : null,
+            ]) ?: ['@type' => 'Organization', 'name' => 'JobsPic Pakistan'],
+            'jobLocation' => [
+                '@type' => 'Place',
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'addressLocality' => $this->city ? $this->city->name : 'Pakistan',
+                    'addressRegion' => $this->province ?: 'Pakistan',
+                    'addressCountry' => 'PK',
+                ],
             ],
-            "jobLocation" => [
-                "@type" => "Place",
-                "address" => [
-                    "@type" => "PostalAddress",
-                    "addressLocality" => $this->city ? $this->city->name : "Pakistan",
-                    "addressRegion" => $this->province ?: "Pakistan",
-                    "addressCountry" => "PK"
-                ]
-            ]
         ];
 
         if ($this->salary_min) {
+            $value = ['@type' => 'QuantitativeValue', 'unitText' => 'MONTH'];
+            if ($this->salary_max) {
+                $value['minValue'] = $this->salary_min;
+                $value['maxValue'] = $this->salary_max;
+            } else {
+                $value['value'] = $this->salary_min;
+            }
             $schema['baseSalary'] = [
-                "@type" => "MonetaryAmount",
-                "currency" => "PKR",
-                "value" => [
-                    "@type" => "QuantitativeValue",
-                    "minValue" => $this->salary_min,
-                    "maxValue" => $this->salary_max ?: $this->salary_min,
-                    "unitText" => "MONTH"
-                ]
+                '@type' => 'MonetaryAmount',
+                'currency' => 'PKR',
+                'value' => $value,
             ];
         }
 
