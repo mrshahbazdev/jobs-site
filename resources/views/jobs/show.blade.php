@@ -1,7 +1,8 @@
 <x-layout>
     @section('title', $job->title . ' - Jobs in ' . $job->city->name . ' | JobsPic')
     @section('meta_description', $job->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($job->description_html), 150))
-    @section('meta_keywords', $job->meta_keywords ?: 'jobs in pakistan, ' . $job->category->name . ', ' . $job->city->name)
+    @section('meta_keywords', ltrim($job->meta_keywords ?? '', ':, \t\n\r\0\x0B') ?: 'jobs in pakistan, ' . $job->category->name . ', ' . $job->city->name)
+    @section('og_title', $job->title . ' - Jobs in ' . $job->city->name . ' | JobsPic')
 
     @push('extra_head')
         <link rel="amphtml" href="{{ route('jobs.amp', $job->slug) }}">
@@ -324,9 +325,11 @@
                 <div class="relative z-10">
                     <h3 class="text-xl font-black mb-2">Join Our WhatsApp</h3>
                     <p class="text-white/90 text-sm mb-6 leading-relaxed">Stay updated with the latest job alerts in your city!</p>
-                    <a href="https://chat.whatsapp.com/invite/YOUR_LINK" target="_blank" class="block w-full text-center bg-white text-[#075E54] font-bold py-3 rounded-xl shadow-md hover:bg-slate-50 transition-colors">
+                    @if(($settings['whatsapp_group_link'] ?? '') !== '')
+                    <a href="{{ $settings['whatsapp_group_link'] }}" target="_blank" class="block w-full text-center bg-white text-[#075E54] font-bold py-3 rounded-xl shadow-md hover:bg-slate-50 transition-colors">
                         Join Community
                     </a>
+                    @endif
                 </div>
             </div>
 
