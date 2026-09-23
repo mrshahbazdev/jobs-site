@@ -36,6 +36,7 @@ return [
         'queue:work' => ['--stop-when-empty', '--tries', '--max-jobs', '--max-time'],
         'queue:retry' => ['id'],
         'queue:flush' => [],
+        'queue:clear' => ['--force'],
         'queue:failed' => [],
         'migrate' => ['--force'],
         'migrate:status' => [],
