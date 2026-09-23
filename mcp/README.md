@@ -76,7 +76,7 @@ JOBS_SITE_URL=http://127.0.0.1:8000 MCP_API_TOKEN=<token> npm run smoke -- --str
 
 ## 3. Surface
 
-### Tools (73)
+### Tools (99)
 
 | Area | Tools |
 | --- | --- |
@@ -86,6 +86,10 @@ JOBS_SITE_URL=http://127.0.0.1:8000 MCP_API_TOKEN=<token> npm run smoke -- --str
 | Scrapers | `scraper_status`, `scraper_trigger`, `scraper_process_image`, `scraper_queue_stats/search/next/set_status/bulk_status/purge` |
 | Growth | `seo_audit`, `indexnow_submit`, `ai_extract_job` (Gemini), `push_stats`, `push_broadcast` |
 | Content | `posts_*`, `settings_*`, `comments_list/moderate`, `subscribers_*`, `landing_get`, `landing_group_*`, `landing_link_*`, `home_blocks_*`, `users_list` |
+| Users & CVs | `users_get/create/update/delete/reset_password`, `cvs_list/get/update/delete`, `bookmarks_stats`, `bookmarks_toggle` |
+| Ad images | `source_image_add` (URL or base64 → scraper pipeline), `source_image_get/update/delete`, `source_image_publish` (link ad to a job) |
+| Sitemaps & alerts | `sitemaps_status`, `sitemaps_flush`, `alerts_preview`, `alerts_send`, `mail_test` |
+| Storage & ops | `storage_list`, `storage_delete`, `storage_orphans`, `maintenance_mode`, `schedule_list` |
 
 Every tool returns JSON as text **and** `structuredContent`; API errors come back as
 `{ success: false, error, status, errors? }` with `isError: true`. Destructive tools are
@@ -94,12 +98,14 @@ annotated with `destructiveHint` so clients can ask for confirmation.
 ### Resources
 
 `jobs-site://health`, `jobs-site://schema`, `jobs-site://categories`, `jobs-site://cities`,
-`jobs-site://settings`, `jobs-site://seo/audit`, `jobs-site://analytics`, `jobs-site://artisan`.
+`jobs-site://settings`, `jobs-site://seo/audit`, `jobs-site://analytics`, `jobs-site://artisan`,
+`jobs-site://sitemaps`, `jobs-site://queue`, `jobs-site://users`.
 
 ### Prompts
 
 `daily_ops_checklist`, `publish_scraped_job`, `seo_improvement_plan`, `write_job_guide_post`,
-`incident_triage`.
+`incident_triage`, `job_from_ad_image` (publish an ad image/text without Gemini — the client does
+the OCR/extraction itself), `weekly_content_plan`, `cv_review`, `cleanup_and_maintenance`.
 
 ## 4. Security notes
 
