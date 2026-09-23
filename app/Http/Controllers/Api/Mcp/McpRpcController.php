@@ -93,6 +93,9 @@ class McpRpcController extends Controller
                     .'destructive tools carry destructiveHint. Prefer jobs_search/source_image_* over db_query.',
             ]),
             'ping' => $this->rpcOk($id, new \stdClass),
+            'resources/templates/list' => $this->rpcOk($id, ['resourceTemplates' => []]),
+            'logging/setLevel' => $this->rpcOk($id, new \stdClass),
+            'completion/complete' => $this->rpcOk($id, ['completion' => ['values' => [], 'total' => 0, 'hasMore' => false]]),
             'tools/list' => $this->rpcOk($id, ['tools' => array_map(
                 fn ($t) => [
                     'name' => $t['name'],
