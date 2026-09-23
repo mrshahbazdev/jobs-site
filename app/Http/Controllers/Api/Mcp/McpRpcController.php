@@ -98,11 +98,11 @@ class McpRpcController extends Controller
             'completion/complete' => $this->rpcOk($id, ['completion' => ['values' => [], 'total' => 0, 'hasMore' => false]]),
             'tools/list' => $this->rpcOk($id, ['tools' => array_map(
                 fn ($t) => [
-                    'name' => $t['name'],
-                    'title' => $t['title'],
-                    'description' => $t['description'],
-                    'inputSchema' => json_decode(json_encode($t['inputSchema'])),
-                    'annotations' => json_decode(json_encode($t['annotations'])),
+                    'name' => $t->name,
+                    'title' => $t->title,
+                    'description' => $t->description,
+                    'inputSchema' => $t->inputSchema,
+                    'annotations' => $t->annotations ?? new \stdClass,
                 ],
                 $this->tools(),
             )]),
@@ -123,11 +123,12 @@ class McpRpcController extends Controller
         };
     }
 
+    /** @return array<int, \stdClass> Raw objects — keeps empty {} (inputSchema.properties) as objects. */
     private function tools(): array
     {
         static $tools = null;
         if ($tools === null) {
-            $tools = json_decode(file_get_contents(base_path('mcp/tools.json')), true) ?: [];
+            $tools = json_decode(file_get_contents(base_path('mcp/tools.json'))) ?: [];
         }
 
         return $tools;
@@ -150,8 +151,8 @@ class McpRpcController extends Controller
             $query = [];
             $body = $data;
         } else {
-            $method = $tool['http']['method'] ?? null;
-            $path = $tool['http']['path'] ?? null;
+            $method = $tool->http->method ?? null;
+            $path = $tool->http->path ?? null;
             if (! $method || ! $path) {
                 return $this->rpcOk($id, $this->toolError("Tool {$name} has no HTTP mapping."));
             }
