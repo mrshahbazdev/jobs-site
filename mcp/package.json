@@ -1,0 +1,23 @@
+{
+  "name": "jobs-site-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Model Context Protocol server for the jobs-site Laravel platform (stdio + Streamable HTTP).",
+  "bin": {
+    "jobs-site-mcp": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "start:http": "node server.js --http",
+    "smoke": "node smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.1.0",
+    "zod": "^4.1.13"
+  }
+}

@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \App\Http\Middleware\CorsMiddleware::class,
         ]);
+        $middleware->alias([
+            'mcp.token' => \App\Http\Middleware\McpTokenMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

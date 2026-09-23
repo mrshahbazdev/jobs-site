@@ -4,7 +4,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "mcp": "node mcp/server.js",
+        "mcp:http": "node mcp/server.js --http",
+        "mcp:smoke": "node mcp/smoke.js --strict"
     },
     "devDependencies": {
         "@tailwindcss/container-queries": "^0.1.1",

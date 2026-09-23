@@ -22,9 +22,11 @@ return new class extends Migration
             $blueprint->timestamps();
         });
 
-        Schema::table('landing_links', function (Blueprint $table) {
-            $table->foreignId('landing_group_id')->nullable()->constrained()->onDelete('cascade');
-        });
+        if (! Schema::hasColumn('landing_links', 'landing_group_id')) {
+            Schema::table('landing_links', function (Blueprint $table) {
+                $table->foreignId('landing_group_id')->nullable()->constrained()->onDelete('cascade');
+            });
+        }
     }
 
     /**

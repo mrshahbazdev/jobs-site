@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Node MCP server deps (mcp/README.md)
+/mcp/node_modules
