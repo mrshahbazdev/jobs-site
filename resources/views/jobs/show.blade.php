@@ -39,14 +39,25 @@
 
 
 
-        @if($job->schema_json)
-            <script type="application/ld+json">
-            {!! $job->schema_json !!}
-            </script>
-        @elseif($job->generateSchema())
-            <script type="application/ld+json">
-            {!! $job->generateSchema() !!}
-            </script>
+        @php
+            $schema = json_decode($job->schema_json ?: ($job->generateSchema() ?? ''), true);
+            if ($schema && $job->poster_path) {
+                $poster = asset('storage/'.$job->poster_path);
+                if (isset($schema['@graph'])) {
+                    foreach ($schema['@graph'] as &$node) {
+                        if (($node['@type'] ?? null) === 'JobPosting') {
+                            $node['image'] = $poster;
+                            $node['hiringOrganization']['logo'] ??= $poster;
+                        }
+                    }
+                    unset($node);
+                } elseif (($schema['@type'] ?? null) === 'JobPosting') {
+                    $schema['image'] = $poster;
+                }
+            }
+        @endphp
+        @if($schema)
+            <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
         @endif
     @endpush
 
