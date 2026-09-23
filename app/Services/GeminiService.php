@@ -14,8 +14,9 @@ class GeminiService
     {
         $apiKey = env('GEMINI_API_KEY');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             Log::warning('GEMINI_API_KEY is not set in .env');
+
             return [
                 'meta_description' => '',
                 'meta_keywords' => '',
@@ -31,31 +32,32 @@ class GeminiService
         4. job_type: The type of job (e.g., 'Full-time', 'Contract', 'Part-time').
 
         Job Description:
-        " . strip_tags($htmlContent);
+        ".strip_tags($htmlContent);
 
         try {
-            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey, [
+            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='.$apiKey, [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
+                            ['text' => $prompt],
+                        ],
+                    ],
                 ],
                 'generationConfig' => [
                     'responseMimeType' => 'application/json',
-                ]
+                ],
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+
                 return json_decode($text, true) ?? [];
             }
 
-            Log::error('Gemini API Error: ' . $response->body());
+            Log::error('Gemini API Error: '.$response->body());
         } catch (\Exception $e) {
-            Log::error('Gemini Service Exception: ' . $e->getMessage());
+            Log::error('Gemini Service Exception: '.$e->getMessage());
         }
 
         return [];
@@ -68,7 +70,7 @@ class GeminiService
     {
         $apiKey = env('GEMINI_API_KEY');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return [];
         }
 
@@ -81,29 +83,30 @@ class GeminiService
 
         If a field is not mentioned, return null for it.
 
-        Search Query: \"" . $query . "\"";
+        Search Query: \"".$query.'"';
 
         try {
-            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey, [
+            $response = Http::post('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='.$apiKey, [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
+                            ['text' => $prompt],
+                        ],
+                    ],
                 ],
                 'generationConfig' => [
                     'responseMimeType' => 'application/json',
-                ]
+                ],
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+
                 return json_decode($text, true) ?? [];
             }
         } catch (\Exception $e) {
-            Log::error('Gemini Search Query Exception: ' . $e->getMessage());
+            Log::error('Gemini Search Query Exception: '.$e->getMessage());
         }
 
         return [];

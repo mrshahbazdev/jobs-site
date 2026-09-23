@@ -165,6 +165,7 @@ Route::prefix('mcp')->middleware('mcp.token')->group(function () {
 
     Route::post('/source-images', [McpAdminController::class, 'storeSourceImage']);
     Route::get('/source-images/{id}', [McpAdminController::class, 'showSourceImage']);
+    Route::get('/source-images/{id}/view', [McpOpsController::class, 'viewSourceImage']);
     Route::put('/source-images/{id}', [McpAdminController::class, 'updateSourceImage']);
     Route::delete('/source-images/{id}', [McpAdminController::class, 'destroySourceImage']);
     Route::post('/source-images/{id}/publish', [McpAdminController::class, 'publishSourceImage']);

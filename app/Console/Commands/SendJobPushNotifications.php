@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 class SendJobPushNotifications extends Command
 {
     protected $signature = 'push:send-new-jobs {--limit=10 : Max number of jobs to notify in one run} {--dry-run}';
+
     protected $description = 'Send a web-push notification for each active job that has not yet been pushed';
 
     public function handle(WebPushService $push): int
@@ -24,6 +25,7 @@ class SendJobPushNotifications extends Command
 
         if ($jobs->isEmpty()) {
             $this->info('No new jobs to notify.');
+
             return self::SUCCESS;
         }
 
@@ -42,20 +44,22 @@ class SendJobPushNotifications extends Command
             $payload = [
                 'title' => Str::limit($job->title, 60),
                 'body' => $job->meta_description
-                    ?: ($job->department ? $job->department . ' — ' : '') . ($job->category?->name ?? 'New Job'),
-                'url' => url('/jobs/' . $job->slug),
-                'tag' => 'job-' . $job->id,
+                    ?: ($job->department ? $job->department.' — ' : '').($job->category?->name ?? 'New Job'),
+                'url' => url('/jobs/'.$job->slug),
+                'tag' => 'job-'.$job->id,
                 'icon' => asset('icons/icon-192x192.png'),
                 'badge' => asset('icons/icon-192x192.png'),
             ];
 
             if ($this->option('dry-run')) {
                 $this->line("  DRY: would notify {$subs->count()} subscribers about: {$job->title}");
+
                 continue;
             }
 
             if ($subs->isEmpty()) {
                 $job->forceFill(['push_notified_at' => now()])->save();
+
                 continue;
             }
 

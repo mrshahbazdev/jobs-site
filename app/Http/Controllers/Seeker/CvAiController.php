@@ -106,7 +106,7 @@ class CvAiController extends Controller
     private function authorizeOwner(Request $request, Cv $cv): void
     {
         $user = $request->user();
-        if (!$user || $cv->user_id !== $user->id) {
+        if (! $user || $cv->user_id !== $user->id) {
             abort(403);
         }
     }

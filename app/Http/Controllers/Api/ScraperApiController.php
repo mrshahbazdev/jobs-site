@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\ScrapePakistanJobs;
 use App\Jobs\ScrapeJobsAlertJobs;
 use App\Jobs\ScrapeJobzPkJobs;
+use App\Jobs\ScrapePakistanJobs;
+use App\Models\JobSourceImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -67,9 +68,9 @@ class ScraperApiController extends Controller
         $onlyLinks = $mode !== 'all';
 
         $config = self::SOURCES[$source] ?? null;
-        if (!$config) {
+        if (! $config) {
             return response()->json([
-                'message' => 'Unknown source. Valid: ' . implode(', ', array_keys(self::SOURCES)),
+                'message' => 'Unknown source. Valid: '.implode(', ', array_keys(self::SOURCES)),
             ], 422);
         }
 
@@ -104,11 +105,12 @@ class ScraperApiController extends Controller
         ]);
 
         if ($exitCode === 0) {
-            $image = \App\Models\JobSourceImage::find($request->id);
+            $image = JobSourceImage::find($request->id);
+
             return response()->json([
                 'status' => 'success',
                 'image_url' => $image && $image->local_image_path
-                    ? asset('storage/' . $image->local_image_path)
+                    ? asset('storage/'.$image->local_image_path)
                     : null,
                 'data' => $image,
             ]);

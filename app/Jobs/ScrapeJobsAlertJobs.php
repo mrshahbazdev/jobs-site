@@ -16,10 +16,13 @@ class ScrapeJobsAlertJobs implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 900;
+
     public $tries = 1;
 
     public bool $onlyLinks;
+
     public ?int $imageId;
+
     public ?int $limit;
 
     public function __construct(bool $onlyLinks = false, ?int $imageId = null, ?int $limit = null)
@@ -55,7 +58,7 @@ class ScrapeJobsAlertJobs implements ShouldQueue
             'current' => 0,
             'total' => 0,
             'status' => 'error',
-            'message' => 'Job failed: ' . $exception->getMessage(),
+            'message' => 'Job failed: '.$exception->getMessage(),
         ], 600);
     }
 }

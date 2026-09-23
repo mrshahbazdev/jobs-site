@@ -8,18 +8,18 @@ use App\Filament\Resources\HomeBlockResource\Pages\ListHomeBlocks;
 use App\Filament\Resources\HomeBlockResource\Schemas\HomeBlockForm;
 use App\Filament\Resources\HomeBlockResource\Tables\HomeBlocksTable;
 use App\Models\HomeBlock;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Table;
 use Filament\Support\Icons\Heroicon;
-use BackedEnum;
+use Filament\Tables\Table;
 
 class HomeBlockResource extends Resource
 {
     protected static ?string $model = HomeBlock::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedViewColumns;
-    
+
     public static function getNavigationGroup(): ?string
     {
         return 'Site Management';
@@ -29,7 +29,7 @@ class HomeBlockResource extends Resource
     {
         return 'Site Builder';
     }
-    
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Schema $schema): Schema

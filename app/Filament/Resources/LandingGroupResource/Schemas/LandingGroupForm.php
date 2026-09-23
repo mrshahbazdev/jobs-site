@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\LandingGroupResource\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -16,7 +16,7 @@ class LandingGroupForm
                 TextInput::make('name')
                     ->required()
                     ->placeholder('e.g. Testing Services, Special Offers'),
-                
+
                 TextInput::make('sub_label')
                     ->placeholder('e.g. (Bahar ke Mulk)'),
 

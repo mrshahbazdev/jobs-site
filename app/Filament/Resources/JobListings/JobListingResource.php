@@ -19,7 +19,7 @@ use UnitEnum;
 class JobListingResource extends Resource
 {
     protected static ?string $model = JobListing::class;
-    
+
     public static function getNavigationLabel(): string
     {
         return 'Manual Jobs';

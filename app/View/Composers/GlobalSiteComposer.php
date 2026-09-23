@@ -2,9 +2,9 @@
 
 namespace App\View\Composers;
 
-use Illuminate\View\View;
 use App\Models\HomeBlock;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class GlobalSiteComposer
 {

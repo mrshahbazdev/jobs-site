@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\LandingLinkResource\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -16,7 +16,7 @@ class LandingLinkForm
                 TextInput::make('label')
                     ->required()
                     ->placeholder('e.g. NTS Jobs, Police Jobs, Qatar Jobs'),
-                
+
                 Select::make('landing_group_id')
                     ->label('Landing Section')
                     ->required()

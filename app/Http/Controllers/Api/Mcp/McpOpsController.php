@@ -14,7 +14,10 @@ use App\Services\WebPushService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class McpOpsController extends Controller
 {
@@ -139,6 +142,37 @@ class McpOpsController extends Controller
             'deleted' => $deleted,
             'samples' => $samples,
         ]);
+    }
+
+    /**
+     * Return a scraper-queue ad image as MCP content blocks so the client
+     * can read (OCR) it. Tall ads are split into 1500px slices.
+     */
+    public function viewSourceImage(Request $request, int $id): JsonResponse
+    {
+        $row = JobSourceImage::findOrFail($id);
+        if (! $row->local_image_path || ! Storage::disk('public')->exists($row->local_image_path)) {
+            return response()->json([
+                'content' => [['type' => 'text', 'text' => 'Image not downloaded yet. Process the image first.']],
+                'isError' => true,
+            ]);
+        }
+
+        $img = (new ImageManager(new Driver))
+            ->read(Storage::disk('public')->path($row->local_image_path));
+        $img->scaleDown(width: 1200);
+
+        $sliceH = 1500;
+        $parts = max(1, (int) ceil($img->height() / $sliceH));
+        $part = max(1, min($parts, (int) $request->input('part', 1)));
+        $y = ($part - 1) * $sliceH;
+
+        $slice = (clone $img)->crop($img->width(), min($sliceH, $img->height() - $y), 0, $y);
+
+        return response()->json(['content' => [
+            ['type' => 'text', 'text' => "Ad #{$row->id} — part {$part}/{$parts} — {$row->title}"],
+            ['type' => 'image', 'data' => base64_encode((string) $slice->toJpeg(82)), 'mimeType' => 'image/jpeg'],
+        ]]);
     }
 
     public function regenerateSchema(Request $request): JsonResponse

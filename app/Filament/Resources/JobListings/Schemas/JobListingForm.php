@@ -2,18 +2,17 @@
 
 namespace App\Filament\Resources\JobListings\Schemas;
 
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\FileUpload;
-use Filament\Actions\Action;
-use Filament\Schemas\Schema;
-use App\Services\GeminiService;
 use App\Models\Category;
 use App\Models\City;
+use App\Services\GeminiService;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -27,7 +26,7 @@ class JobListingForm
                     ->required()
                     ->lazy()
                     ->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state))),
-                
+
                 TextInput::make('slug')
                     ->required(),
 
@@ -78,7 +77,7 @@ class JobListingForm
                     ->label('Minimum Salary')
                     ->numeric()
                     ->prefix('PKR'),
-                
+
                 TextInput::make('salary_max')
                     ->label('Maximum Salary')
                     ->numeric()
@@ -139,7 +138,7 @@ class JobListingForm
 
                 Select::make('bps_scale')
                     ->label('BPS (Scale)')
-                    ->options(collect(range(1, 22))->mapWithKeys(fn($i) => ["BPS-".str_pad($i, 2, '0', STR_PAD_LEFT) => "BPS-".str_pad($i, 2, '0', STR_PAD_LEFT)]))
+                    ->options(collect(range(1, 22))->mapWithKeys(fn ($i) => ['BPS-'.str_pad($i, 2, '0', STR_PAD_LEFT) => 'BPS-'.str_pad($i, 2, '0', STR_PAD_LEFT)]))
                     ->searchable()
                     ->placeholder('Select BPS Scale'),
 
@@ -193,7 +192,7 @@ class JobListingForm
                     ->label('Specific Job Role / Title')
                     ->placeholder('e.g. Computer Operator, Security Guard, Driver')
                     ->datalist([
-                        'Computer Operator', 'Data Entry Operator', 'Driver', 'Security Guard', 'Clerk', 'Junior Clerk', 'Assistant', 'Accountant', 'Receptionist', 'HR Manager', 'Sales Marketing', 'Cook', 'Sweeper', 'Naib Qasid', 'Patwari', 'Teacher', 'Professor', 'Lecturer', 'Doctor', 'Nurse', 'Engineer'
+                        'Computer Operator', 'Data Entry Operator', 'Driver', 'Security Guard', 'Clerk', 'Junior Clerk', 'Assistant', 'Accountant', 'Receptionist', 'HR Manager', 'Sales Marketing', 'Cook', 'Sweeper', 'Naib Qasid', 'Patwari', 'Teacher', 'Professor', 'Lecturer', 'Doctor', 'Nurse', 'Engineer',
                     ]),
 
                 Select::make('sub_sector')
@@ -232,12 +231,12 @@ class JobListingForm
                     ->label('Technical Skills')
                     ->placeholder('e.g. MS Office, Typing, Graphics Design (Comma separated)')
                     ->datalist([
-                        'MS Office', 'Typing', 'Graphics Design', 'Web Development', 'SEO', 'Digital Marketing', 'ACCA/CA', 'HR Management', 'Data Entry'
+                        'MS Office', 'Typing', 'Graphics Design', 'Web Development', 'SEO', 'Digital Marketing', 'ACCA/CA', 'HR Management', 'Data Entry',
                     ]),
 
                 Toggle::make('is_remote')
                     ->label('Work From Home (Remote)'),
-                
+
                 Toggle::make('has_walkin_interview')
                     ->label('Walk-in Interview Available'),
 
@@ -274,7 +273,7 @@ class JobListingForm
                     ->label('Minimum Qualification / Degree')
                     ->placeholder('e.g. MBBS, MBA, BS Software Engineering')
                     ->datalist([
-                        'MBBS', 'MBA', 'BSCS', 'BBA', 'LLB', 'CA', 'ACCA', 'BS Electrical', 'BS Civil', 'Nursing', 'Pharmacy'
+                        'MBBS', 'MBA', 'BSCS', 'BBA', 'LLB', 'CA', 'ACCA', 'BS Electrical', 'BS Civil', 'Nursing', 'Pharmacy',
                     ]),
 
                 Toggle::make('is_special_quota')
@@ -297,10 +296,12 @@ class JobListingForm
                             ->tooltip('Extract SEO & Details with AI')
                             ->action(function ($set, $state, $get) {
                                 $html = $get('description_html') ?: $get('description');
-                                if (!$html) return;
-                                
+                                if (! $html) {
+                                    return;
+                                }
+
                                 $data = GeminiService::extractMetadata($html);
-                                if (!empty($data)) {
+                                if (! empty($data)) {
                                     $set('meta_description', $data['meta_description'] ?? '');
                                     $set('meta_keywords', $data['meta_keywords'] ?? '');
                                     $set('experience', $data['experience'] ?? '');
@@ -330,12 +331,13 @@ class JobListingForm
                 Placeholder::make('source_image')
                     ->label('Source Image Advertisement')
                     ->content(function ($record) {
-                        if (!$record || !$record->jobSourceImage || !$record->jobSourceImage->local_image_path) {
+                        if (! $record || ! $record->jobSourceImage || ! $record->jobSourceImage->local_image_path) {
                             return 'No image attached';
                         }
-                        $path = storage_path('app/public/' . $record->jobSourceImage->local_image_path);
-                        $url = url('storage/' . $record->jobSourceImage->local_image_path);
-                        return new HtmlString('<img src="' . $url . '" style="max-height: 400px; border: 1px solid #ccc;">');
+                        $path = storage_path('app/public/'.$record->jobSourceImage->local_image_path);
+                        $url = url('storage/'.$record->jobSourceImage->local_image_path);
+
+                        return new HtmlString('<img src="'.$url.'" style="max-height: 400px; border: 1px solid #ccc;">');
                     }),
             ]);
     }

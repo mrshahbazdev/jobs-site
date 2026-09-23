@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 class SitemapController extends Controller
 {
     private const JOBS_PER_PAGE = 5000;
+
     private const CACHE_TTL = 3600; // 60 minutes
 
     /**
@@ -185,7 +186,7 @@ class SitemapController extends Controller
      */
     public function robots(): Response
     {
-        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: " . url('/sitemap.xml') . "\nSitemap: " . url('/news-sitemap.xml') . "\nSitemap: " . url('/image-sitemap.xml') . "\nSitemap: " . url('/amp-sitemap.xml') . "\nSitemap: " . url('/stories-sitemap.xml') . "\nSitemap: " . url('/feed');
+        $content = "User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /search\n\nSitemap: ".url('/sitemap.xml')."\nSitemap: ".url('/news-sitemap.xml')."\nSitemap: ".url('/image-sitemap.xml')."\nSitemap: ".url('/amp-sitemap.xml')."\nSitemap: ".url('/stories-sitemap.xml')."\nSitemap: ".url('/feed');
 
         return response($content)->header('Content-Type', 'text/plain');
     }

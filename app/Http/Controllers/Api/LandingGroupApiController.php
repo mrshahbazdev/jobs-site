@@ -42,15 +42,15 @@ class LandingGroupApiController extends Controller
         $group = LandingGroup::firstOrCreate(
             ['name' => trim($request->name)],
             [
-                'icon'         => $request->icon ?? 'calendar_today', // Default calendar icon for groups
-                'is_active'    => true,
-                'sort_order'   => 0,
+                'icon' => $request->icon ?? 'calendar_today', // Default calendar icon for groups
+                'is_active' => true,
+                'sort_order' => 0,
                 'section_type' => 'grid',
             ]
         );
 
         // If icon was provided but group already exists, update the icon if it's currently null/default
-        if ($request->icon && ($group->icon === 'calendar_today' || !$group->icon)) {
+        if ($request->icon && ($group->icon === 'calendar_today' || ! $group->icon)) {
             $group->update(['icon' => $request->icon]);
         }
 

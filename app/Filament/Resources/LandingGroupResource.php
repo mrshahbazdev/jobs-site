@@ -8,18 +8,18 @@ use App\Filament\Resources\LandingGroupResource\Pages\ListLandingGroups;
 use App\Filament\Resources\LandingGroupResource\Schemas\LandingGroupForm;
 use App\Filament\Resources\LandingGroupResource\Tables\LandingGroupsTable;
 use App\Models\LandingGroup;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Table;
 use Filament\Support\Icons\Heroicon;
-use BackedEnum;
+use Filament\Tables\Table;
 
 class LandingGroupResource extends Resource
 {
     protected static ?string $model = LandingGroup::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
-    
+
     public static function getNavigationGroup(): ?string
     {
         return 'Site Management';
@@ -29,7 +29,7 @@ class LandingGroupResource extends Resource
     {
         return 'Landing Sections';
     }
-    
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

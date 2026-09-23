@@ -2,17 +2,20 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\Cache;
-use App\Jobs\ScrapePakistanJobs;
 use App\Jobs\ScrapeJobsAlertJobs;
 use App\Jobs\ScrapeJobzPkJobs;
+use App\Jobs\ScrapePakistanJobs;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Component;
 
 class ScraperProgress extends Component
 {
     public $progress = null;
+
     public $isScraping = false;
+
     public $mode = 'all'; // 'all' or 'links'
+
     public $source = 'pakistan-jobs'; // 'pakistan-jobs', 'jobsalert', 'jobz-pk'
 
     private const SOURCE_CONFIG = [
@@ -72,7 +75,7 @@ class ScraperProgress extends Component
 
     public function getSources(): array
     {
-        return array_map(fn($cfg) => $cfg['label'], self::SOURCE_CONFIG);
+        return array_map(fn ($cfg) => $cfg['label'], self::SOURCE_CONFIG);
     }
 
     public function render()

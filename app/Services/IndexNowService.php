@@ -16,7 +16,7 @@ class IndexNowService
             return false;
         }
 
-        $key      = config('indexnow.key');
+        $key = config('indexnow.key');
         $endpoint = config('indexnow.endpoint');
 
         try {
@@ -27,17 +27,18 @@ class IndexNowService
 
             if ($response->successful()) {
                 Log::info('IndexNow: URL submitted', ['url' => $url]);
+
                 return true;
             }
 
             Log::warning('IndexNow: submission failed', [
-                'url'    => $url,
+                'url' => $url,
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
         } catch (\Exception $e) {
             Log::error('IndexNow: request error', [
-                'url'     => $url,
+                'url' => $url,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -56,15 +57,15 @@ class IndexNowService
             return ['ok' => false, 'status' => null, 'error' => 'Disabled or empty URL list'];
         }
 
-        $key      = config('indexnow.key');
+        $key = config('indexnow.key');
         $endpoint = config('indexnow.endpoint');
-        $host     = parse_url(config('app.url'), PHP_URL_HOST);
+        $host = parse_url(config('app.url'), PHP_URL_HOST);
 
         $payload = [
-            'host'        => $host,
-            'key'         => $key,
+            'host' => $host,
+            'key' => $key,
             'keyLocation' => url("/{$key}.txt"),
-            'urlList'     => array_values($urls),
+            'urlList' => array_values($urls),
         ];
 
         try {
@@ -74,22 +75,23 @@ class IndexNowService
 
             if ($response->successful()) {
                 Log::info('IndexNow: batch submitted', ['count' => count($urls)]);
+
                 return ['ok' => true, 'status' => $response->status(), 'error' => null];
             }
 
             $error = "HTTP {$response->status()}: {$response->body()}";
             Log::warning('IndexNow: batch submission failed', [
                 'status' => $response->status(),
-                'body'   => $response->body(),
-                'count'  => count($urls),
-                'host'   => $host,
+                'body' => $response->body(),
+                'count' => count($urls),
+                'host' => $host,
             ]);
 
             return ['ok' => false, 'status' => $response->status(), 'error' => $error];
         } catch (\Exception $e) {
             Log::error('IndexNow: batch request error', [
                 'message' => $e->getMessage(),
-                'count'   => count($urls),
+                'count' => count($urls),
             ]);
 
             return ['ok' => false, 'status' => null, 'error' => $e->getMessage()];

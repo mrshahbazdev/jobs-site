@@ -8,23 +8,23 @@ use App\Filament\Resources\LandingLinkResource\Pages\ListLandingLinks;
 use App\Filament\Resources\LandingLinkResource\Schemas\LandingLinkForm;
 use App\Filament\Resources\LandingLinkResource\Tables\LandingLinksTable;
 use App\Models\LandingLink;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Table;
 use Filament\Support\Icons\Heroicon;
-use BackedEnum;
+use Filament\Tables\Table;
 
 class LandingLinkResource extends Resource
 {
     protected static ?string $model = LandingLink::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLink;
-    
+
     public static function getNavigationGroup(): ?string
     {
         return 'Site Management';
     }
-    
+
     protected static ?string $recordTitleAttribute = 'label';
 
     public static function form(Schema $schema): Schema

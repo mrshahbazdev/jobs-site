@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LandingLinkResource\Pages;
 
 use App\Filament\Resources\LandingLinkResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListLandingLinks extends ListRecords
@@ -12,7 +13,7 @@ class ListLandingLinks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

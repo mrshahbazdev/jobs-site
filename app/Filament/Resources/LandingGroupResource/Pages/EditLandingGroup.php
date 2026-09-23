@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\LandingGroupResource\Pages;
 
 use App\Filament\Resources\LandingGroupResource;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
 
 class EditLandingGroup extends EditRecord
 {

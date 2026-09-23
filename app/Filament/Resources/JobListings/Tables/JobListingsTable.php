@@ -2,15 +2,19 @@
 
 namespace App\Filament\Resources\JobListings\Tables;
 
+use App\Models\JobListing;
+use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class JobListingsTable
 {
@@ -59,7 +63,7 @@ class JobListingsTable
                 //
             ])
             ->headerActions([
-                \Filament\Actions\Action::make('deactivate_expired')
+                Action::make('deactivate_expired')
                     ->label('Deactivate All Expired')
                     ->icon('heroicon-o-archive-box-x-mark')
                     ->color('danger')
@@ -67,11 +71,11 @@ class JobListingsTable
                     ->modalHeading('Deactivate All Expired Jobs?')
                     ->modalDescription('This will set "Live" to false for all jobs whose deadline has passed.')
                     ->action(function () {
-                        \App\Models\JobListing::where('is_active', true)
+                        JobListing::where('is_active', true)
                             ->where('deadline', '<', now()->toDateString())
                             ->update(['is_active' => false]);
-                        
-                        \Filament\Notifications\Notification::make()
+
+                        Notification::make()
                             ->title('Expired jobs deactivated successfully.')
                             ->success()
                             ->send();
@@ -86,20 +90,20 @@ class JobListingsTable
                         ->label('Activate Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['is_active' => true])),
+                        ->action(fn (Collection $records) => $records->each->update(['is_active' => true])),
 
                     BulkAction::make('deactivate')
                         ->label('Deactivate Selected')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
-                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => $records->each->update(['is_active' => false])),
+                        ->action(fn (Collection $records) => $records->each->update(['is_active' => false])),
 
                     BulkAction::make('extend_deadline')
                         ->label('Extend Deadline (+7 Days)')
                         ->icon('heroicon-o-calendar-days')
                         ->color('warning')
-                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => $records->each(function ($record) {
-                            $record->update(['deadline' => \Carbon\Carbon::parse($record->deadline)->addDays(7)]);
+                        ->action(fn (Collection $records) => $records->each(function ($record) {
+                            $record->update(['deadline' => Carbon::parse($record->deadline)->addDays(7)]);
                         })),
 
                     DeleteBulkAction::make(),

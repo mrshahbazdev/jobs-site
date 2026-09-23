@@ -2,20 +2,21 @@
 
 namespace App\Filament\Resources\JobSourceImages\Tables;
 
+use App\Jobs\ScrapePakistanJobs;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
+use Filament\Notifications\Notification;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
-use App\Jobs\ScrapePakistanJobs;
-use Filament\Notifications\Notification;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
-use Illuminate\Support\Collection;
 
 class JobSourceImagesTable
 {
@@ -24,7 +25,7 @@ class JobSourceImagesTable
         return $table
             ->columns([
                 TextColumn::make('id')->sortable(),
-                
+
                 ImageColumn::make('local_image_path')
                     ->label('Thumbnail')
                     ->disk('public'),
@@ -41,10 +42,13 @@ class JobSourceImagesTable
                 TextColumn::make('local_image_path')
                     ->label('Local Image Link')
                     ->getStateUsing(function ($record) {
-                        if (!$record->local_image_path) return 'Not Yet Scraped';
-                        $path = storage_path('app/public/' . $record->local_image_path);
+                        if (! $record->local_image_path) {
+                            return 'Not Yet Scraped';
+                        }
+                        $path = storage_path('app/public/'.$record->local_image_path);
                         $version = file_exists($path) ? filemtime($path) : time();
-                        return url('storage/' . $record->local_image_path) . '?t=' . $version;
+
+                        return url('storage/'.$record->local_image_path).'?t='.$version;
                     })
                     ->copyable()
                     ->limit(30),
@@ -52,7 +56,7 @@ class JobSourceImagesTable
                 IconColumn::make('local_image_path')
                     ->boolean()
                     ->label('Ad Fetched')
-                    ->getStateUsing(fn ($record) => !empty($record->local_image_path)),
+                    ->getStateUsing(fn ($record) => ! empty($record->local_image_path)),
 
                 IconColumn::make('is_processed')
                     ->boolean()
@@ -68,13 +72,13 @@ class JobSourceImagesTable
                     ->label('Scrape (Now)')
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
-                    ->hidden(fn ($record) => !empty($record->local_image_path))
+                    ->hidden(fn ($record) => ! empty($record->local_image_path))
                     ->action(function ($record) {
                         try {
-                            $result = \Illuminate\Support\Facades\Artisan::call('scrape:pakistan-jobs', [
+                            $result = Artisan::call('scrape:pakistan-jobs', [
                                 '--image-id' => $record->id,
                             ]);
-                            
+
                             if ($result === 0) {
                                 Notification::make()
                                     ->title('Success')
@@ -100,9 +104,9 @@ class JobSourceImagesTable
                     ->label('Scrape (Queued)')
                     ->icon('heroicon-o-camera')
                     ->color('info')
-                    ->hidden(fn ($record) => !empty($record->local_image_path))
+                    ->hidden(fn ($record) => ! empty($record->local_image_path))
                     ->action(function ($record) {
-                        \App\Jobs\ScrapePakistanJobs::dispatch(false, $record->id);
+                        ScrapePakistanJobs::dispatch(false, $record->id);
                         Notification::make()
                             ->title('Image scraping queued...')
                             ->info()
@@ -122,7 +126,7 @@ class JobSourceImagesTable
                                 }
                             }
                             Notification::make()
-                                ->title('Queued ' . $records->count() . ' images for scraping')
+                                ->title('Queued '.$records->count().' images for scraping')
                                 ->success()
                                 ->send();
                         }),

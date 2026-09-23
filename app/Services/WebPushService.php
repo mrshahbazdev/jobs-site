@@ -61,7 +61,7 @@ class WebPushService
      * Send all queued notifications. Deletes subscriptions that report
      * permanent failures (410 Gone / 404 Not Found).
      *
-     * @param  Collection<int,PushSubscription>  $subscriptions keyed by endpoint hash
+     * @param  Collection<int,PushSubscription>  $subscriptions  keyed by endpoint hash
      * @return array{success:int, failed:int, pruned:int}
      */
     public function flush(Collection $subscriptions): array
@@ -82,6 +82,7 @@ class WebPushService
                         'failure_count' => 0,
                     ])->save();
                 }
+
                 continue;
             }
 
@@ -91,6 +92,7 @@ class WebPushService
             if (in_array($statusCode, [404, 410], true) && $sub) {
                 $sub->delete();
                 $pruned++;
+
                 continue;
             }
 

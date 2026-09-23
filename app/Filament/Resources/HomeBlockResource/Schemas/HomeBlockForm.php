@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\HomeBlockResource\Schemas;
 
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -80,8 +81,8 @@ class HomeBlockForm
                     ])
                     ->default('list')
                     ->visible(fn ($get) => $get('type') === 'multi_list'),
-                
-                \Filament\Forms\Components\Repeater::make('cards')
+
+                Repeater::make('cards')
                     ->label(fn ($get) => $get('type') === 'footer_column' ? 'Links in this Column' : 'Section Items (Max 4)')
                     ->visible(fn ($get) => in_array($get('type'), ['hero_cards', 'footer_column']))
                     ->schema([

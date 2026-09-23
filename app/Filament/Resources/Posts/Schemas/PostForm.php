@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\Posts\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class PostForm
 {
@@ -17,8 +18,8 @@ class PostForm
                 TextInput::make('title')
                     ->required()
                     ->lazy()
-                    ->afterStateUpdated(fn ($set, $state) => $set('slug', \Illuminate\Support\Str::slug($state))),
-                
+                    ->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state))),
+
                 TextInput::make('slug')
                     ->required()
                     ->unique(ignoreRecord: true),
@@ -28,7 +29,7 @@ class PostForm
                     ->directory('blog')
                     ->disk('public'),
 
-                \Filament\Forms\Components\RichEditor::make('content')
+                RichEditor::make('content')
                     ->required()
                     ->columnSpanFull(),
 

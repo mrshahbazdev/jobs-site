@@ -39,7 +39,7 @@ class ScraperQueueController extends Controller
             ->orderBy('id', 'asc')
             ->first();
 
-        if (!$image) {
+        if (! $image) {
             return response()->json([
                 'message' => 'No pending images in queue.',
                 'data' => null,
@@ -48,7 +48,7 @@ class ScraperQueueController extends Controller
 
         $imageUrl = $image->source_image_url;
         if ($image->local_image_path) {
-            $imageUrl = asset('storage/' . $image->local_image_path);
+            $imageUrl = asset('storage/'.$image->local_image_path);
         }
 
         return response()->json([
@@ -58,11 +58,11 @@ class ScraperQueueController extends Controller
                 'source_page_url' => $image->source_page_url,
                 'source_image_url' => $image->source_image_url,
                 'local_image_url' => $image->local_image_path
-                    ? asset('storage/' . $image->local_image_path)
+                    ? asset('storage/'.$image->local_image_path)
                     : null,
                 'image_url' => $imageUrl,
                 'proxy_image_url' => $image->local_image_path
-                    ? url('/api/v2/scraper-queue/' . $image->id . '/image')
+                    ? url('/api/v2/scraper-queue/'.$image->id.'/image')
                     : null,
                 'publish_status' => $image->publish_status,
                 'created_at' => $image->created_at,
@@ -74,7 +74,7 @@ class ScraperQueueController extends Controller
     {
         $image = JobSourceImage::findOrFail($id);
 
-        if (!$image->local_image_path || !Storage::disk('public')->exists($image->local_image_path)) {
+        if (! $image->local_image_path || ! Storage::disk('public')->exists($image->local_image_path)) {
             return response()->json(['error' => 'Image not found'], 404);
         }
 

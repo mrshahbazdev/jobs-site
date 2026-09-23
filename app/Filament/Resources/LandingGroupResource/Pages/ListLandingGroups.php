@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\LandingGroupResource\Pages;
 
 use App\Filament\Resources\LandingGroupResource;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
 
 class ListLandingGroups extends ListRecords
 {

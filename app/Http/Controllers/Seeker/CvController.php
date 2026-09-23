@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -19,6 +18,7 @@ class CvController extends Controller
     public function index(Request $request): View
     {
         $cvs = $request->user()->cvs()->get();
+
         return view('seeker.cv.index', compact('cvs'));
     }
 
@@ -98,7 +98,7 @@ class CvController extends Controller
         $user = $request->user();
         $cv->delete();
 
-        if (!$user->cvs()->exists()) {
+        if (! $user->cvs()->exists()) {
             $user->cv_file_path = null;
             $user->save();
         }
@@ -111,7 +111,7 @@ class CvController extends Controller
         $this->authorizeOwner($request, $cv);
 
         $copy = $cv->replicate(['share_uuid', 'views_count', 'last_viewed_at']);
-        $copy->title = trim($cv->title) . ' (copy)';
+        $copy->title = trim($cv->title).' (copy)';
         $copy->share_uuid = (string) Str::uuid();
         $copy->views_count = 0;
         $copy->last_viewed_at = null;
@@ -140,20 +140,20 @@ class CvController extends Controller
         $pdf = Pdf::loadView("seeker.cv.pdf.{$template}", ['cv' => $cv, 'data' => $data])
             ->setPaper('a4');
 
-        $filename = Str::slug($data['personal']['full_name'] ?: $cv->title) . '-cv.pdf';
+        $filename = Str::slug($data['personal']['full_name'] ?: $cv->title).'-cv.pdf';
         if ($filename === '-cv.pdf') {
-            $filename = 'cv-' . $cv->id . '.pdf';
+            $filename = 'cv-'.$cv->id.'.pdf';
         }
 
         $binary = $pdf->output();
 
-        $path = 'cvs/' . $cv->user_id . '/' . $cv->id . '.pdf';
+        $path = 'cvs/'.$cv->user_id.'/'.$cv->id.'.pdf';
         Storage::disk('local')->put($path, $binary);
         $cv->user->update(['cv_file_path' => $path]);
 
         return response($binary, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -164,7 +164,7 @@ class CvController extends Controller
     {
         $cv = Cv::where('share_uuid', $uuid)->firstOrFail();
 
-        if (!$cv->is_public) {
+        if (! $cv->is_public) {
             abort(404);
         }
 
@@ -180,7 +180,7 @@ class CvController extends Controller
     private function authorizeOwner(Request $request, Cv $cv): void
     {
         $user = $request->user();
-        if (!$user || $cv->user_id !== $user->id) {
+        if (! $user || $cv->user_id !== $user->id) {
             abort(403);
         }
     }
@@ -189,7 +189,7 @@ class CvController extends Controller
     {
         $user = $cv->user;
         if ($user && empty($user->cv_file_path)) {
-            $user->cv_file_path = 'cvs/pending/' . $cv->id;
+            $user->cv_file_path = 'cvs/pending/'.$cv->id;
             $user->save();
         }
     }

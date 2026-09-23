@@ -138,21 +138,20 @@ class Cv extends Model
 
     /**
      * @param  array|null  $rows
-     * @param  array  $defaults
      */
     private function normalizeList($rows, array $defaults): array
     {
-        if (!is_array($rows)) {
+        if (! is_array($rows)) {
             return [];
         }
 
         $out = [];
         foreach ($rows as $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $merged = array_merge($defaults, $row);
-            if (isset($merged['bullets']) && !is_array($merged['bullets'])) {
+            if (isset($merged['bullets']) && ! is_array($merged['bullets'])) {
                 $merged['bullets'] = [];
             }
             $out[] = $merged;
@@ -174,6 +173,7 @@ class Cv extends Model
         ];
 
         $filled = count(array_filter($checks));
+
         return (int) round(($filled / count($checks)) * 100);
     }
 }

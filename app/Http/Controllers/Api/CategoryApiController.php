@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\LandingLink;
-use App\Models\LandingGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -22,8 +21,8 @@ class CategoryApiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'             => 'required|string|max:255',
-            'landing_group_id' => 'nullable|exists:landing_groups,id'
+            'name' => 'required|string|max:255',
+            'landing_group_id' => 'nullable|exists:landing_groups,id',
         ]);
 
         $name = trim($request->name);
@@ -32,7 +31,7 @@ class CategoryApiController extends Controller
         $category = Category::firstOrCreate(
             ['slug' => $slug],
             [
-                'name'      => $name,
+                'name' => $name,
                 'icon_name' => 'work', // Material Symbol name
             ]
         );
@@ -42,14 +41,14 @@ class CategoryApiController extends Controller
             LandingLink::firstOrCreate(
                 [
                     'landing_group_id' => $request->landing_group_id,
-                    'route_param'      => $category->slug,
+                    'route_param' => $category->slug,
                 ],
                 [
-                    'title'      => $category->name,
+                    'title' => $category->name,
                     'route_name' => 'categories.show',
-                    'is_active'  => true,
+                    'is_active' => true,
                     'sort_order' => 0,
-                    'icon'       => 'work' // Ensure link also has the Material icon
+                    'icon' => 'work', // Ensure link also has the Material icon
                 ]
             );
         }
@@ -75,7 +74,7 @@ class CategoryApiController extends Controller
             }
         }
 
-        if (!$bestMatch) {
+        if (! $bestMatch) {
             return response()->json(['message' => 'No matching category found.'], 404);
         }
 
@@ -87,14 +86,14 @@ class CategoryApiController extends Controller
         // If no group is linked, we return the category but suggest creating a group link in test.html
         return response()->json([
             'category' => [
-                'id'   => $bestMatch->id,
+                'id' => $bestMatch->id,
                 'name' => $bestMatch->name,
                 'slug' => $bestMatch->slug,
             ],
             'group' => $landingLink && $landingLink->group ? [
-                'id'   => $landingLink->group->id,
+                'id' => $landingLink->group->id,
                 'name' => $landingLink->group->name,
-            ] : null
+            ] : null,
         ]);
     }
 }

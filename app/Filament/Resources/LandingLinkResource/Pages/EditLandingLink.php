@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LandingLinkResource\Pages;
 
 use App\Filament\Resources\LandingLinkResource;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditLandingLink extends EditRecord
@@ -12,7 +13,7 @@ class EditLandingLink extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }
