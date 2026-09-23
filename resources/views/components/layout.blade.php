@@ -12,7 +12,7 @@
     <link rel="canonical" href="{{ url()->current() }}">
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('og_title', 'Latest Govt & Private Jobs in Pakistan - JobsPic')">
     <meta property="og:description" content="@yield('meta_description', 'Find the latest Government, Federal, Police, and Private sector jobs in Pakistan.')">
