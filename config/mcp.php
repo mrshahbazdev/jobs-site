@@ -50,6 +50,10 @@ return [
         'optimize:clear' => [],
         'optimize' => [],
         'about' => ['--json'],
+        'schedule:list' => [],
+        'down' => ['--secret', '--retry', '--refresh'],
+        'up' => [],
+        'db:show' => ['--json', '--counts'],
     ],
 
     /*

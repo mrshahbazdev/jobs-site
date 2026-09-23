@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\JobArticleController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\CityApiController;
-use App\Http\Controllers\Api\ScraperApiController;
-use App\Http\Controllers\Api\LandingGroupApiController;
 use App\Http\Controllers\Api\JobApiController;
-use App\Http\Controllers\Api\ScraperQueueController;
+use App\Http\Controllers\Api\JobArticleController;
+use App\Http\Controllers\Api\LandingGroupApiController;
+use App\Http\Controllers\Api\Mcp\McpAdminController;
 use App\Http\Controllers\Api\Mcp\McpContentController;
 use App\Http\Controllers\Api\Mcp\McpOpsController;
 use App\Http\Controllers\Api\Mcp\McpSystemController;
+use App\Http\Controllers\Api\ScraperApiController;
+use App\Http\Controllers\Api\ScraperQueueController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // ── CORS OPTIONS preflight (allows test.html file:// access) ──────────────────
 Route::options('/{any}', function () {
@@ -35,17 +36,17 @@ Route::post('/skip-image', [JobArticleController::class, 'skipImage']);
 
 // ── Enhanced Job API ─────────────────────────────────────────────────────────
 // Advanced listing with pagination, filters, search, sorting
-Route::get('/v2/jobs',                   [JobApiController::class, 'index']);
-Route::get('/v2/jobs/stats',             [JobApiController::class, 'stats']);
-Route::get('/v2/jobs/{idOrSlug}',        [JobApiController::class, 'show']);
-Route::post('/v2/jobs',                  [JobApiController::class, 'store']);
-Route::put('/v2/jobs/{id}',              [JobApiController::class, 'update']);
-Route::delete('/v2/jobs/{id}',           [JobApiController::class, 'destroy']);
-Route::post('/v2/jobs/{id}/toggle',      [JobApiController::class, 'toggleStatus']);
-Route::post('/v2/jobs/{id}/duplicate',   [JobApiController::class, 'duplicate']);
-Route::post('/v2/jobs/bulk',             [JobApiController::class, 'bulkStore']);
-Route::post('/v2/jobs/bulk-status',      [JobApiController::class, 'bulkUpdateStatus']);
-Route::delete('/v2/jobs/bulk',           [JobApiController::class, 'bulkDelete']);
+Route::get('/v2/jobs', [JobApiController::class, 'index']);
+Route::get('/v2/jobs/stats', [JobApiController::class, 'stats']);
+Route::get('/v2/jobs/{idOrSlug}', [JobApiController::class, 'show']);
+Route::post('/v2/jobs', [JobApiController::class, 'store']);
+Route::put('/v2/jobs/{id}', [JobApiController::class, 'update']);
+Route::delete('/v2/jobs/{id}', [JobApiController::class, 'destroy']);
+Route::post('/v2/jobs/{id}/toggle', [JobApiController::class, 'toggleStatus']);
+Route::post('/v2/jobs/{id}/duplicate', [JobApiController::class, 'duplicate']);
+Route::post('/v2/jobs/bulk', [JobApiController::class, 'bulkStore']);
+Route::post('/v2/jobs/bulk-status', [JobApiController::class, 'bulkUpdateStatus']);
+Route::delete('/v2/jobs/bulk', [JobApiController::class, 'bulkDelete']);
 
 // Category APIs
 Route::get('/categories', [CategoryApiController::class, 'index']);
@@ -143,4 +144,35 @@ Route::prefix('mcp')->middleware('mcp.token')->group(function () {
     Route::delete('/home-blocks/{id}', [McpContentController::class, 'destroyHomeBlock']);
 
     Route::get('/users', [McpContentController::class, 'users']);
+    Route::post('/users', [McpAdminController::class, 'createUser']);
+    Route::get('/users/{id}', [McpAdminController::class, 'showUser']);
+    Route::put('/users/{id}', [McpAdminController::class, 'updateUser']);
+    Route::delete('/users/{id}', [McpAdminController::class, 'destroyUser']);
+    Route::post('/users/{id}/reset-password', [McpAdminController::class, 'resetPassword']);
+
+    Route::get('/cvs', [McpAdminController::class, 'cvs']);
+    Route::get('/cvs/{id}', [McpAdminController::class, 'showCv']);
+    Route::put('/cvs/{id}', [McpAdminController::class, 'updateCv']);
+    Route::delete('/cvs/{id}', [McpAdminController::class, 'destroyCv']);
+
+    Route::get('/bookmarks', [McpAdminController::class, 'bookmarks']);
+    Route::post('/bookmarks/toggle', [McpAdminController::class, 'toggleBookmark']);
+
+    Route::post('/source-images', [McpAdminController::class, 'storeSourceImage']);
+    Route::get('/source-images/{id}', [McpAdminController::class, 'showSourceImage']);
+    Route::put('/source-images/{id}', [McpAdminController::class, 'updateSourceImage']);
+    Route::delete('/source-images/{id}', [McpAdminController::class, 'destroySourceImage']);
+    Route::post('/source-images/{id}/publish', [McpAdminController::class, 'publishSourceImage']);
+
+    Route::get('/sitemaps', [McpAdminController::class, 'sitemaps']);
+    Route::post('/sitemaps/flush', [McpAdminController::class, 'flushSitemaps']);
+
+    Route::get('/alerts/preview', [McpAdminController::class, 'alertsPreview']);
+    Route::post('/alerts/send', [McpAdminController::class, 'alertsSend']);
+    Route::post('/mail/test', [McpAdminController::class, 'mailTest']);
+
+    Route::get('/storage', [McpAdminController::class, 'storage']);
+    Route::post('/storage/delete', [McpAdminController::class, 'storageDelete']);
+    Route::get('/storage/orphans', [McpAdminController::class, 'orphanImages']);
+    Route::post('/storage/orphans', [McpAdminController::class, 'orphanImages']);
 });

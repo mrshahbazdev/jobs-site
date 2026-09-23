@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { api, ApiError, config } from './client.js';
 
 const SERVER_NAME = 'jobs-site-mcp';
-const SERVER_VERSION = '1.0.0';
+const SERVER_VERSION = '1.1.0';
 
 const READ = { readOnlyHint: true, openWorldHint: false };
 const WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
@@ -725,6 +725,197 @@ function registerContentTools(server) {
 }
 
 // ---------------------------------------------------------------------------
+// Admin: users, CVs, bookmarks, source images, sitemaps, alerts, storage
+// ---------------------------------------------------------------------------
+const ROLE = z.enum(['seeker', 'employer', 'admin']);
+const CV_ARRAY = z.array(z.unknown()).optional();
+
+function registerAdminTools(server) {
+  tool(server, 'users_get', {
+    title: 'Get user',
+    description: 'User profile with CVs, bookmarked jobs and profile completion.',
+    inputSchema: { id },
+    annotations: READ,
+  }, ({ id: userId }) => api.get(`/api/mcp/users/${userId}`));
+
+  tool(server, 'users_create', {
+    title: 'Create user',
+    description: 'Create a user (password auto-generated and returned if omitted).',
+    inputSchema: { name: z.string().max(255), email: z.string().email(), password: str, role: ROLE.optional(), phone: str, verified: bool },
+    annotations: WRITE,
+  }, (a) => api.post('/api/mcp/users', a));
+
+  tool(server, 'users_update', {
+    title: 'Update user',
+    description: 'Change name/email/role/phone/verified state or set a new password.',
+    inputSchema: { id, name: str, email: str, password: str, role: ROLE.optional(), phone: z.string().nullable().optional(), verified: bool },
+    annotations: IDEMPOTENT,
+  }, ({ id: userId, ...rest }) => api.put(`/api/mcp/users/${userId}`, rest));
+
+  tool(server, 'users_reset_password', {
+    title: 'Reset user password',
+    description: 'Sets a new password (random if omitted) and invalidates remember-me sessions.',
+    inputSchema: { id, password: str },
+    annotations: WRITE,
+  }, ({ id: userId, ...rest }) => api.post(`/api/mcp/users/${userId}/reset-password`, rest));
+
+  tool(server, 'users_delete', {
+    title: 'Delete user',
+    description: 'Deletes the user with their bookmarks, comments and CVs. Refuses the last admin unless force=true.',
+    inputSchema: { id, force: bool },
+    annotations: DESTRUCTIVE,
+  }, ({ id: userId, force }) => api.del(`/api/mcp/users/${userId}`, force ? { force: true } : undefined));
+
+  tool(server, 'cvs_list', {
+    title: 'List CVs',
+    description: 'CV builder documents with summary (templates, public count, views).',
+    inputSchema: { q: str, user_id: id.optional(), public: bool, template: z.enum(['modern', 'classic', 'minimal']).optional(), page, per_page: perPage },
+    annotations: READ,
+  }, (a) => api.get('/api/mcp/cvs', a));
+
+  tool(server, 'cvs_get', {
+    title: 'Get CV', description: 'Full CV JSON (personal, experience, education, skills...).', inputSchema: { id }, annotations: READ,
+  }, ({ id: cvId }) => api.get(`/api/mcp/cvs/${cvId}`));
+
+  tool(server, 'cvs_update', {
+    title: 'Update CV',
+    description: 'Edit CV sections/template/visibility. Making it public generates a share URL.',
+    inputSchema: {
+      id, title: str, template: z.enum(['modern', 'classic', 'minimal']).optional(), theme_color: str, font_family: str,
+      personal: z.record(z.string(), z.unknown()).optional(), summary: z.string().nullable().optional(),
+      experience: CV_ARRAY, education: CV_ARRAY, skills: CV_ARRAY, languages: CV_ARRAY, certifications: CV_ARRAY,
+      projects: CV_ARRAY, references_list: CV_ARRAY, section_order: z.array(z.string()).optional(), is_public: bool,
+    },
+    annotations: IDEMPOTENT,
+  }, ({ id: cvId, ...rest }) => api.put(`/api/mcp/cvs/${cvId}`, rest));
+
+  tool(server, 'cvs_delete', {
+    title: 'Delete CV', inputSchema: { id }, annotations: DESTRUCTIVE,
+  }, ({ id: cvId }) => api.del(`/api/mcp/cvs/${cvId}`));
+
+  tool(server, 'bookmarks_stats', {
+    title: 'Bookmark stats',
+    description: 'Most-bookmarked jobs in a window plus totals (demand signal).',
+    inputSchema: { days: z.number().int().min(0).optional().describe('0 = all time'), limit: z.number().int().min(1).max(100).optional() },
+    annotations: READ,
+  }, (a) => api.get('/api/mcp/bookmarks', a));
+
+  tool(server, 'bookmarks_toggle', {
+    title: 'Toggle bookmark', inputSchema: { user_id: id, job_id: id }, annotations: IDEMPOTENT,
+  }, (a) => api.post('/api/mcp/bookmarks/toggle', a));
+
+  tool(server, 'source_image_get', {
+    title: 'Get source image',
+    description: 'A scraper-queue item (job ad image) with its OCR/article text and linked job.',
+    inputSchema: { id },
+    annotations: READ,
+  }, ({ id: imgId }) => api.get(`/api/mcp/source-images/${imgId}`));
+
+  tool(server, 'source_image_add', {
+    title: 'Add job ad image to scraper queue',
+    description: 'Manually ingest a job ad image (by URL or base64) into job_source_images so it can be published via the normal pipeline.',
+    inputSchema: {
+      title: z.string().max(255), image_url: z.string().url().optional(), image_base64: str,
+      source_page_url: z.string().url().optional(), article_text: str,
+      publish_status: z.enum(['pending', 'published', 'skipped']).optional(),
+    },
+    annotations: WRITE,
+  }, (a) => api.post('/api/mcp/source-images', a));
+
+  tool(server, 'source_image_update', {
+    title: 'Update source image',
+    inputSchema: {
+      id, title: str, article_text: z.string().nullable().optional(), source_page_url: z.string().nullable().optional(),
+      publish_status: z.enum(['pending', 'published', 'skipped']).optional(), published_job_id: id.nullable().optional(),
+    },
+    annotations: IDEMPOTENT,
+  }, ({ id: imgId, ...rest }) => api.put(`/api/mcp/source-images/${imgId}`, rest));
+
+  tool(server, 'source_image_publish', {
+    title: 'Link source image to job',
+    description: 'Attach the ad image to an existing job listing and mark the queue item published.',
+    inputSchema: { id, job_id: id },
+    annotations: IDEMPOTENT,
+  }, ({ id: imgId, job_id }) => api.post(`/api/mcp/source-images/${imgId}/publish`, { job_id }));
+
+  tool(server, 'source_image_delete', {
+    title: 'Delete source image',
+    inputSchema: { id, delete_file: bool.describe('Also remove the stored image file (default true).') },
+    annotations: DESTRUCTIVE,
+  }, ({ id: imgId, delete_file }) => api.del(`/api/mcp/source-images/${imgId}`, delete_file === undefined ? undefined : { delete_file }));
+
+  tool(server, 'sitemaps_status', {
+    title: 'Sitemap status',
+    description: 'All sitemap/feed URLs, job sitemap page count and which are cached.',
+    inputSchema: {},
+    annotations: READ,
+  }, () => api.get('/api/mcp/sitemaps'));
+
+  tool(server, 'sitemaps_flush', {
+    title: 'Flush sitemap caches',
+    description: 'Forces sitemaps/feeds to regenerate on next crawl (run after bulk job changes).',
+    inputSchema: {},
+    annotations: IDEMPOTENT,
+  }, () => api.post('/api/mcp/sitemaps/flush', {}));
+
+  tool(server, 'alerts_preview', {
+    title: 'Preview job alerts',
+    description: 'Which subscribers would receive alerts for jobs created in the last N hours.',
+    inputSchema: { hours: z.number().int().min(1).max(720).optional() },
+    annotations: READ,
+  }, (a) => api.get('/api/mcp/alerts/preview', a));
+
+  tool(server, 'alerts_send', {
+    title: 'Send job alerts',
+    description: 'Email matching jobs (last 24h) to all active subscribers, or only the given subscriber_ids.',
+    inputSchema: { subscriber_ids: z.array(id).optional() },
+    annotations: WRITE,
+  }, (a) => api.post('/api/mcp/alerts/send', a));
+
+  tool(server, 'mail_test', {
+    title: 'Send test email',
+    inputSchema: { to: z.string().email(), subject: str, body: str },
+    annotations: WRITE,
+  }, (a) => api.post('/api/mcp/mail/test', a));
+
+  tool(server, 'storage_list', {
+    title: 'List public storage',
+    description: 'Files/dirs under storage/app/public with sizes, totals and storage:link status.',
+    inputSchema: { dir: str, limit: z.number().int().min(1).max(500).optional() },
+    annotations: READ,
+  }, (a) => api.get('/api/mcp/storage', a));
+
+  tool(server, 'storage_delete', {
+    title: 'Delete storage files', inputSchema: { paths: z.array(z.string()).min(1) }, annotations: DESTRUCTIVE,
+  }, (a) => api.post('/api/mcp/storage/delete', a));
+
+  tool(server, 'storage_orphans', {
+    title: 'Find/clean orphan job images',
+    description: 'Image files in job-sources/ not referenced by any queue item, and records whose file is missing. delete_orphans=true removes the files.',
+    inputSchema: { delete_orphans: bool },
+    annotations: DESTRUCTIVE,
+  }, ({ delete_orphans }) => (delete_orphans ? api.post('/api/mcp/storage/orphans', { delete_orphans: true }) : api.get('/api/mcp/storage/orphans')));
+
+  tool(server, 'maintenance_mode', {
+    title: 'Maintenance mode',
+    description: 'Put the site down (with optional bypass secret) or bring it back up.',
+    inputSchema: { action: z.enum(['down', 'up']), secret: str, retry: z.number().int().optional() },
+    annotations: IDEMPOTENT,
+  }, ({ action, secret, retry }) => {
+    const args = {};
+    if (action === 'down') {
+      if (secret) args['--secret'] = secret;
+      if (retry) args['--retry'] = String(retry);
+    }
+    return api.post('/api/mcp/artisan', { command: action, arguments: args });
+  });
+
+  tool(server, 'schedule_list', {
+    title: 'List scheduled tasks', inputSchema: {}, annotations: READ,
+  }, () => api.post('/api/mcp/artisan', { command: 'schedule:list', arguments: {} }));
+}
+
+// ---------------------------------------------------------------------------
 // Resources
 // ---------------------------------------------------------------------------
 function jsonResource(server, name, uri, meta, loader) {
@@ -748,6 +939,9 @@ function registerResources(server) {
   jsonResource(server, 'seo-audit', 'jobs-site://seo/audit', { title: 'SEO audit' }, () => api.get('/api/mcp/seo/audit'));
   jsonResource(server, 'analytics', 'jobs-site://analytics', { title: 'Analytics (30d)' }, () => api.get('/api/mcp/analytics', { days: 30 }));
   jsonResource(server, 'artisan-allowlist', 'jobs-site://artisan', { title: 'Artisan allow-list' }, () => api.get('/api/mcp/artisan'));
+  jsonResource(server, 'sitemaps', 'jobs-site://sitemaps', { title: 'Sitemaps' }, () => api.get('/api/mcp/sitemaps'));
+  jsonResource(server, 'queue', 'jobs-site://queue', { title: 'Queue status' }, () => api.get('/api/mcp/queue'));
+  jsonResource(server, 'users-summary', 'jobs-site://users', { title: 'Users summary' }, () => api.get('/api/mcp/users', { per_page: 1 }));
 }
 
 // ---------------------------------------------------------------------------
@@ -824,6 +1018,60 @@ function registerPrompts(server) {
     'Use site_overview, logs_tail(level=ERROR, lines=300), queue_status, routes_list, db_schema and db_query (read-only) to find the root cause. ' +
     'Where safe, remediate with artisan_run (optimize:clear, queue:retry, migrate --force) or cache_manage. Report cause, fix, and follow-ups.',
   ));
+
+  server.registerPrompt('job_from_ad_image', {
+    title: 'Publish job from an ad image/text (no Gemini needed)',
+    description: 'You (the AI client) read a newspaper ad image or its text and publish a complete listing yourself.',
+    argsSchema: {
+      image_url: z.string().optional().describe('URL of the job ad image'),
+      ad_text: z.string().optional().describe('Raw ad text if already transcribed'),
+    },
+  }, async ({ image_url, ad_text }) => userPrompt(
+    'Publish a job listing from this advertisement without relying on ai_extract_job.\n' +
+    (image_url ? `Image: ${image_url}\n` : '') + (ad_text ? `Ad text:\n${ad_text}\n` : '') +
+    'Steps: 1) Transcribe/extract: title, department/company, city, province, positions, qualification, experience, age, BPS, salary, deadline, how to apply, newspaper. ' +
+    '2) categories_resolve + cities_list (cities_create if missing). 3) Write SEO description_html (H2 sections: Overview, Vacancies, Eligibility, How to Apply, Important Dates), ' +
+    'meta_description <=160 chars, meta_keywords, set flags (is_special_quota, has_walkin_interview...). 4) jobs_create. ' +
+    (image_url ? '5) source_image_add(title, image_url, article_text=<transcription>) then source_image_publish(id, job_id). ' : '') +
+    '6) indexnow_submit(job_ids=[id]) and sitemaps_flush. Report the job URL.',
+  ));
+
+  server.registerPrompt('weekly_content_plan', {
+    title: 'Weekly content & growth plan',
+    description: 'Use analytics, bookmarks, subscribers and SEO audit to plan the week: posts, landing pages, alerts, pushes.',
+    argsSchema: {},
+  }, async () => {
+    const [analytics, bookmarks] = await Promise.all([
+      api.get('/api/mcp/analytics', { days: 7 }).catch((e) => ({ error: e.message })),
+      api.get('/api/mcp/bookmarks', { days: 7, limit: 10 }).catch((e) => ({ error: e.message })),
+    ]);
+    return userPrompt(
+      'Plan this week for the jobs site. Using the data below plus seo_audit and subscribers_list: ' +
+      'propose 3 blog posts (posts_create), 2 landing-page link groups (landing_link_create), which jobs to feature (jobs_toggle is_featured), ' +
+      'a push broadcast (push_broadcast) and whether to run alerts_send. Execute the low-risk items and list the rest for approval.\n\n' +
+      `Analytics (7d):\n${JSON.stringify(analytics, null, 2)}\n\nTop bookmarked (7d):\n${JSON.stringify(bookmarks, null, 2)}`,
+    );
+  });
+
+  server.registerPrompt('cv_review', {
+    title: 'Review a user CV',
+    description: 'Critique and improve a CV builder document, optionally against a target job.',
+    argsSchema: { cv_id: z.string(), job_id: z.string().optional() },
+  }, async ({ cv_id, job_id }) => userPrompt(
+    `Review CV #${cv_id} via cvs_get${job_id ? ` against job #${job_id} (jobs_get)` : ''}. ` +
+    'Give an ATS-style score, list gaps, rewrite the summary and weak bullet points, suggest skills. ' +
+    'Apply improvements with cvs_update only if explicitly asked; otherwise return the proposed JSON changes.',
+  ));
+
+  server.registerPrompt('cleanup_and_maintenance', {
+    title: 'Storage & data cleanup',
+    description: 'Find orphan images, stale scraper queue items, expired jobs and unused taxonomy, then clean safely.',
+    argsSchema: {},
+  }, async () => userPrompt(
+    'Run a maintenance pass: storage_orphans (report first), scraper_queue_search(status=skipped, older than 30 days) -> scraper_queue_purge, ' +
+    'jobs_deactivate_expired(dry_run=true), categories_list / cities_list with zero jobs (do NOT delete without confirming), ' +
+    'queue_status failed jobs -> artisan_run queue:retry or queue:flush, then sitemaps_flush + cache_manage(clear). Summarise what was cleaned and what needs approval.',
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -838,6 +1086,7 @@ export function createServer() {
   registerScraperTools(server);
   registerGrowthTools(server);
   registerContentTools(server);
+  registerAdminTools(server);
   registerResources(server);
   registerPrompts(server);
   return server;
