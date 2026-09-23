@@ -98,6 +98,7 @@ Route::prefix('mcp')->middleware('mcp.token')->group(function () {
     Route::get('/analytics', [McpOpsController::class, 'analytics']);
     Route::get('/seo/audit', [McpOpsController::class, 'seoAudit']);
     Route::post('/jobs/deactivate-expired', [McpOpsController::class, 'deactivateExpired']);
+    Route::delete('/jobs/bulk-delete-by-filter', [McpOpsController::class, 'bulkDeleteByFilter']);
     Route::post('/jobs/regenerate-schema', [McpOpsController::class, 'regenerateSchema']);
     Route::post('/ai/extract', [McpOpsController::class, 'aiExtract']);
     Route::post('/indexnow', [McpOpsController::class, 'indexNow']);

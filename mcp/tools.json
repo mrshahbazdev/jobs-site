@@ -1173,6 +1173,57 @@
     }
   },
   {
+    "name": "jobs_bulk_delete_by_filter",
+    "title": "Bulk delete jobs by filter",
+    "description": "Delete all jobs matching filters (expired, inactive, category, city, job_type, older_than_days, deadline_before, title_like). Runs dry_run preview unless confirm=true.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "expired": {
+          "type": "boolean"
+        },
+        "inactive": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "job_type": {
+          "type": "string"
+        },
+        "older_than_days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3650
+        },
+        "deadline_before": {
+          "type": "string"
+        },
+        "title_like": {
+          "type": "string"
+        },
+        "dry_run": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "DELETE",
+      "path": "/api/mcp/jobs/bulk-delete-by-filter"
+    }
+  },
+  {
     "name": "jobs_deactivate_expired",
     "title": "Deactivate expired jobs",
     "description": "Mark jobs whose deadline passed (minus grace days) as inactive. Use dry_run to preview.",

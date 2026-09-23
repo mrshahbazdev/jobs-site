@@ -284,4 +284,26 @@ class McpApiTest extends TestCase
         $this->postJson('/api/mcp/rpc', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'])
             ->assertUnauthorized();
     }
+
+    public function test_bulk_delete_by_filter(): void
+    {
+        $expired = $this->makeJob(['deadline' => now()->subDay(), 'is_active' => true]);
+        $fresh = $this->makeJob(['deadline' => now()->addMonth(), 'is_active' => true]);
+
+        $this->deleteJson('/api/mcp/jobs/bulk-delete-by-filter', [], $this->auth())
+            ->assertStatus(422);
+
+        $this->deleteJson('/api/mcp/jobs/bulk-delete-by-filter', ['expired' => true], $this->auth())
+            ->assertOk()
+            ->assertJsonPath('dry_run', true)
+            ->assertJsonPath('matched', 1)
+            ->assertJsonPath('deleted', 0);
+        $this->assertDatabaseHas('job_listings', ['id' => $expired->id]);
+
+        $this->deleteJson('/api/mcp/jobs/bulk-delete-by-filter', ['expired' => true, 'confirm' => true], $this->auth())
+            ->assertOk()
+            ->assertJsonPath('deleted', 1);
+        $this->assertDatabaseMissing('job_listings', ['id' => $expired->id]);
+        $this->assertDatabaseHas('job_listings', ['id' => $fresh->id]);
+    }
 }

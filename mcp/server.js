@@ -337,6 +337,24 @@ function registerJobTools(server) {
     annotations: DESTRUCTIVE,
   }, (a, api) => api.del('/api/v2/jobs/bulk', a));
 
+  tool(server, 'jobs_bulk_delete_by_filter', {
+    title: 'Bulk delete jobs by filter',
+    description: 'Delete all jobs matching filters (expired, inactive, category, city, job_type, older_than_days, deadline_before, title_like). Runs dry_run preview unless confirm=true.',
+    inputSchema: {
+      expired: z.boolean().optional(),
+      inactive: z.boolean().optional(),
+      category: z.string().optional(),
+      city: z.string().optional(),
+      job_type: z.string().optional(),
+      older_than_days: z.number().int().min(1).max(3650).optional(),
+      deadline_before: z.string().optional(),
+      title_like: z.string().optional(),
+      dry_run: bool,
+      confirm: z.boolean().optional(),
+    },
+    annotations: DESTRUCTIVE,
+  }, (a, api) => api.del('/api/mcp/jobs/bulk-delete-by-filter', a));
+
   tool(server, 'jobs_deactivate_expired', {
     title: 'Deactivate expired jobs',
     description: 'Mark jobs whose deadline passed (minus grace days) as inactive. Use dry_run to preview.',

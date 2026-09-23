@@ -80,6 +80,67 @@ class McpOpsController extends Controller
         ]);
     }
 
+    public function bulkDeleteByFilter(Request $request): JsonResponse
+    {
+        $request->validate([
+            'expired' => 'nullable|boolean',
+            'inactive' => 'nullable|boolean',
+            'category' => 'nullable|string',
+            'city' => 'nullable|string',
+            'job_type' => 'nullable|string',
+            'older_than_days' => 'nullable|integer|min:1|max:3650',
+            'deadline_before' => 'nullable|date',
+            'title_like' => 'nullable|string|max:200',
+            'dry_run' => 'nullable|boolean',
+            'confirm' => 'nullable|boolean',
+        ]);
+
+        $hasFilter = collect($request->only(['expired', 'inactive', 'category', 'city', 'job_type', 'older_than_days', 'deadline_before', 'title_like']))
+            ->filter(fn ($v) => $v !== null && $v !== '' && $v !== false)->isNotEmpty();
+        if (! $hasFilter) {
+            return response()->json(['success' => false, 'message' => 'At least one filter is required (refusing to delete all jobs).'], 422);
+        }
+
+        $query = JobListing::query();
+        if ($request->boolean('expired')) {
+            $query->whereNotNull('deadline')->whereDate('deadline', '<', now());
+        }
+        if ($request->boolean('inactive')) {
+            $query->where('is_active', false);
+        }
+        if ($request->filled('category')) {
+            $query->whereHas('category', fn ($q) => $q->where('slug', $request->category)->orWhere('id', $request->category)->orWhere('name', $request->category));
+        }
+        if ($request->filled('city')) {
+            $query->whereHas('city', fn ($q) => $q->where('slug', $request->city)->orWhere('id', $request->city)->orWhere('name', $request->city));
+        }
+        if ($request->filled('job_type')) {
+            $query->where('job_type', 'like', '%'.$request->job_type.'%');
+        }
+        if ($request->filled('older_than_days')) {
+            $query->where('created_at', '<', now()->subDays((int) $request->older_than_days));
+        }
+        if ($request->filled('deadline_before')) {
+            $query->whereNotNull('deadline')->whereDate('deadline', '<', $request->deadline_before);
+        }
+        if ($request->filled('title_like')) {
+            $query->where('title', 'like', '%'.$request->title_like.'%');
+        }
+
+        $matched = (clone $query)->count();
+        $samples = (clone $query)->latest()->limit(20)->get(['id', 'title', 'slug', 'deadline', 'is_active']);
+        $dryRun = $request->boolean('dry_run') || ! $request->boolean('confirm');
+        $deleted = $dryRun ? 0 : $query->delete();
+
+        return response()->json([
+            'success' => true,
+            'dry_run' => $dryRun,
+            'matched' => $matched,
+            'deleted' => $deleted,
+            'samples' => $samples,
+        ]);
+    }
+
     public function regenerateSchema(Request $request): JsonResponse
     {
         $request->validate(['ids' => 'nullable|array', 'ids.*' => 'integer', 'only_missing' => 'nullable|boolean', 'limit' => 'nullable|integer|min:1|max:500']);
