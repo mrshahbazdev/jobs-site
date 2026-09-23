@@ -3,6 +3,12 @@
     @section('meta_description', $job->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($job->description_html), 150))
     @section('meta_keywords', ltrim($job->meta_keywords ?? '', ':, \t\n\r\0\x0B') ?: 'jobs in pakistan, ' . $job->category->name . ', ' . $job->city->name)
     @section('og_title', $job->title . ' - Jobs in ' . $job->city->name . ' | JobsPic')
+    @section('og_type', 'article')
+    @section('og_image', $job->sourceImage?->local_image_path
+        ? asset('storage/'.$job->sourceImage->local_image_path)
+        : (preg_match('/<img[^>]+src="([^"]+)"/', $job->description_html ?? '', $ogImageMatch)
+            ? $ogImageMatch[1]
+            : ($job->company_logo ? asset('storage/'.$job->company_logo) : asset('icons/icon-512x512.png'))))
 
     @push('extra_head')
         <link rel="amphtml" href="{{ route('jobs.amp', $job->slug) }}">
