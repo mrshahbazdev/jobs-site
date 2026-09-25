@@ -3582,6 +3582,37 @@
     }
   },
   {
+    "name": "source_image_view",
+    "title": "View source ad image",
+    "description": "Return a scraper-queue ad image as an image block so the assistant can read (OCR) it. Tall ads are split into parts; pass part=2,3... for more.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "part": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/source-images/{id}/view"
+    }
+  },
+  {
     "name": "source_image_update",
     "title": "Update source image",
     "description": "Update source image",

@@ -182,6 +182,10 @@ class McpRpcController extends Controller
 
         $result = ['content' => [['type' => 'text', 'text' => $text]]];
         if (is_array($data)) {
+            // Responses already in MCP content-block form (e.g. source_image_view) pass through.
+            if (isset($data['content']) && is_array($data['content'])) {
+                return $this->rpcOk($id, $data);
+            }
             $result['structuredContent'] = array_is_list($data) ? ['result' => $data] : $data;
         }
 
