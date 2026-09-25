@@ -1,0 +1,76 @@
+:root{--jp-blue:#1773cf;--jp-blue-d:#0f5aa6;--jp-yellow:#ffc107;--jp-ink:#1f2937;--jp-muted:#6b7280;--jp-line:#e5e7eb;--jp-soft:#f5f8fc}
+
+/* progress bar */
+#jp-progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--jp-blue),var(--jp-yellow));z-index:9999;transition:width .1s}
+
+/* layout */
+.jp-post{max-width:1100px;margin:0 auto;padding:24px 16px;display:grid;grid-template-columns:1fr;gap:32px}
+@media(min-width:1024px){.jp-post{grid-template-columns:minmax(0,1fr) 280px}}
+
+/* header */
+.jp-post-head{grid-column:1/-1;background:linear-gradient(135deg,var(--jp-blue),var(--jp-blue-d));color:#fff;border-radius:16px;padding:32px 28px}
+.jp-post-head .jp-cat{display:inline-block;background:var(--jp-yellow);color:#111;font-weight:700;font-size:12px;letter-spacing:.5px;padding:4px 12px;border-radius:999px;text-transform:uppercase}
+.jp-post-head h1{font-size:clamp(24px,4vw,38px);line-height:1.25;margin:14px 0 10px;color:#fff}
+.jp-post-head .jp-meta{font-size:14px;opacity:.9;display:flex;gap:16px;flex-wrap:wrap}
+.jp-post-head img{max-width:100%;height:auto;border-radius:10px;margin-top:18px;display:block}
+
+/* article typography */
+.jp-article{font-size:17px;line-height:1.8;color:var(--jp-ink);min-width:0}
+.jp-article>p:first-of-type{font-size:19px;color:#374151}
+.jp-article h2{font-size:26px;line-height:1.3;margin:44px 0 14px;padding-left:14px;border-left:5px solid var(--jp-blue);scroll-margin-top:80px}
+.jp-article h3{font-size:20px;margin:28px 0 10px;color:#111827;scroll-margin-top:80px}
+.jp-article p{margin:0 0 16px}
+.jp-article a{color:var(--jp-blue);text-decoration:underline;text-underline-offset:3px}
+.jp-article a:hover{color:var(--jp-blue-d)}
+.jp-article ul,.jp-article ol{margin:0 0 18px;padding-left:22px}
+.jp-article li{margin:6px 0}
+.jp-article ul li::marker{color:var(--jp-blue)}
+.jp-article ol li::marker{color:var(--jp-blue);font-weight:700}
+.jp-article strong{color:#111827}
+.jp-article code{background:#eef2f7;padding:2px 6px;border-radius:4px;font-size:.9em}
+
+/* tables (old posts use border="1" – override) */
+.jp-table-wrap{overflow-x:auto;margin:20px 0;border:1px solid var(--jp-line);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.jp-article table{width:100%;border-collapse:collapse;border:0!important;font-size:15px;margin:0}
+.jp-article th{background:var(--jp-blue);color:#fff;text-align:left;font-weight:600;padding:12px 14px;border:0!important;white-space:nowrap}
+.jp-article td{padding:11px 14px;border:0!important;border-top:1px solid var(--jp-line)!important;vertical-align:top}
+.jp-article tbody tr:nth-child(even){background:var(--jp-soft)}
+.jp-article tbody tr:hover{background:#eaf2fd}
+.jp-article td:first-child{font-weight:600}
+
+/* components for new posts */
+.jp-tldr{background:#fffbea;border:1px solid #fde68a;border-radius:12px;padding:18px 20px;margin:0 0 28px}
+.jp-tldr h4{margin:0 0 8px;font-size:16px}
+.jp-tldr ul{margin:0}
+.jp-note,.jp-warn,.jp-tip{border-radius:10px;padding:14px 16px;margin:20px 0;border-left:5px solid}
+.jp-note{background:#eff6ff;border-color:var(--jp-blue)}
+.jp-warn{background:#fff7ed;border-color:#f97316}
+.jp-tip{background:#ecfdf5;border-color:#10b981}
+.jp-cta{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:20px 0}
+.jp-cta a{display:block;text-decoration:none!important;border:1px solid var(--jp-line);border-radius:12px;padding:14px 16px;background:#fff;color:var(--jp-ink);transition:.15s}
+.jp-cta a:hover{border-color:var(--jp-blue);box-shadow:0 4px 14px rgba(23,115,207,.12);transform:translateY(-2px)}
+.jp-cta b{display:block;color:var(--jp-blue);margin-bottom:4px}
+.jp-cta span{font-size:13px;color:var(--jp-muted)}
+
+/* FAQ accordion (built by JS) */
+.jp-faq details{border:1px solid var(--jp-line);border-radius:10px;margin:10px 0;background:#fff}
+.jp-faq summary{cursor:pointer;padding:14px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.jp-faq summary::-webkit-details-marker{display:none}
+.jp-faq summary::after{content:"+";font-size:22px;line-height:1;color:var(--jp-blue)}
+.jp-faq details[open] summary::after{content:"–"}
+.jp-faq details>div{padding:0 16px 14px;color:#374151}
+
+/* sidebar */
+.jp-aside{position:relative}
+.jp-toc{position:sticky;top:90px;border:1px solid var(--jp-line);border-radius:12px;padding:16px;background:#fff;font-size:14px}
+.jp-toc h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--jp-muted)}
+.jp-toc ol{margin:0;padding-left:18px}
+.jp-toc li{margin:6px 0}
+.jp-toc a{color:var(--jp-ink);text-decoration:none}
+.jp-toc a.active{color:var(--jp-blue);font-weight:700}
+@media(max-width:1023px){.jp-toc{position:static}}
+
+/* share */
+.jp-share{display:flex;gap:10px;margin:32px 0 0;flex-wrap:wrap}
+.jp-share a{padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none!important;color:#fff!important}
+.jp-share .wa{background:#25d366}.jp-share .fb{background:#1877f2}.jp-share .x{background:#111}

@@ -6,46 +6,89 @@
     @section('og_image', $post->poster_path
         ? asset('storage/'.$post->poster_path)
         : ($post->image ? asset('storage/'.$post->image) : asset('icons/icon-512x512.png')))
-    <article class="mx-auto max-w-4xl px-4 py-12 lg:px-10">
-        <div class="mb-12 text-center">
-            <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-primary">
-                {{ $post->created_at->format('M d, Y') }}
-            </div>
-            <h1 class="text-4xl font-black text-slate-900 dark:text-white md:text-6xl tracking-tight leading-tight">{{ $post->title }}</h1>
-        </div>
 
-        @php $postImage = $post->poster_path ?: $post->image; @endphp
-        @if($postImage)
-            <div class="mb-12 overflow-hidden rounded-[2.5rem] shadow-2xl">
-                <img src="{{ asset('storage/'.$postImage) }}" alt="{{ $post->title }}" width="1200" height="630" class="w-full h-auto" fetchpriority="high">
-            </div>
-        @endif
+    @push('styles')<link rel="stylesheet" href="{{ asset('css/blog-article.css') }}?v=1">@endpush
 
-        <div class="prose prose-slate prose-lg dark:prose-invert max-w-none 
-                    prose-headings:font-black prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                    prose-th:bg-primary/5 prose-th:p-4 prose-td:p-4 prose-table:overflow-hidden prose-table:rounded-xl prose-table:border prose-table:border-slate-200 dark:prose-table:border-slate-700
-                    prose-li:marker:text-primary leading-relaxed text-slate-700 dark:text-slate-300">
+    <div id="jp-progress"></div>
+    @php $mins = max(1, (int) ceil(str_word_count(strip_tags($post->content)) / 200)); @endphp
+
+    <div class="jp-post">
+        <header class="jp-post-head">
+            <span class="jp-cat">Career Guide</span>
+            <h1>{{ $post->title }}</h1>
+            <div class="jp-meta">
+                <span>📅 Updated {{ $post->updated_at->format('d M Y') }}</span>
+                <span>⏱ {{ $mins }} min read</span>
+                <span>✍️ JobsPic Editorial</span>
+            </div>
+            @php $postImage = $post->poster_path ?: $post->image; @endphp
+            @if($postImage)
+                <img src="{{ asset('storage/'.$postImage) }}" alt="{{ $post->title }}" width="1200" height="630" fetchpriority="high">
+            @endif
+        </header>
+
+        <article class="jp-article" id="jp-article">
             {!! $post->content !!}
-        </div>
 
-        <div class="mt-20 border-t border-slate-200 dark:border-slate-800 pt-10">
-            <div class="flex flex-col items-center justify-between gap-6 sm:flex-row">
-                <a href="{{ route('blog.index') }}" class="inline-flex items-center gap-2 text-sm font-black text-slate-500 hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined text-base">arrow_back</span>
-                    Back to Articles
-                </a>
-                <div class="flex items-center gap-4">
-                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Share Article</p>
-                    <div class="flex gap-2">
-                         <a href="https://wa.me/?text={{ urlencode($post->title . ' - ' . url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#075E54] text-white shadow-md hover:bg-[#064e46] transition-all">
-                             <span class="material-symbols-outlined text-lg">share</span>
-                         </a>
-                         <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0d65d9] text-white shadow-md hover:bg-[#0b54b5] transition-all">
-                             <span class="material-symbols-outlined text-lg">share</span>
-                         </a>
-                    </div>
-                </div>
+            <div class="jp-share">
+                @php $u = urlencode(url()->current()); $t = urlencode($post->title); @endphp
+                <a class="wa" href="https://wa.me/?text={{ $t }}%20{{ $u }}" target="_blank" rel="noopener">WhatsApp</a>
+                <a class="fb" href="https://www.facebook.com/sharer/sharer.php?u={{ $u }}" target="_blank" rel="noopener">Facebook</a>
+                <a class="x"  href="https://twitter.com/intent/tweet?url={{ $u }}&text={{ $t }}" target="_blank" rel="noopener">X</a>
             </div>
-        </div>
-    </article>
+        </article>
+
+        <aside class="jp-aside">
+            <nav class="jp-toc" id="jp-toc" aria-label="Table of contents">
+                <h4>On this page</h4><ol></ol>
+            </nav>
+        </aside>
+    </div>
+
+    @push('scripts')
+    <script>
+    (function(){
+        const art=document.getElementById('jp-article'); if(!art) return;
+        const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+        // 1) wrap tables for mobile scroll (old posts)
+        art.querySelectorAll('table').forEach(t=>{
+            if(!t.parentElement.classList.contains('jp-table-wrap')){
+                const w=document.createElement('div');w.className='jp-table-wrap';
+                t.parentElement.style.overflowX==='auto'?t.parentElement.replaceWith(w):t.replaceWith(w);
+                w.appendChild(t);
+            }
+            t.removeAttribute('border');t.removeAttribute('cellpadding');t.removeAttribute('style');
+        });
+
+        // 2) FAQ h3+p → accordion
+        const faqH=[...art.querySelectorAll('h2')].find(h=>/frequently asked|faq/i.test(h.textContent));
+        if(faqH){
+            const box=document.createElement('div');box.className='jp-faq';
+            let n=faqH.nextElementSibling;
+            while(n && n.tagName==='H3'){
+                const q=n, a=[];let m=q.nextElementSibling;
+                while(m && !['H2','H3'].includes(m.tagName)){a.push(m);m=m.nextElementSibling;}
+                const d=document.createElement('details'),s=document.createElement('summary'),c=document.createElement('div');
+                s.textContent=q.textContent;a.forEach(x=>c.appendChild(x));d.append(s,c);box.appendChild(d);q.remove();n=m;
+            }
+            faqH.after(box);
+        }
+
+        // 3) TOC from h2
+        const list=document.querySelector('#jp-toc ol'),hs=[...art.querySelectorAll('h2')];
+        if(!hs.length){document.getElementById('jp-toc').remove();}
+        hs.forEach(h=>{h.id=h.id||slug(h.textContent);
+            const li=document.createElement('li');li.innerHTML=`<a href="#${h.id}">${h.textContent}</a>`;list.appendChild(li);});
+        const links=[...list.querySelectorAll('a')];
+        hs.forEach(h=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){
+            links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+h.id));}}),{rootMargin:'-80px 0px -70% 0px'}).observe(h));
+
+        // 4) reading progress
+        const bar=document.getElementById('jp-progress');
+        addEventListener('scroll',()=>{const r=art.getBoundingClientRect(),h=art.offsetHeight-innerHeight;
+            bar.style.width=Math.min(100,Math.max(0,(-r.top/h)*100))+'%';},{passive:true});
+    })();
+    </script>
+    @endpush
 </x-layout>
