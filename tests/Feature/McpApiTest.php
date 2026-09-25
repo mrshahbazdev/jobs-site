@@ -285,6 +285,28 @@ class McpApiTest extends TestCase
             ->assertUnauthorized();
     }
 
+    public function test_source_image_view_returns_image_block(): void
+    {
+        $png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+        $create = $this->postJson('/api/mcp/source-images', [
+            'title' => 'View Ad', 'image_base64' => $png,
+        ], $this->auth())->assertCreated();
+        $id = $create->json('data.id');
+
+        $res = $this->rpc('tools/call', ['name' => 'source_image_view', 'arguments' => ['id' => $id]])
+            ->assertOk();
+        $content = $res->json('result.content');
+        $this->assertSame('text', $content[0]['type']);
+        $this->assertSame('image', $content[1]['type']);
+        $this->assertSame('image/jpeg', $content[1]['mimeType']);
+        $this->assertStringContainsString('part 1/1', $content[0]['text']);
+        $this->assertSame("\xff\xd8", substr(base64_decode($content[1]['data']), 0, 2));
+
+        $missing = $this->rpc('tools/call', ['name' => 'source_image_view', 'arguments' => ['id' => 999999]])
+            ->assertOk();
+        $this->assertTrue($missing->json('result.isError'));
+    }
+
     public function test_bulk_delete_by_filter(): void
     {
         $expired = $this->makeJob(['deadline' => now()->subDay(), 'is_active' => true]);

@@ -843,6 +843,16 @@ function registerAdminTools(server) {
     annotations: WRITE,
   }, (a, api) => api.post('/api/mcp/source-images', a));
 
+  tool(server, 'source_image_view', {
+    title: 'View source ad image',
+    description: 'Return a scraper-queue ad image as an image block so the assistant can read (OCR) it. Tall ads are split into parts; pass part=2,3... for more.',
+    inputSchema: {
+      id: z.number().int(),
+      part: z.number().int().min(1).optional(),
+    },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/source-images/{id}/view', a));
+
   tool(server, 'source_image_update', {
     title: 'Update source image',
     inputSchema: {
