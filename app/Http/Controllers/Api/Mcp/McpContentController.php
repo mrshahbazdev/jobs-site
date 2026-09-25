@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class McpContentController extends Controller
@@ -55,11 +56,17 @@ class McpContentController extends Controller
             'is_published' => 'nullable|boolean',
         ]);
 
-        $data['slug'] = $this->uniqueSlug(Post::class, $data['slug'] ?? $data['title']);
-        $data['is_published'] = $data['is_published'] ?? false;
-        $post = Post::create($data);
+        try {
+            $data['slug'] = $this->uniqueSlug(Post::class, $data['slug'] ?? $data['title']);
+            $data['is_published'] = $data['is_published'] ?? false;
+            $post = Post::create($data);
 
-        return response()->json(['success' => true, 'data' => $this->postSummary($post, true)], 201);
+            return response()->json(['success' => true, 'data' => $this->postSummary($post, true)], 201);
+        } catch (\Throwable $e) {
+            Log::error('MCP '.$request->path(), ['msg' => $e->getMessage(), 'at' => $e->getFile().':'.$e->getLine()]);
+
+            return response()->json(['success' => false, 'error' => 'Server Error'], 500);
+        }
     }
 
     public function updatePost(Request $request, int $id): JsonResponse
@@ -73,12 +80,19 @@ class McpContentController extends Controller
             'meta_description' => 'nullable|string|max:255',
             'is_published' => 'sometimes|boolean',
         ]);
-        if (isset($data['slug']) && $data['slug'] !== $post->slug) {
-            $data['slug'] = $this->uniqueSlug(Post::class, $data['slug'], $post->id);
-        }
-        $post->update($data);
 
-        return response()->json(['success' => true, 'data' => $this->postSummary($post->fresh(), true)]);
+        try {
+            if (isset($data['slug']) && $data['slug'] !== $post->slug) {
+                $data['slug'] = $this->uniqueSlug(Post::class, $data['slug'], $post->id);
+            }
+            $post->update($data);
+
+            return response()->json(['success' => true, 'data' => $this->postSummary($post->fresh(), true)]);
+        } catch (\Throwable $e) {
+            Log::error('MCP '.$request->path(), ['msg' => $e->getMessage(), 'at' => $e->getFile().':'.$e->getLine()]);
+
+            return response()->json(['success' => false, 'error' => 'Server Error'], 500);
+        }
     }
 
     public function destroyPost(int $id): JsonResponse
