@@ -51,6 +51,7 @@ class McpContentController extends Controller
             'slug' => 'nullable|string|max:255',
             'content' => 'required|string',
             'image' => 'nullable|string|max:500',
+            'meta_description' => 'nullable|string|max:255',
             'is_published' => 'nullable|boolean',
         ]);
 
@@ -69,6 +70,7 @@ class McpContentController extends Controller
             'slug' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
             'image' => 'nullable|string|max:500',
+            'meta_description' => 'nullable|string|max:255',
             'is_published' => 'sometimes|boolean',
         ]);
         if (isset($data['slug']) && $data['slug'] !== $post->slug) {
@@ -347,6 +349,8 @@ class McpContentController extends Controller
             'slug' => $p->slug,
             'url' => url('/blog/'.$p->slug),
             'image' => $p->image,
+            'meta_description' => $p->meta_description,
+            'poster_path' => $p->poster_path,
             'is_published' => (bool) $p->is_published,
             'word_count' => str_word_count(strip_tags((string) $p->content)),
             'content' => $withContent ? $p->content : null,

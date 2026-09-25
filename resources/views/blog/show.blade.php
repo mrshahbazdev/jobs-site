@@ -1,4 +1,11 @@
 <x-layout>
+    @section('title', $post->title . ' | JobsPic')
+    @section('meta_description', $post->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($post->content), 155))
+    @section('og_title', $post->title . ' | JobsPic')
+    @section('og_type', 'article')
+    @section('og_image', $post->poster_path
+        ? asset('storage/'.$post->poster_path)
+        : ($post->image ? asset('storage/'.$post->image) : asset('icons/icon-512x512.png')))
     <article class="mx-auto max-w-4xl px-4 py-12 lg:px-10">
         <div class="mb-12 text-center">
             <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-primary">
@@ -7,9 +14,10 @@
             <h1 class="text-4xl font-black text-slate-900 dark:text-white md:text-6xl tracking-tight leading-tight">{{ $post->title }}</h1>
         </div>
 
-        @if($post->image)
+        @php $postImage = $post->poster_path ?: $post->image; @endphp
+        @if($postImage)
             <div class="mb-12 overflow-hidden rounded-[2.5rem] shadow-2xl">
-                <img src="{{ asset('storage/'.$post->image) }}" alt="{{ $post->title }}" class="w-full h-auto">
+                <img src="{{ asset('storage/'.$postImage) }}" alt="{{ $post->title }}" width="1200" height="630" class="w-full h-auto" fetchpriority="high">
             </div>
         @endif
 
