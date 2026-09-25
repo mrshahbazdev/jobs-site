@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\JobListing;
+use App\Models\Post;
 use App\Models\Subscriber;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -327,5 +328,27 @@ class McpApiTest extends TestCase
             ->assertJsonPath('deleted', 1);
         $this->assertDatabaseMissing('job_listings', ['id' => $expired->id]);
         $this->assertDatabaseHas('job_listings', ['id' => $fresh->id]);
+    }
+
+    public function test_posts_create_supports_meta_description_and_generates_poster(): void
+    {
+        $create = $this->postJson('/api/mcp/posts', [
+            'title' => 'How to Apply for Govt Jobs',
+            'content' => '<p>Guide body</p>',
+            'meta_description' => 'Step by step guide to applying for Pakistan government jobs.',
+            'is_published' => true,
+        ], $this->auth())->assertCreated();
+
+        $id = $create->json('data.id');
+        $post = Post::findOrFail($id);
+
+        $this->assertSame('Step by step guide to applying for Pakistan government jobs.', $post->meta_description);
+        $this->assertNotNull($post->poster_path);
+        $this->assertStringStartsWith('blog-posters/', $post->poster_path);
+        $this->assertTrue(Storage::disk('public')->exists($post->poster_path));
+
+        $this->putJson("/api/mcp/posts/{$id}", [
+            'meta_description' => 'Updated meta.',
+        ], $this->auth())->assertOk()->assertJsonPath('data.meta_description', 'Updated meta.');
     }
 }

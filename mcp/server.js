@@ -587,13 +587,13 @@ function registerContentTools(server) {
 
   tool(server, 'posts_create', {
     title: 'Create blog post',
-    inputSchema: { title: z.string().max(255), content: z.string(), slug: str, image: str, is_published: bool },
+    inputSchema: { title: z.string().max(255), content: z.string(), slug: str, image: str, meta_description: str, is_published: bool },
     annotations: WRITE,
   }, (a, api) => api.post('/api/mcp/posts', a));
 
   tool(server, 'posts_update', {
     title: 'Update blog post',
-    inputSchema: { id, title: str, content: str, slug: str, image: str, is_published: bool },
+    inputSchema: { id, title: str, content: str, slug: str, image: str, meta_description: str, is_published: bool },
     annotations: IDEMPOTENT,
   }, ({ id: postId, ...rest }, api) => api.put(`/api/mcp/posts/${postId}`, rest));
 

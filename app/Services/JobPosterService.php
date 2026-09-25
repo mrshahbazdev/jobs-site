@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\JobListing;
+use App\Models\Post;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -26,7 +27,38 @@ class JobPosterService
 
     public function generate(JobListing $job): string
     {
-        [$bg, $accent] = $this->colors[$job->category?->slug] ?? $this->colors['default'];
+        $facts = array_filter([
+            ['Last Date', $job->deadline ? Carbon::parse($job->deadline)->format('d M Y') : null],
+            ['Education', $job->education],
+            ['Location', $job->city?->name],
+            [$job->bps_scale ? 'Pay Scale' : 'Job Type', $job->bps_scale ?: str_replace('_', ' ', $job->job_type ?? '')],
+        ], fn ($f) => filled($f[1]));
+
+        return $this->render(
+            $job->category?->slug,
+            strtoupper($job->category?->name ?? 'Jobs'),
+            $job->company_name ?: $job->department ?: '',
+            $this->shortTitle($job->title),
+            array_values($facts),
+            "job-posters/{$job->slug}.jpg",
+        );
+    }
+
+    public function generateForPost(Post $post): string
+    {
+        return $this->render(
+            null,
+            'CAREER GUIDE',
+            'JobsPic Career Guide',
+            $this->shortTitle($post->title),
+            [['Published', $post->created_at->format('d M Y')]],
+            "blog-posters/{$post->slug}.jpg",
+        );
+    }
+
+    private function render(?string $colorKey, string $pill, string $org, string $title, array $facts, string $path): string
+    {
+        [$bg, $accent] = $this->colors[$colorKey] ?? $this->colors['default'];
         $bold = resource_path('fonts/Poppins-Bold.ttf');
         $reg = resource_path('fonts/Poppins-Regular.ttf');
 
@@ -42,16 +74,13 @@ class JobPosterService
         });
         $img->drawRectangle(0, 0, fn ($r) => $r->size(self::W, 8)->background('#ffc107'));
 
-        // Category pill
-        $cat = strtoupper($job->category?->name ?? 'Jobs');
-        $img->drawRectangle(60, 50, fn ($r) => $r->size(strlen($cat) * 13 + 40, 42)->background('#ffc107'));
-        $this->text($img, $cat, 80, 58, $bold, 20, '#141414');
+        // Pill
+        $img->drawRectangle(60, 50, fn ($r) => $r->size(strlen($pill) * 13 + 40, 42)->background('#ffc107'));
+        $this->text($img, $pill, 80, 58, $bold, 20, '#141414');
 
         // Organization + title
-        $org = $job->company_name ?: $job->department ?: '';
         $this->text($img, mb_strimwidth($org, 0, 45, '…'), 60, 118, $bold, 30, '#ffffff');
 
-        $title = $this->shortTitle($job->title);
         $size = mb_strlen($title) > 60 ? 50 : 60;
         $y = 170;
         foreach (array_slice(explode("\n", wordwrap($title, $size === 60 ? 26 : 32, "\n", true)), 0, 3) as $line) {
@@ -60,14 +89,6 @@ class JobPosterService
         }
 
         // Facts bar
-        $facts = array_filter([
-            ['Last Date', $job->deadline ? Carbon::parse($job->deadline)->format('d M Y') : null],
-            ['Education', $job->education],
-            ['Location',  $job->city?->name],
-            [$job->bps_scale ? 'Pay Scale' : 'Job Type', $job->bps_scale ?: str_replace('_', ' ', $job->job_type ?? '')],
-        ], fn ($f) => filled($f[1]));
-        $facts = array_values($facts);
-
         $by = self::H - 150;
         $img->drawRectangle(60, $by, fn ($r) => $r->size(self::W - 120, 80)->background('#ffffff'));
         $colW = (self::W - 150) / max(count($facts), 1);
@@ -81,7 +102,6 @@ class JobPosterService
         $this->text($img, 'JobsPic.com', 60, self::H - 55, $bold, 26, '#ffc107');
         $this->text($img, 'Latest Jobs in Pakistan', self::W - 320, self::H - 50, $reg, 20, '#e6e6e6');
 
-        $path = "job-posters/{$job->slug}.jpg";
         Storage::disk('public')->put($path, (string) $img->toJpeg(85));
 
         return $path;
