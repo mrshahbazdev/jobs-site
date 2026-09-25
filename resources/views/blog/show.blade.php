@@ -27,16 +27,18 @@
             @endif
         </header>
 
+        <div class="jp-main" style="min-width:0">
         <article class="jp-article" id="jp-article">
             {!! $post->content !!}
-
-            <div class="jp-share">
-                @php $u = urlencode(url()->current()); $t = urlencode($post->title); @endphp
-                <a class="wa" href="https://wa.me/?text={{ $t }}%20{{ $u }}" target="_blank" rel="noopener">WhatsApp</a>
-                <a class="fb" href="https://www.facebook.com/sharer/sharer.php?u={{ $u }}" target="_blank" rel="noopener">Facebook</a>
-                <a class="x"  href="https://twitter.com/intent/tweet?url={{ $u }}&text={{ $t }}" target="_blank" rel="noopener">X</a>
-            </div>
         </article>
+
+        <div class="jp-share">
+            @php $u = urlencode(url()->current()); $t = urlencode($post->title); @endphp
+            <a class="wa" href="https://wa.me/?text={{ $t }}%20{{ $u }}" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="fb" href="https://www.facebook.com/sharer/sharer.php?u={{ $u }}" target="_blank" rel="noopener">Facebook</a>
+            <a class="x"  href="https://twitter.com/intent/tweet?url={{ $u }}&text={{ $t }}" target="_blank" rel="noopener">X</a>
+        </div>
+        </div>
 
         <aside class="jp-aside">
             <nav class="jp-toc" id="jp-toc" aria-label="Table of contents">

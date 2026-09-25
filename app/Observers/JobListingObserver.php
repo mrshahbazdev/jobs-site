@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\JobListing;
 use App\Services\IndexNowService;
 use App\Services\JobPosterService;
+use Illuminate\Support\Facades\Log;
 
 class JobListingObserver
 {
@@ -12,8 +13,16 @@ class JobListingObserver
     {
         $watch = ['title', 'slug', 'deadline', 'education', 'company_name', 'category_id', 'city_id', 'bps_scale'];
         if (! $job->poster_path || $job->wasChanged($watch) || $job->wasRecentlyCreated) {
-            $path = app(JobPosterService::class)->generate($job);
-            $job->updateQuietly(['poster_path' => $path]);
+            try {
+                $path = app(JobPosterService::class)->generate($job);
+                $job->updateQuietly(['poster_path' => $path]);
+            } catch (\Throwable $e) {
+                Log::error('Job poster generation failed', [
+                    'job_id' => $job->id,
+                    'msg' => $e->getMessage(),
+                    'at' => $e->getFile().':'.$e->getLine(),
+                ]);
+            }
         }
     }
 
