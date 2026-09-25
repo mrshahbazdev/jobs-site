@@ -19,3 +19,5 @@ description: How to run the Laravel jobs-site app locally for end-to-end/UI test
 ## MCP
 - Set `MCP_API_TOKEN` in `.env`; REST at `/api/mcp/*`, JSON-RPC at `POST /api/mcp/rpc` (Bearer token).
 - Smoke test: `JOBS_SITE_URL=http://127.0.0.1:<port> MCP_API_TOKEN=<token> npm run mcp:smoke` (from repo root, needs `cd mcp && npm install` first).
+
+- MCP API testing: `POST /api/mcp/<resource>` with `Authorization: Bearer $MCP_API_TOKEN` from .env — useful for creating test entities (posts/jobs) and asserting observer side-effects.
