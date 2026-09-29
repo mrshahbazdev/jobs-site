@@ -1189,7 +1189,7 @@ function registerFileTools(server) {
 
   tool(server, 'files_create', {
     title: 'Create a new file',
-    description: 'Creates a file under an allowed root (allowed extensions: php js css txt json xml md html svg webmanifest). Refuses to overwrite — use files_replace.',
+    description: 'Creates a file under an allowed root (allowed extensions: php js css txt json xml md html svg webmanifest htaccess). Refuses to overwrite — use files_replace.',
     inputSchema: {
       path: z.string(),
       content: z.string(),
