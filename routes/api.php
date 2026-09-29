@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\JobArticleController;
 use App\Http\Controllers\Api\LandingGroupApiController;
 use App\Http\Controllers\Api\Mcp\McpAdminController;
 use App\Http\Controllers\Api\Mcp\McpContentController;
+use App\Http\Controllers\Api\Mcp\McpFileController;
 use App\Http\Controllers\Api\Mcp\McpOpsController;
 use App\Http\Controllers\Api\Mcp\McpRpcController;
 use App\Http\Controllers\Api\Mcp\McpSystemController;
@@ -185,6 +186,15 @@ Route::prefix('mcp')->middleware('mcp.token')->group(function () {
     Route::post('/views/create', [McpViewController::class, 'create']);
     Route::get('/views/backups', [McpViewController::class, 'backups']);
     Route::post('/views/restore', [McpViewController::class, 'restore']);
+
+    // General file editing (allow-listed roots, backups + php -l) & live site fetch
+    Route::get('/files', [McpFileController::class, 'list']);
+    Route::get('/files/read', [McpFileController::class, 'read']);
+    Route::post('/files/replace', [McpFileController::class, 'replace']);
+    Route::post('/files/create', [McpFileController::class, 'create']);
+    Route::get('/files/backups', [McpFileController::class, 'backups']);
+    Route::post('/files/restore', [McpFileController::class, 'restore']);
+    Route::get('/site/fetch', [McpFileController::class, 'siteFetch']);
 
     Route::get('/storage', [McpAdminController::class, 'storage']);
     Route::post('/storage/delete', [McpAdminController::class, 'storageDelete']);
