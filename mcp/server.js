@@ -1106,6 +1106,58 @@ function registerPrompts(server) {
 }
 
 // ---------------------------------------------------------------------------
+function registerViewTools(server) {
+  tool(server, 'views_list', {
+    title: 'List blade views',
+    description: 'All .blade.php files under resources/views (blocked: vendor/, filament/, errors/). Optional substring filter.',
+    inputSchema: { filter: str },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/views', a));
+
+  tool(server, 'views_read', {
+    title: 'Read a blade view',
+    description: 'Full contents of one .blade.php file under resources/views, e.g. pages/about.blade.php.',
+    inputSchema: { path: z.string().describe('Path relative to resources/views, e.g. pages/about.blade.php') },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/views/read', a));
+
+  tool(server, 'views_replace', {
+    title: 'Replace text in a view',
+    description: 'str_replace-style edit: old_str must appear exactly once. Backs up the file first, then lints the compiled PHP (php -l) before saving.',
+    inputSchema: {
+      path: z.string(),
+      old_str: z.string(),
+      new_str: z.string(),
+    },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/views/replace', a));
+
+  tool(server, 'views_create', {
+    title: 'Create a new view',
+    description: 'Creates a new .blade.php inside an existing folder under resources/views. Refuses to overwrite existing files — use views_replace.',
+    inputSchema: {
+      path: z.string(),
+      content: z.string(),
+    },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/views/create', a));
+
+  tool(server, 'views_backups', {
+    title: 'List view backups',
+    description: 'Recent .bak snapshots taken before view edits (latest 50). Optional substring filter.',
+    inputSchema: { filter: str },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/views/backups', a));
+
+  tool(server, 'views_restore', {
+    title: 'Restore a view backup',
+    description: 'Copies a .bak snapshot back over its original view. The current file is backed up first.',
+    inputSchema: { backup: z.string().describe('Backup path as returned by views_backups, e.g. pages/about.blade.php.20260929_120000.bak') },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/views/restore', a));
+}
+
+// ---------------------------------------------------------------------------
 export function createServer() {
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION, websiteUrl: config.baseUrl },
@@ -1118,6 +1170,7 @@ export function createServer() {
   registerGrowthTools(server);
   registerContentTools(server);
   registerAdminTools(server);
+  registerViewTools(server);
   registerResources(server);
   registerPrompts(server);
   return server;

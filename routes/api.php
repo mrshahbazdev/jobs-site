@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Mcp\McpContentController;
 use App\Http\Controllers\Api\Mcp\McpOpsController;
 use App\Http\Controllers\Api\Mcp\McpRpcController;
 use App\Http\Controllers\Api\Mcp\McpSystemController;
+use App\Http\Controllers\Api\Mcp\McpViewController;
 use App\Http\Controllers\Api\ScraperApiController;
 use App\Http\Controllers\Api\ScraperQueueController;
 use Illuminate\Http\Request;
@@ -176,6 +177,14 @@ Route::prefix('mcp')->middleware('mcp.token')->group(function () {
     Route::get('/alerts/preview', [McpAdminController::class, 'alertsPreview']);
     Route::post('/alerts/send', [McpAdminController::class, 'alertsSend']);
     Route::post('/mail/test', [McpAdminController::class, 'mailTest']);
+
+    // Blade view editing (guarded to resources/views .blade.php, backups + php -l)
+    Route::get('/views', [McpViewController::class, 'list']);
+    Route::get('/views/read', [McpViewController::class, 'read']);
+    Route::post('/views/replace', [McpViewController::class, 'replace']);
+    Route::post('/views/create', [McpViewController::class, 'create']);
+    Route::get('/views/backups', [McpViewController::class, 'backups']);
+    Route::post('/views/restore', [McpViewController::class, 'restore']);
 
     Route::get('/storage', [McpAdminController::class, 'storage']);
     Route::post('/storage/delete', [McpAdminController::class, 'storageDelete']);
