@@ -37,6 +37,7 @@
                         <li><a class="hover:text-primary" href="{{ url('/about') }}">About Us</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/privacy-policy') }}">Privacy Policy</a></li>
                         <li><a class="hover:text-primary" href="{{ url('/terms') }}">Terms & Conditions</a></li>
+                        <li><a class="hover:text-primary" href="{{ url('/contact') }}">Contact Us</a></li>
                     </ul>
                 </div>
                 <div>

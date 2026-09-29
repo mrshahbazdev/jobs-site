@@ -127,3 +127,7 @@ Route::get('/skill/{skill}', [JobController::class, 'skill'])->name('jobs.skill'
 Route::get('/about', [PageController::class, 'about'])->name('pages.about');
 Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('pages.privacy');
 Route::get('/terms', [PageController::class, 'terms'])->name('pages.terms');
+Route::get('/contact', [PageController::class, 'contact'])->name('pages.contact');
+Route::post('/contact', [PageController::class, 'submitContact'])
+    ->middleware('throttle:5,1')
+    ->name('pages.contact.submit');
