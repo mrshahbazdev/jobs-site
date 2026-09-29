@@ -4156,5 +4156,192 @@
       "method": "POST",
       "path": "/api/mcp/views/restore"
     }
+  },
+  {
+    "name": "files_list",
+    "title": "List editable files",
+    "description": "Files under allow-listed roots (app/, routes/, resources/, config/, database/migrations|seeders, lang/, public/). Blocked: .env, vendor/, storage/, bootstrap/, node_modules/, .git/, config/database.php, config/app.php.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dir": {
+          "description": "Directory relative to project root, e.g. app/ or routes/. Default app/.",
+          "type": "string"
+        },
+        "filter": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/files"
+    }
+  },
+  {
+    "name": "files_read",
+    "title": "Read a file",
+    "description": "Full contents of one file under an allowed root, e.g. routes/web.php or app/Models/Job.php.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path relative to project root"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/files/read"
+    }
+  },
+  {
+    "name": "files_replace",
+    "title": "Replace text in a file",
+    "description": "str_replace-style edit: old_str must appear exactly once. Backs up the file first; PHP files are php -l linted (Blade compiled first), .json validated, before saving.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "old_str": {
+          "type": "string"
+        },
+        "new_str": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "old_str",
+        "new_str"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/files/replace"
+    }
+  },
+  {
+    "name": "files_create",
+    "title": "Create a new file",
+    "description": "Creates a file under an allowed root (allowed extensions: php js css txt json xml md html svg webmanifest). Refuses to overwrite — use files_replace.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/files/create"
+    }
+  },
+  {
+    "name": "files_backups",
+    "title": "List file backups",
+    "description": "Recent .bak snapshots taken before file edits (latest 50). Optional substring filter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/files/backups"
+    }
+  },
+  {
+    "name": "files_restore",
+    "title": "Restore a file backup",
+    "description": "Copies a .bak snapshot back over its original file. The current file is backed up first.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "backup": {
+          "type": "string",
+          "description": "Backup path as returned by files_backups, e.g. routes/web.php.20260929_120000.bak"
+        }
+      },
+      "required": [
+        "backup"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/files/restore"
+    }
+  },
+  {
+    "name": "site_fetch",
+    "title": "Fetch a live page",
+    "description": "GET a path on the production site (APP_URL) without following redirects; returns status, Location, content-type and body (200KB max). Use to verify changes live.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Site path, e.g. / or /jobs. Default /.",
+          "type": "string"
+        },
+        "user_agent": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/site/fetch"
+    }
   }
 ]

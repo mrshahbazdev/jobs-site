@@ -1158,6 +1158,71 @@ function registerViewTools(server) {
 }
 
 // ---------------------------------------------------------------------------
+function registerFileTools(server) {
+  tool(server, 'files_list', {
+    title: 'List editable files',
+    description: 'Files under allow-listed roots (app/, routes/, resources/, config/, database/migrations|seeders, lang/, public/). Blocked: .env, vendor/, storage/, bootstrap/, node_modules/, .git/, config/database.php, config/app.php.',
+    inputSchema: {
+      dir: z.string().optional().describe('Directory relative to project root, e.g. app/ or routes/. Default app/.'),
+      filter: str,
+    },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/files', a));
+
+  tool(server, 'files_read', {
+    title: 'Read a file',
+    description: 'Full contents of one file under an allowed root, e.g. routes/web.php or app/Models/Job.php.',
+    inputSchema: { path: z.string().describe('Path relative to project root') },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/files/read', a));
+
+  tool(server, 'files_replace', {
+    title: 'Replace text in a file',
+    description: 'str_replace-style edit: old_str must appear exactly once. Backs up the file first; PHP files are php -l linted (Blade compiled first), .json validated, before saving.',
+    inputSchema: {
+      path: z.string(),
+      old_str: z.string(),
+      new_str: z.string(),
+    },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/files/replace', a));
+
+  tool(server, 'files_create', {
+    title: 'Create a new file',
+    description: 'Creates a file under an allowed root (allowed extensions: php js css txt json xml md html svg webmanifest). Refuses to overwrite — use files_replace.',
+    inputSchema: {
+      path: z.string(),
+      content: z.string(),
+    },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/files/create', a));
+
+  tool(server, 'files_backups', {
+    title: 'List file backups',
+    description: 'Recent .bak snapshots taken before file edits (latest 50). Optional substring filter.',
+    inputSchema: { filter: str },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/files/backups', a));
+
+  tool(server, 'files_restore', {
+    title: 'Restore a file backup',
+    description: 'Copies a .bak snapshot back over its original file. The current file is backed up first.',
+    inputSchema: { backup: z.string().describe('Backup path as returned by files_backups, e.g. routes/web.php.20260929_120000.bak') },
+    annotations: WRITE,
+  }, (a, api) => api.post('/api/mcp/files/restore', a));
+
+  tool(server, 'site_fetch', {
+    title: 'Fetch a live page',
+    description: 'GET a path on the production site (APP_URL) without following redirects; returns status, Location, content-type and body (200KB max). Use to verify changes live.',
+    inputSchema: {
+      path: z.string().optional().describe('Site path, e.g. / or /jobs. Default /.'),
+      user_agent: str,
+    },
+    annotations: READ,
+  }, (a, api) => api.get('/api/mcp/site/fetch', a));
+}
+
+// ---------------------------------------------------------------------------
 export function createServer() {
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION, websiteUrl: config.baseUrl },
@@ -1171,6 +1236,7 @@ export function createServer() {
   registerContentTools(server);
   registerAdminTools(server);
   registerViewTools(server);
+  registerFileTools(server);
   registerResources(server);
   registerPrompts(server);
   return server;
