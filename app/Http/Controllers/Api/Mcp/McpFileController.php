@@ -25,7 +25,7 @@ class McpFileController extends Controller
         'public/storage', 'public/build/', 'config/database.php', 'config/app.php',
     ];
 
-    private const EXTENSIONS = ['php', 'js', 'css', 'txt', 'json', 'xml', 'md', 'html', 'svg', 'webmanifest'];
+    private const EXTENSIONS = ['php', 'js', 'css', 'txt', 'json', 'xml', 'md', 'html', 'svg', 'webmanifest', 'htaccess'];
 
     /* ---------------- helpers ---------------- */
 
@@ -39,7 +39,12 @@ class McpFileController extends Controller
         }
         abort_unless(collect(self::ALLOWED_ROOTS)->contains(fn ($r) => str_starts_with($path, $r)), 403, 'Path is outside allowed folders.');
 
-        $ext = str_ends_with($path, '.blade.php') ? 'php' : strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        // Dotfiles like .htaccess have no extension — treat the name itself as the ext key
+        $basename = basename($path);
+        $ext = str_ends_with($path, '.blade.php') ? 'php'
+            : (str_starts_with($basename, '.')
+                ? ltrim($basename, '.')
+                : strtolower(pathinfo($path, PATHINFO_EXTENSION)));
         abort_unless(in_array($ext, self::EXTENSIONS, true), 422, "Extension .{$ext} not allowed.");
 
         $base = realpath(base_path());
