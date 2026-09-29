@@ -3998,5 +3998,163 @@
       "method": "POST",
       "path": "/api/mcp/artisan"
     }
+  },
+  {
+    "name": "views_list",
+    "title": "List blade views",
+    "description": "All .blade.php files under resources/views (blocked: vendor/, filament/, errors/). Optional substring filter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/views"
+    }
+  },
+  {
+    "name": "views_read",
+    "title": "Read a blade view",
+    "description": "Full contents of one .blade.php file under resources/views, e.g. pages/about.blade.php.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path relative to resources/views, e.g. pages/about.blade.php"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/views/read"
+    }
+  },
+  {
+    "name": "views_replace",
+    "title": "Replace text in a view",
+    "description": "str_replace-style edit: old_str must appear exactly once. Backs up the file first, then lints the compiled PHP (php -l) before saving.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "old_str": {
+          "type": "string"
+        },
+        "new_str": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "old_str",
+        "new_str"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/views/replace"
+    }
+  },
+  {
+    "name": "views_create",
+    "title": "Create a new view",
+    "description": "Creates a new .blade.php inside an existing folder under resources/views. Refuses to overwrite existing files — use views_replace.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "content"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/views/create"
+    }
+  },
+  {
+    "name": "views_backups",
+    "title": "List view backups",
+    "description": "Recent .bak snapshots taken before view edits (latest 50). Optional substring filter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "GET",
+      "path": "/api/mcp/views/backups"
+    }
+  },
+  {
+    "name": "views_restore",
+    "title": "Restore a view backup",
+    "description": "Copies a .bak snapshot back over its original view. The current file is backed up first.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "backup": {
+          "type": "string",
+          "description": "Backup path as returned by views_backups, e.g. pages/about.blade.php.20260929_120000.bak"
+        }
+      },
+      "required": [
+        "backup"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "http": {
+      "method": "POST",
+      "path": "/api/mcp/views/restore"
+    }
   }
 ]
